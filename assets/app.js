@@ -18,7 +18,7 @@ function sp(a,e){return '<span data-l="ar">'+a+'</span><span data-l="en">'+e+'</
 // packs grid
 var g=document.getElementById("packs"), h="";
 ["m","a","f","s"].forEach(function(k){var x=P[k];
- h+='<article class="pk"><img class="cover" loading="lazy" alt="" src="assets/'+x.img+'_cover.jpg">'
+ h+='<article class="pk"><img class="cover" alt="" width="520" height="673" src="assets/'+x.img+'_cover.jpg?v=2">'
   +'<h3>'+sp(x.ar,x.en)+'</h3><p>'+sp(x.d_ar,x.d_en)+'</p>'
   +'<div class="thumbs three"><img loading="lazy" alt="" src="assets/'+x.img+'_1.jpg"><img loading="lazy" alt="" src="assets/'+x.img+'_2.jpg"><img loading="lazy" alt="" src="assets/'+x.img+'_3.jpg"></div>'
   +'<div class="bar"><div class="price">$'+x.p+'</div><button type="button" data-pick="'+k+'">'+sp("أضف للطلب","Add to order")+'</button></div></article>'});
