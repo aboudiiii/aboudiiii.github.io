@@ -267,3 +267,11 @@ html[dir="rtl"] .vn{transform:scaleX(-1)}
 .rvl{opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}
 .rvl.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.rvl{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+.inc{margin:12px 0 2px;border-top:1px solid var(--line);padding-top:10px}
+.inc summary{cursor:pointer;font-weight:600;color:var(--gold);font-size:15.5px;list-style:none}
+.inc summary::-webkit-details-marker{display:none}
+.inc summary::before{content:"+ ";font-weight:700}
+.inc[open] summary::before{content:"\2212 "}
+.inc ul{margin:10px 0 0;padding-inline-start:20px;color:var(--muted);font-size:15px;line-height:1.7}
+.inc li{margin-bottom:4px}

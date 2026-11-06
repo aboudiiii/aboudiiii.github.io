@@ -12,13 +12,17 @@ var P={
  s:{p:4,img:"stars_cover",ar:"نجوم وبلاطات هندسية (١٧)",en:"Stars and Tiles (17)",
     d_ar:"سبعة عشر نمطاً من البلاطات الإسلامية المتكررة.",d_en:"Seventeen repeating Islamic tile patterns."},
  p:{p:4,img:"planner_cover",ar:"مخطط الدراسة والامتحانات (١١ صفحة)",en:"Study and Exam Planner (11 pages)",
-    d_ar:"جدول أسبوعي، عدّ تنازلي للامتحانات، متابعة المواد، سجل مذاكرة ودرجات. PDF للطباعة.",d_en:"Weekly timetable, exam countdown, subject tracker, study log and grades. Printable PDF."},
+    d_ar:"جدول أسبوعي، عدّ تنازلي للامتحانات، متابعة المواد، سجل مذاكرة ودرجات. PDF للطباعة.",d_en:"Weekly timetable, exam countdown, subject tracker, study log and grades. Printable PDF.",
+    inc_ar:["جدول أسبوعي بالساعات (٨ صباحاً إلى ٧ مساءً)", "جدول الامتحانات مع عدّ تنازلي ٣٠ يوماً", "أهداف الفصل وجدول المواد", "مخطط الأسبوع وأولوياته", "متابعة مادة بخمسة عشر فصلاً (قراءة، تلخيص، حل أسئلة، مراجعة)", "سجل مذاكرة يومي بجلسات تركيز", "مراجعة الأسبوع بمخطط ساعات", "جدول المراجعة المتباعدة (يوم ٣ و٧ و١٤ و٣٠)", "متابعة الدرجات والمعدل", "صفحة ملاحظات وشبكة نقطية"],inc_en:["Weekly timetable by the hour (8 AM to 7 PM)", "Exam schedule with a 30-day countdown", "Semester goals and subject list", "Weekly planner with priorities", "Subject tracker with 15 chapters (read, summarize, practice, review)", "Daily study log with focus sessions", "Weekly review with an hours chart", "Spaced revision schedule (day 3, 7, 14, 30)", "Grades and GPA tracker", "A notes page and a dot grid"]},
  c:{p:4,img:"cv_cover",ar:"قوالب السيرة الذاتية (٨ قوالب Word)",en:"Editable CV Templates (8 Word designs)",
-    d_ar:"أربعة تصاميم بالعربية وأربعة بالإنجليزية. ملف Word قابل للتعديل (وليس PDF).",d_en:"Four designs in English and four in Arabic. Editable Word file (not a PDF)."},
+    d_ar:"أربعة تصاميم بالعربية وأربعة بالإنجليزية. ملف Word قابل للتعديل (وليس PDF).",d_en:"Four designs in English and four in Arabic. Editable Word file (not a PDF).",
+    inc_ar:["ثمانية قوالب: أربعة تصاميم (كلاسيكي، عصري بشريط جانبي، بسيط، ترويسة ذهبية)", "كل تصميم بنسخة عربية (من اليمين لليسار) وأخرى إنجليزية", "صفحة تعليمات قصيرة لاستخدام القوالب", "ملف Word واحد بحجم A4 وآخر بحجم Letter"],inc_en:["Eight templates: four designs (Classic, Modern with a sidebar, Minimal, Gold header)", "Every design in Arabic (right to left) and in English", "A short instruction page", "One Word file in A4 and another in US Letter"]},
  e:{p:4,img:"learn_cover",ar:"كتاب التعلّم الممتع للأطفال (٤٤ صفحة)",en:"Fun Learning Book for Kids (44 pages)",
-    d_ar:"الحروف العربية الثمانية والعشرون، الأعداد، الأشكال، وتتبّع الخطوط وشهادة إنجاز.",d_en:"All 28 Arabic letters, numbers, shapes, line tracing and a certificate."},
+    d_ar:"الحروف العربية الثمانية والعشرون، الأعداد، الأشكال، وتتبّع الخطوط وشهادة إنجاز.",d_en:"All 28 Arabic letters, numbers, shapes, line tracing and a certificate.",
+    inc_ar:["الحروف العربية الثمانية والعشرون، لكل حرف صفحة: أشكاله الأربعة، تتبّع الخط، وكلمة مع صورتها", "الأعداد من ١ إلى ١٠ مع العدّ والكتابة", "ثمانية أشكال هندسية للتتبّع والرسم", "صفحتان لخطوط التحضير للكتابة", "لوّن حسب الاسم، وعدّ واكتب (صفحتان)", "شهادة إنجاز وصفحة تعليمات للأهل"],inc_en:["All 28 Arabic letters, one page each: four forms, line tracing and an example word with a picture", "Numbers 1 to 10 with counting and writing", "Eight geometric shapes to trace and draw", "Two pre-writing line pages", "Color by name, and count and write (two pages)", "A certificate and a short guide for parents"]},
  t:{p:3,img:"tracker_cover",ar:"متتبع الصلوات والعادات (٦ صفحات)",en:"Prayer and Habit Tracker (6 pages)",
-    d_ar:"متابعة الصلوات، العادات، ختمة القرآن، عدّاد التسبيح وخطة أسبوعية.",d_en:"Prayer, habit and Quran khatma trackers, a dhikr counter and a weekly plan."}
+    d_ar:"متابعة الصلوات، العادات، ختمة القرآن، عدّاد التسبيح وخطة أسبوعية.",d_en:"Prayer, habit and Quran khatma trackers, a dhikr counter and a weekly plan.",
+    inc_ar:["متابعة الصلوات الشهرية: الخمس مع الوتر والضحى والأذكار والقرآن", "متابعة العادات: اثنتا عشرة عادة على مدى ٣١ يوماً", "متابعة ختمة القرآن: الأجزاء الثلاثون بثمانية أرباع لكل جزء", "عدّاد التسبيح: ٣٣ لكل ذكر", "خطة أسبوعية للعبادة والأعمال الصالحة", "صفحة يومية للصلاة والمهام والعادات والشكر"],inc_en:["Monthly prayer tracker: the five prayers plus Witr, Duha, Adhkar and Quran", "Habit tracker: twelve habits across 31 days", "Quran khatma tracker: 30 juz with 8 quarters each", "Dhikr counter: 33 for each phrase", "A weekly plan for worship and good deeds", "A daily page for prayer, tasks, habits and gratitude"]}
 };
 var root=document.documentElement;
 function iq(u){return (Math.round(u*IQD_RATE/250)*250).toLocaleString("en-US")}
@@ -34,6 +38,7 @@ var tg2=document.getElementById("tools"); h="";
 ["p","c","e","t"].forEach(function(k){var x=P[k];
  h+='<article class="pk"><div class="book"><img class="cover" width="520" height="673" loading="lazy" alt="" src="assets/'+x.img+'.jpg?v=1"></div>'
   +'<h3>'+sp(x.ar,x.en)+'</h3><p>'+sp(x.d_ar,x.d_en)+'</p>'
+  +'<details class="inc"><summary>'+sp("ماذا بداخله؟","What is inside?")+'</summary><ul>'+x.inc_ar.map(function(t,i){return '<li>'+sp(t,x.inc_en[i])+'</li>'}).join("")+'</ul></details>'
   +'<div class="bar"><div class="price">$'+x.p+'</div><button type="button" data-pick="'+k+'">'+sp("أضف للطلب","Add to order")+'</button></div></article>'});
 tg2.innerHTML=h;
 document.querySelectorAll(".price").forEach(function(p){
