@@ -215,3 +215,8 @@ html[dir="ltr"] .iqd{direction:ltr}
 .price .iqd{font-size:14px;letter-spacing:0}
 .iqdline{color:var(--muted);font-size:15px;text-align:end;margin-top:2px}
 .pk .price .iqd{margin-top:2px}
+
+.thumbs.six{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.thumbs.six button.z{border-radius:14px;box-shadow:var(--shadow)}
+.thumbs.six img{aspect-ratio:850/1100}
+@media (max-width:640px){.thumbs.six{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
