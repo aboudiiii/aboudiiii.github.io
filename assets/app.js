@@ -36,7 +36,7 @@ var g=document.getElementById("packs"), h="";
 g.innerHTML=h;
 var tg2=document.getElementById("tools"); h="";
 ["p","c","e","t"].forEach(function(k){var x=P[k];
- h+='<article class="pk"><div class="book"><img class="cover" width="520" height="673" loading="lazy" alt="" src="assets/'+x.img+'.jpg?v=1"></div>'
+ h+='<article class="pk"><div class="book"><img class="cover" width="520" height="673" loading="lazy" alt="" src="assets/'+x.img+'.jpg?v=2"></div>'
   +'<h3>'+sp(x.ar,x.en)+'</h3><p>'+sp(x.d_ar,x.d_en)+'</p>'
   +'<details class="inc"><summary>'+sp("ماذا بداخله؟","What is inside?")+'</summary><ul>'+x.inc_ar.map(function(t,i){return '<li>'+sp(t,x.inc_en[i])+'</li>'}).join("")+'</ul></details>'
   +'<div class="bar"><div class="price">$'+x.p+'</div><button type="button" data-pick="'+k+'">'+sp("أضف للطلب","Add to order")+'</button></div></article>'});
@@ -47,7 +47,7 @@ document.querySelectorAll(".price").forEach(function(p){
  p.insertBefore(e,p.querySelector("small")||null)});
 var list=document.getElementById("items"); h="";
 ["i","k","m","a","f","s","p","c","e","t"].forEach(function(k){
- h+='<label class="item"><input type="checkbox" value="'+k+'" id="c_'+k+'"><img alt="" loading="lazy" src="assets/'+P[k].img+'.jpg?v=3"><span class="n" data-name="'+k+'"></span><span class="p">$'+P[k].p+'</span></label>'});
+ h+='<label class="item"><input type="checkbox" value="'+k+'" id="c_'+k+'"><img alt="" loading="lazy" src="assets/'+P[k].img+'.jpg?v=4"><span class="n" data-name="'+k+'"></span><span class="p">$'+P[k].p+'</span></label>'});
 list.innerHTML=h;
 var boxes=[].slice.call(list.querySelectorAll("input")), msg=document.getElementById("msg"),
     totalEl=document.getElementById("total"), saveEl=document.getElementById("saving"), tg=document.getElementById("tg"), st=document.getElementById("state"),
