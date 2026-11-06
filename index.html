@@ -15,6 +15,7 @@
   <a class="brand" href="#top"><svg viewBox="0 0 24 24" fill="#e3b95c" style="color:#e3b95c"><use href="#st"/></svg><span data-l="ar">مكتبة تلوين الحيالي</span><span data-l="en">Al-Hayali Coloring</span></a>
   <div class="links">
     <a class="nav" href="#books"><span data-l="ar">الدفاتر</span><span data-l="en">Books</span></a>
+    <a class="nav" href="#paint"><span data-l="ar">لوّن</span><span data-l="en">Color</span></a>
     <a class="nav" href="#sample"><span data-l="ar">عيّنة مجانية</span><span data-l="en">Free sample</span></a>
     <a class="nav" href="#guide"><span data-l="ar">تعليمات</span><span data-l="en">Guide</span></a>
     <a class="nav" href="#faq"><span data-l="ar">أسئلة</span><span data-l="en">FAQ</span></a>
@@ -100,6 +101,40 @@
 <section class="sec" id="colored">
   <div class="head"><div class="orn l"><svg class="star" viewBox="0 0 24 24" fill="currentColor"><use href="#st"/></svg></div><h2><span data-l="ar">هكذا تبدو الصفحات بعد التلوين</span><span data-l="en">How the pages look colored</span></h2><p class="sub"><span data-l="ar">أمثلة ملوّنة رقمياً لتتخيّل النتيجة. دفاترك تصلك بخطوط فقط، وأنت تلوّنها بألوانك.</span><span data-l="en">Digitally colored examples to picture the result. Your books arrive as line art, and you color them your way.</span></p></div>
   <div class="thumbs six"><button class="z" type="button" data-big="assets/ex1.jpg" aria-label="example 1"><img alt="" loading="lazy" src="assets/ex1.jpg"></button><button class="z" type="button" data-big="assets/ex2.jpg" aria-label="example 2"><img alt="" loading="lazy" src="assets/ex2.jpg"></button><button class="z" type="button" data-big="assets/ex3.jpg" aria-label="example 3"><img alt="" loading="lazy" src="assets/ex3.jpg"></button><button class="z" type="button" data-big="assets/ex4.jpg" aria-label="example 4"><img alt="" loading="lazy" src="assets/ex4.jpg"></button><button class="z" type="button" data-big="assets/ex5.jpg" aria-label="example 5"><img alt="" loading="lazy" src="assets/ex5.jpg"></button><button class="z" type="button" data-big="assets/ex6.jpg" aria-label="example 6"><img alt="" loading="lazy" src="assets/ex6.jpg"></button></div>
+</section>
+
+<section class="sec" id="paint">
+  <div class="head"><div class="orn l"><svg class="star" viewBox="0 0 24 24" fill="currentColor"><use href="#st"/></svg></div><h2><span data-l="ar">لوّن بنفسك الآن</span><span data-l="en">Color it yourself, right now</span></h2><p class="sub"><span data-l="ar">اختر صفحة، واضغط على أي مساحة لتلوينها. حمّل النتيجة صورة. هذا تجريب فقط، والدفتر الكامل ملف PDF للطباعة.</span><span data-l="en">Pick a page and tap any area to fill it. Download the result as an image. This is a demo; the full books are printable PDFs.</span></p></div>
+  <div class="paint plaque">
+    <div class="ptabs" id="ptabs" role="tablist"></div>
+    <div class="pstage"><canvas id="pc" width="720" height="932" aria-label="coloring canvas"></canvas><div class="pload" id="pload"><span data-l="ar">جارٍ التحميل…</span><span data-l="en">Loading…</span></div></div>
+    <div class="ppal" id="ppal"></div>
+    <div class="pbar">
+      <button type="button" class="ghost" id="pundo"><span data-l="ar">تراجع</span><span data-l="en">Undo</span></button>
+      <button type="button" class="ghost" id="preset"><span data-l="ar">مسح الكل</span><span data-l="en">Clear</span></button>
+      <button type="button" id="pdl"><span data-l="ar">حمّل الصورة</span><span data-l="en">Download image</span></button>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="preview">
+  <div class="head"><div class="orn l"><svg class="star" viewBox="0 0 24 24" fill="currentColor"><use href="#st"/></svg></div><h2><span data-l="ar">تصفّح الدفتر قبل الشراء</span><span data-l="en">Flip through before you buy</span></h2><p class="sub"><span data-l="ar">اختر الدفتر وقلّب بعض صفحاته كما هي في الملف.</span><span data-l="en">Choose a book and flip some of its pages as they appear in the file.</span></p></div>
+  <div class="plaque pv">
+    <div class="ptabs" id="vtabs" role="tablist"></div>
+    <div class="vwrap"><button type="button" class="ghost vn" id="vprev" aria-label="prev">‹</button><img id="vimg" alt="" width="520" height="673"><button type="button" class="ghost vn" id="vnext" aria-label="next">›</button></div>
+    <div class="vcount" id="vcount"></div>
+    <div class="vthumbs" id="vthumbs"></div>
+  </div>
+</section>
+
+<section class="sec" id="quiz">
+  <div class="head"><div class="orn l"><svg class="star" viewBox="0 0 24 24" fill="currentColor"><use href="#st"/></svg></div><h2><span data-l="ar">أي دفتر يناسبك؟</span><span data-l="en">Which book suits you?</span></h2><p class="sub"><span data-l="ar">ثلاثة أسئلة سريعة وأقترح لك الأنسب.</span><span data-l="en">Three quick questions and we suggest the best fit.</span></p></div>
+  <div class="plaque qz" id="qz" aria-live="polite"></div>
+</section>
+
+<section class="sec" id="reviews" hidden>
+  <div class="head"><div class="orn l"><svg class="star" viewBox="0 0 24 24" fill="currentColor"><use href="#st"/></svg></div><h2><span data-l="ar">آراء الزبائن</span><span data-l="en">Customer reviews</span></h2></div>
+  <div class="rv" id="rv"></div>
 </section>
 
 <section class="sec" id="sample">
@@ -202,4 +237,5 @@
 <div class="cartbar" id="cartbar"><div><div id="cartn" style="font-size:14px;color:#e6dcc0"></div><b id="cartt">$0</b></div><a class="btn gold" href="#order"><span data-l="ar">أكمل الطلب</span><span data-l="en">Continue</span></a></div>
 <div class="lb" id="lb"><button type="button" id="lbx">✕</button><img alt="" id="lbi" src=""></div>
 <script src="assets/app.js"></script>
+<script src="assets/play.js"></script>
 </body></html>
