@@ -70,7 +70,7 @@ $("preset").addEventListener("click",function(){if(img){ctx.drawImage(img,0,0);h
 $("pdl").addEventListener("click",function(){
  var o=document.createElement("canvas"); o.width=cv.width; o.height=cv.height+44; var c=o.getContext("2d");
  c.fillStyle="#fff"; c.fillRect(0,0,o.width,o.height); c.drawImage(cv,0,0);
- c.fillStyle="#6b7a90"; c.font="20px sans-serif"; c.textAlign="center"; c.fillText("aboudiiii.github.io  ·  Al-Hayali Coloring",o.width/2,cv.height+29);
+ c.fillStyle="#6b7a90"; c.font="20px sans-serif"; c.textAlign="center"; c.fillText("aboudiiii.github.io  ·  Al-Hayali Digital Library",o.width/2,cv.height+29);
  o.toBlob(function(b){var a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="my-coloring-"+PAGES[cur].f+".png"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href)},4000)},"image/png");
 });
 load(0);
@@ -101,16 +101,19 @@ showB(0);
 /* ---------- quiz ---------- */
 var NAMES={i:["الزخارف الإسلامية (٤٠ تصميماً)","Islamic Patterns (40 designs)","i_cover"],k:["ألوان الطبيعة للأطفال (٢٠ مشهداً)","Nature Coloring Book for Kids (20 scenes)","k_cover"],
  m:["مندالا هندسية (١٠)","Geometric Mandalas (10)","mandala_cover"],a:["مساجد وعمارة إسلامية (٨)","Mosques and Architecture (8)","mosques_cover"],
- f:["زخارف نباتية (٦)","Floral Ornaments (6)","floral_cover"],s:["نجوم وبلاطات هندسية (١٧)","Stars and Tiles (17)","stars_cover"]};
+ f:["زخارف نباتية (٦)","Floral Ornaments (6)","floral_cover"],
+ p:["مخطط الدراسة والامتحانات","Study and Exam Planner","planner_cover"],c:["قوالب السيرة الذاتية (Word)","Editable CV Templates (Word)","cv_cover"],e:["كتاب التعلّم الممتع للأطفال","Fun Learning Book for Kids","learn_cover"],t:["متتبع الصلوات والعادات","Prayer and Habit Tracker","tracker_cover"],s:["نجوم وبلاطات هندسية (١٧)","Stars and Tiles (17)","stars_cover"]};
 var Q=[
- {ar:"من سيلوّن؟",en:"Who will color?",o:[["me",["أنا (بالغ)","Me (adult)"]],["kid",["طفل","A child"]],["both",["أنا وأطفالي","Me and my kids"]]]},
+ {ar:"ماذا تبحث عنه؟",en:"What are you looking for?",o:[["me",["تلوين لي (بالغ)","Coloring for me (adult)"]],["kid",["تلوين وتعلّم لطفل","Coloring and learning for a child"]],["both",["تلوين لي ولأطفالي","Coloring for me and my kids"]],["study",["مخطط دراسة أو سيرة ذاتية","A study planner or CV"]],["faith",["متابعة صلواتي وعاداتي","Track my prayers and habits"]]]},
  {ar:"ما الذي يعجبك أكثر؟",en:"What do you like most?",o:[["geo",["زخارف ومندالا هندسية","Geometric patterns and mandalas"]],["arch",["مساجد وعمارة","Mosques and architecture"]],["flo",["زهور وأغصان","Flowers and vines"]],["nat",["مناظر طبيعية","Nature scenes"]]]},
  {ar:"كم تريد من التصاميم؟",en:"How much do you want?",o:[["few",["مجموعة صغيرة وسعر أقل","A small set, lower price"]],["many",["دفتر كامل وفير","A full, generous book"]]]}
 ];
 var qs=0, ans=[], qz=$("qz");
 function rec(a){
  var who=a[0],like=a[1],size=a[2],r=[];
+ if(who==="study")return["p","c"]; if(who==="faith")return["t"];
  if(who==="kid"||like==="nat"&&who!=="me")r.push("k");
+ if(who==="kid")r.push("e");
  if(who!=="kid"){
   if(size==="many"){ if(like!=="nat")r.push("i"); else r.push("k"); }
   else{ var m={geo:"m",arch:"a",flo:"f",nat:"k"}; r.push(m[like]); if(like==="geo")r.push("s") }
@@ -119,7 +122,7 @@ function rec(a){
  return r.filter(function(x,i){return r.indexOf(x)===i}).slice(0,3);
 }
 function rq(){
- if(qs>=Q.length){var r=rec(ans); var tot=r.reduce(function(a,k){return a+({i:7,k:4,m:3,a:3,f:3,s:4})[k]},0);
+ if(qs>=Q.length){var r=rec(ans);
   qz.innerHTML='<div class="qn">'+sp("اقتراحنا لك","Our suggestion")+'</div><h3>'+sp("هذا ما يناسبك","This fits you")+'</h3><div class="rs">'+
    r.map(function(k){var n=NAMES[k];return '<div class="ri"><img alt="" src="assets/'+n[2]+'.jpg?v=3"><div>'+sp(n[0],n[1])+'</div></div>'}).join("")+'</div>'+
    '<div class="acts"><button type="button" id="qgo">'+sp("أضفها للطلب","Add to my order")+'</button><button type="button" class="ghost" id="qre">'+sp("أعد الاختبار","Retake")+'</button></div>';
@@ -131,7 +134,7 @@ function rq(){
  qz.innerHTML='<div class="qbar"><i style="width:'+(qs/Q.length*100)+'%"></i></div><div class="qn">'+sp("السؤال "+(qs+1)+" من "+Q.length,"Question "+(qs+1)+" of "+Q.length)+'</div><h3>'+sp(q.ar,q.en)+'</h3><div class="qo">'+
   q.o.map(function(o){return '<button type="button" data-v="'+o[0]+'">'+sp(o[1][0],o[1][1])+'</button>'}).join("")+'</div>';
 }
-qz.addEventListener("click",function(e){var b=e.target.closest(".qo button");if(!b)return;ans[qs]=b.getAttribute("data-v");qs++;rq()});
+qz.addEventListener("click",function(e){var b=e.target.closest(".qo button");if(!b)return;ans[qs]=b.getAttribute("data-v");qs++; if(qs===1&&(ans[0]==="study"||ans[0]==="faith"))qs=Q.length; rq()});
 rq();
 
 /* ---------- reviews: shown only when real reviews exist ---------- */
