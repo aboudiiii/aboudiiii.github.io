@@ -1,5 +1,5 @@
 (function(){
-var TELEGRAM_USER="Aboudi_Dev26";
+var IQD_RATE=1500; // approximate dollar rate in Iraqi dinar; keep equal to USD_IQD in the bot config
 var P={
  i:{p:7,img:"i_cover",ar:"الزخارف الإسلامية (٤٠ تصميماً)",en:"Islamic Patterns (40 designs)"},
  k:{p:4,img:"k_cover",ar:"ألوان الطبيعة للأطفال (٢٠ مشهداً)",en:"Nature Coloring Book for Kids (20 scenes)"},
@@ -13,6 +13,7 @@ var P={
     d_ar:"سبعة عشر نمطاً من البلاطات الإسلامية المتكررة.",d_en:"Seventeen repeating Islamic tile patterns."}
 };
 var root=document.documentElement;
+function iq(u){return (Math.round(u*IQD_RATE/250)*250).toLocaleString("en-US")}
 function L(){return root.getAttribute("data-lang")==="en"?"en":"ar"}
 function sp(a,e){return '<span data-l="ar">'+a+'</span><span data-l="en">'+e+'</span>'}
 var g=document.getElementById("packs"), h="";
@@ -21,6 +22,10 @@ var g=document.getElementById("packs"), h="";
   +'<h3>'+sp(x.ar,x.en)+'</h3><p>'+sp(x.d_ar,x.d_en)+'</p>'
   +'<div class="bar"><div class="price">$'+x.p+'</div><button type="button" data-pick="'+k+'">'+sp("أضف للطلب","Add to order")+'</button></div></article>'});
 g.innerHTML=h;
+document.querySelectorAll(".price").forEach(function(p){
+ var m=(p.firstChild&&p.firstChild.textContent||"").match(/\$(\d+)/); if(!m)return;
+ var e=document.createElement("em"); e.className="iqd"; e.innerHTML='<span data-l="ar">≈ '+iq(+m[1])+' د.ع</span><span data-l="en">≈ '+iq(+m[1])+' IQD</span>';
+ p.insertBefore(e,p.querySelector("small")||null)});
 var list=document.getElementById("items"); h="";
 ["i","k","m","a","f","s"].forEach(function(k){
  h+='<label class="item"><input type="checkbox" value="'+k+'" id="c_'+k+'"><img alt="" loading="lazy" src="assets/'+P[k].img+'.jpg?v=3"><span class="n" data-name="'+k+'"></span><span class="p">$'+P[k].p+'</span></label>'});
@@ -47,7 +52,7 @@ function text(c){
 }
 function refresh(){
  var c=calc(), t=text(c);
- totalEl.textContent="$"+c.total; msg.textContent=t;
+ totalEl.textContent="$"+c.total; var ti=document.getElementById("totaliqd"); ti.textContent=c.total?("≈ "+iq(c.total)+(L()==="ar"?" دينار عراقي":" IQD")):""; msg.textContent=t;
  saveEl.textContent=c.saved?((L()==="ar"?"وفّرت ":"You save ")+"⁦$"+c.saved+"⁩ — "+c.deal):"";
  var sk=sizeVal()==="A4 + Letter"?"both":sizeVal(); tg.href="https://t.me/SmartZaki_Bot?start="+(c.sel.length?"o_"+c.sel.join("-")+"_"+sk:"web");
  [].forEach.call(document.querySelectorAll("[data-name]"),function(n){n.textContent=P[n.getAttribute("data-name")][L()]});
