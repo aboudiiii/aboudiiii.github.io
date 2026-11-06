@@ -24,27 +24,29 @@ var P={
     d_ar:"متابعة الصلوات، العادات، ختمة القرآن، عدّاد التسبيح وخطة أسبوعية.",d_en:"Prayer, habit and Quran khatma trackers, a dhikr counter and a weekly plan.",
     inc_ar:["متابعة الصلوات الشهرية: الخمس مع الوتر والضحى والأذكار والقرآن", "متابعة العادات: اثنتا عشرة عادة على مدى ٣١ يوماً", "متابعة ختمة القرآن: الأجزاء الثلاثون بثمانية أرباع لكل جزء", "عدّاد التسبيح: ٣٣ لكل ذكر", "خطة أسبوعية للعبادة والأعمال الصالحة", "صفحة يومية للصلاة والمهام والعادات والشكر"],inc_en:["Monthly prayer tracker: the five prayers plus Witr, Duha, Adhkar and Quran", "Habit tracker: twelve habits across 31 days", "Quran khatma tracker: 30 juz with 8 quarters each", "Dhikr counter: 33 for each phrase", "A weekly plan for worship and good deeds", "A daily page for prayer, tasks, habits and gratitude"]}
 };
+
+var X={
+ i:{cat:["color"],d_ar:"دفتر تلوين للكبار: ٤٠ تصميماً مفصلاً من النجوم والمندالا الهندسية والمساجد والقباب والمآذن والفوانيس والزخارف النباتية.",d_en:"A coloring book for adults: 40 detailed designs of geometric stars and mandalas, mosques, domes, minarets, lanterns and floral ornament.",
+  inc_ar:["٤٢ صفحة بغلاف ملوّن وصفحة ترخيص","خطوط واضحة للأقلام الملونة والفلوماستر","من التصاميم السهلة إلى الدقيقة جداً","حجما A4 وLetter"],inc_en:["42 pages with a color cover and a license page","Clean line work for pencils and markers","From easy designs to very intricate ones","Both A4 and Letter sizes"],
+  th:["i1","i2","i3","i4"],big:["big_i1","big_i2","big_i3","big_i4"],tag_ar:"للكبار",tag_en:"Adults",pair:"k"},
+ k:{cat:["color","kids"],d_ar:"٢٠ مشهداً طبيعياً بسيطاً بخطوط عريضة: تلال وجبال وبحر وصحراء وقوس قزح وغابة.",d_en:"20 simple nature scenes with thick lines: hills, mountains, sea, desert, rainbow and forest.",
+  inc_ar:["٢٢ صفحة بغلاف ملوّن وصفحة ترخيص","خطوط سميكة تناسب أيدي الأطفال الصغيرة","مشاهد هادئة تنمّي التركيز والإبداع","حجما A4 وLetter"],inc_en:["22 pages with a color cover and a license page","Thick lines made for little hands","Calm scenes that build focus and creativity","Both A4 and Letter sizes"],
+  th:["k1","k2","k3","k4"],big:["big_k1","big_k2","big_k3","big_k4"],tag_ar:"للأطفال",tag_en:"Kids",pair:"i"},
+ m:{cat:["color"],inc_ar:["١٠ مندالا دائرية","من البسيط إلى الدقيق","حجما A4 وLetter"],inc_en:["10 round mandalas","From simple to intricate","Both A4 and Letter sizes"],th:["mandala_1","mandala_2","mandala_3"],tag_ar:"حزمة",tag_en:"Pack",packs:1},
+ a:{cat:["color"],inc_ar:["٨ تصاميم: قباب ومآذن ومحراب","أقواس وفوانيس ونوافذ وبوابات","حجما A4 وLetter"],inc_en:["8 designs: domes, minarets and a mihrab","Arches, lanterns, windows and gates","Both A4 and Letter sizes"],th:["mosques_1","mosques_2","mosques_3"],tag_ar:"حزمة",tag_en:"Pack",packs:1},
+ f:{cat:["color"],inc_ar:["٦ تصاميم نباتية","أغصان وزهور وأكاليل وأوراق","حجما A4 وLetter"],inc_en:["6 floral designs","Vines, flowers, garlands and leaves","Both A4 and Letter sizes"],th:["floral_1","floral_2","floral_3"],tag_ar:"حزمة",tag_en:"Pack",packs:1},
+ s:{cat:["color"],inc_ar:["١٧ نمطاً من البلاطات المتكررة","نجوم هندسية بأحجام متدرجة","حجما A4 وLetter"],inc_en:["17 repeating tile patterns","Geometric stars in graded sizes","Both A4 and Letter sizes"],th:["stars_1","stars_2","stars_3"],tag_ar:"حزمة",tag_en:"Pack",packs:1},
+ p:{cat:["study"],tag_ar:"دراسة",tag_en:"Study"},
+ c:{cat:["work"],tag_ar:"عمل",tag_en:"Work"},
+ e:{cat:["kids"],tag_ar:"للأطفال",tag_en:"Kids"},
+ t:{cat:["faith"],tag_ar:"إيمان وعادات",tag_en:"Faith and habits"}
+};
+Object.keys(X).forEach(function(k){for(var f in X[k]){if(P[k][f]===undefined)P[k][f]=X[k][f]}});
 var root=document.documentElement;
 function iq(u){return (Math.round(u*IQD_RATE/250)*250).toLocaleString("en-US")}
 function L(){return root.getAttribute("data-lang")==="en"?"en":"ar"}
 function sp(a,e){return '<span data-l="ar">'+a+'</span><span data-l="en">'+e+'</span>'}
-var g=document.getElementById("packs"), h="";
-["m","a","f","s"].forEach(function(k){var x=P[k];
- h+='<article class="pk"><div class="book"><img class="cover" width="520" height="673" loading="lazy" alt="" src="assets/'+x.img+'.jpg?v=3"></div>'
-  +'<h3>'+sp(x.ar,x.en)+'</h3><p>'+sp(x.d_ar,x.d_en)+'</p>'
-  +'<div class="bar"><div class="price">$'+x.p+'</div><button type="button" data-pick="'+k+'">'+sp("أضف للطلب","Add to order")+'</button></div></article>'});
-g.innerHTML=h;
-var tg2=document.getElementById("tools"); h="";
-["p","c","e","t"].forEach(function(k){var x=P[k];
- h+='<article class="pk"><div class="book"><img class="cover" width="520" height="673" loading="lazy" alt="" src="assets/'+x.img+'.jpg?v=2"></div>'
-  +'<h3>'+sp(x.ar,x.en)+'</h3><p>'+sp(x.d_ar,x.d_en)+'</p>'
-  +'<details class="inc"><summary>'+sp("ماذا بداخله؟","What is inside?")+'</summary><ul>'+x.inc_ar.map(function(t,i){return '<li>'+sp(t,x.inc_en[i])+'</li>'}).join("")+'</ul></details>'
-  +'<div class="bar"><div class="price">$'+x.p+'</div><button type="button" data-pick="'+k+'">'+sp("أضف للطلب","Add to order")+'</button></div></article>'});
-tg2.innerHTML=h;
-document.querySelectorAll(".price").forEach(function(p){
- var m=(p.firstChild&&p.firstChild.textContent||"").match(/\$(\d+)/); if(!m)return;
- var e=document.createElement("em"); e.className="iqd"; e.innerHTML='<span data-l="ar">≈ '+iq(+m[1])+' د.ع</span><span data-l="en">≈ '+iq(+m[1])+' IQD</span>';
- p.insertBefore(e,p.querySelector("small")||null)});
+var h="";
 var list=document.getElementById("items"); h="";
 ["i","k","m","a","f","s","p","c","e","t"].forEach(function(k){
  h+='<label class="item"><input type="checkbox" value="'+k+'" id="c_'+k+'"><img alt="" loading="lazy" src="assets/'+P[k].img+'.jpg?v=4"><span class="n" data-name="'+k+'"></span><span class="p">$'+P[k].p+'</span></label>'});
@@ -77,6 +79,7 @@ function refresh(){
  [].forEach.call(document.querySelectorAll("[data-name]"),function(n){n.textContent=P[n.getAttribute("data-name")][L()]});
  bar.classList.toggle("on",c.sel.length>0);
  cartn.textContent=c.sel.length+(L()==="ar"?" في الطلب":" in order"); cartt.textContent="$"+c.total;
+ renderCart(c); syncShop(c);
 }
 function go(){document.getElementById("order").scrollIntoView({behavior:"smooth"})}
 [].forEach.call(document.querySelectorAll("[data-pick]"),function(b){b.addEventListener("click",function(){
@@ -107,6 +110,94 @@ function setLang(l){
  refresh();
 }
 document.getElementById("lang").addEventListener("click",function(){setLang(L()==="ar"?"en":"ar")});
+
+/* ---------- collection explorer ---------- */
+var ORDER=["i","k","m","a","f","s","p","c","e","t"], CATS=[["all","الكل","All"],["color","كتب تلوين","Coloring"],["kids","للأطفال","Kids"],["study","دراسة","Study"],["work","عمل","Work"],["faith","إيمان","Faith"]];
+var curK="p", curCat="all";
+var chipsEl=document.getElementById("chips"), slist=document.getElementById("slist"), sdet=document.getElementById("sdetail");
+function isOn(k){var b=document.getElementById("c_"+k);return !!(b&&b.checked)}
+function setOn(k,v){var b=document.getElementById("c_"+k);if(b&&b.checked!==v){b.checked=v;b.dispatchEvent(new Event("change",{bubbles:true}))}}
+function toast(a,e){var t=document.getElementById("toast");t.innerHTML=sp(a,e);t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove("on")},2200)}
+function renderChips(){
+ chipsEl.innerHTML=CATS.map(function(c){return '<button type="button" data-cat="'+c[0]+'" aria-pressed="'+(c[0]===curCat)+'">'+sp(c[1],c[2])+'</button>'}).join("");
+}
+function renderList(){
+ var keys=ORDER.filter(function(k){return curCat==="all"||P[k].cat.indexOf(curCat)>-1});
+ if(keys.indexOf(curK)<0&&keys.length)curK=keys[0];
+ slist.innerHTML=keys.map(function(k){var x=P[k];
+  return '<button type="button" class="srow'+(isOn(k)?' has':'')+'" role="option" data-k="'+k+'" aria-selected="'+(k===curK)+'"><img alt="" loading="lazy" src="assets/'+x.img+'.jpg?v=4"><span class="nm">'+sp(x.ar,x.en)+'</span><span class="pr">$'+x.p+'</span><span class="in" aria-hidden="true">✓</span></button>'}).join("");
+}
+function dealHtml(k){
+ var x=P[k];
+ if(x.pair) return '<div class="dealnote"><span>'+sp("الدفتران معاً <bdi dir=\"ltr\">$9</bdi> بدل <bdi dir=\"ltr\">$11</bdi>","Both books <bdi>$9</bdi> instead of <bdi>$11</bdi>")+'</span><button type="button" class="sec2" data-addboth="i,k">'+sp("أضف الدفترين","Add both")+'</button></div>';
+ if(x.packs) return '<div class="dealnote"><span>'+sp("الحزم الأربع معاً <bdi dir=\"ltr\">$10</bdi> بدل <bdi dir=\"ltr\">$12</bdi>","All four packs <bdi>$10</bdi> instead of <bdi>$12</bdi>")+'</span><button type="button" class="sec2" data-addboth="m,a,f,s">'+sp("أضف الحزم الأربع","Add all four")+'</button></div>';
+ return "";
+}
+function renderDetail(anim){
+ var k=curK,x=P[k],on=isOn(k),th="";
+ if(x.th){th='<div class="thumbs'+(x.th.length===3?' three':'')+'">'+x.th.map(function(t,i){var big=x.big?x.big[i]:t;return '<button class="z" type="button" data-big="assets/'+big+'.jpg" aria-label="preview '+(i+1)+'"><img alt="" loading="lazy" src="assets/'+t+'.jpg"></button>'}).join("")+'<p class="hint">'+sp("اضغط على أي صفحة لتكبيرها","Tap a page to enlarge")+'</p></div>'}
+ var iqd='<em class="iqd">'+sp("≈ "+iq(x.p)+" د.ع","≈ "+iq(x.p)+" IQD")+'</em>';
+ sdet.innerHTML='<div><div class="book"><img class="cover" width="520" height="673" alt="" src="assets/'+x.img+'.jpg?v=4"></div></div>'
+  +'<div><span class="tag i">'+sp(x.tag_ar,x.tag_en)+'</span><h3>'+sp(x.ar,x.en)+'</h3><p class="desc">'+sp(x.d_ar,x.d_en)+'</p>'
+  +'<ul class="chk">'+x.inc_ar.map(function(t,i){return '<li>'+sp(t,x.inc_en[i])+'</li>'}).join("")+'</ul>'
+  +'<div class="buy"><div class="price">$'+x.p+iqd+'</div></div>'
+  +'<div class="sact"><button type="button" class="add'+(on?' on':'')+'" data-add="'+k+'">'+(on?sp("✓ في طلبك (إزالة)","✓ In your order (remove)"):sp("أضف للطلب","Add to order"))+'</button><button type="button" class="share" data-share="'+k+'">'+sp("انسخ رابط المنتج","Copy product link")+'</button></div>'
+  +dealHtml(k)+'</div>'+th;
+ if(anim){sdet.classList.remove("swap");void sdet.offsetWidth;sdet.classList.add("swap")}
+}
+function selectKey(k,scroll){
+ if(!P[k])return; curK=k;
+ if(curCat!=="all"&&P[k].cat.indexOf(curCat)<0){curCat="all";renderChips()}
+ renderList();renderDetail(true);
+ try{history.replaceState(null,"","#shop-"+k)}catch(e){}
+ if(scroll)sdet.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function syncShop(){
+ if(!slist)return;
+ [].forEach.call(slist.querySelectorAll(".srow"),function(r){r.classList.toggle("has",isOn(r.getAttribute("data-k")))});
+ renderDetail(false);
+}
+chipsEl.addEventListener("click",function(e){var b=e.target.closest("button[data-cat]");if(!b)return;curCat=b.getAttribute("data-cat");renderChips();renderList();renderDetail(true)});
+slist.addEventListener("click",function(e){var b=e.target.closest(".srow");if(!b)return;selectKey(b.getAttribute("data-k"),window.innerWidth<=900)});
+sdet.addEventListener("click",function(e){
+ var a=e.target.closest("[data-add]");
+ if(a){var k=a.getAttribute("data-add"),v=!isOn(k);setOn(k,v);toast(v?"أُضيف إلى طلبك":"أُزيل من طلبك",v?"Added to your order":"Removed from your order");return}
+ var d=e.target.closest("[data-addboth]");
+ if(d){var ks=d.getAttribute("data-addboth").split(","),all=ks.every(isOn);ks.forEach(function(k){setOn(k,!all)});toast(all?"أُزيل من طلبك":"أُضيف مع الخصم",all?"Removed from your order":"Added with the discount");return}
+ var s2=e.target.closest("[data-share]");
+ if(s2){var url=location.origin+location.pathname+"#shop-"+s2.getAttribute("data-share");
+  try{navigator.clipboard.writeText(url).then(function(){toast("تم نسخ الرابط","Link copied")},function(){toast(url,url)})}catch(er){toast(url,url)}}
+});
+function openFromHash(scroll){var m=/^#shop-([a-z])$/.exec(location.hash);if(m&&P[m[1]]){selectKey(m[1],scroll)}}
+window.addEventListener("hashchange",function(){openFromHash(true)});
+renderChips();renderList();renderDetail(false);
+
+/* ---------- mini cart ---------- */
+var cpanel=document.getElementById("cartpanel"), cpill=document.getElementById("cartpill"), clist=document.getElementById("cartlist");
+function renderCart(c){
+ clist.innerHTML=c.sel.map(function(k){var x=P[k];return '<li><img alt="" src="assets/'+x.img+'.jpg?v=4"><span class="nm">'+sp(x.ar,x.en)+'</span><span class="pr">$'+x.p+'</span><button type="button" data-rm="'+k+'" aria-label="remove">✕</button></li>'}).join("");
+ if(!c.sel.length){cpanel.hidden=true;cpill.setAttribute("aria-expanded","false")}
+}
+cpill.addEventListener("click",function(){var o=cpanel.hidden;cpanel.hidden=!o;cpill.setAttribute("aria-expanded",String(o))});
+document.getElementById("cartx").addEventListener("click",function(){cpanel.hidden=true;cpill.setAttribute("aria-expanded","false")});
+document.getElementById("cartgo").addEventListener("click",function(){cpanel.hidden=true;cpill.setAttribute("aria-expanded","false")});
+clist.addEventListener("click",function(e){var b=e.target.closest("[data-rm]");if(b)setOn(b.getAttribute("data-rm"),false)});
+
+/* ---------- theme, progress, active nav ---------- */
+var tb=document.getElementById("theme");
+function dark(){var t=root.getAttribute("data-theme");return t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches}
+try{var th=localStorage.getItem("theme");if(th)root.setAttribute("data-theme",th)}catch(e){}
+tb.addEventListener("click",function(){var n=dark()?"light":"dark";root.setAttribute("data-theme",n);try{localStorage.setItem("theme",n)}catch(e){}});
+var prog=document.getElementById("prog");
+function onScroll(){var h=document.documentElement.scrollHeight-innerHeight;prog.style.setProperty("--p",(h>0?Math.min(100,scrollY/h*100):0)+"%")}
+addEventListener("scroll",onScroll,{passive:true});onScroll();
+if("IntersectionObserver" in window){
+ var navs=[].slice.call(document.querySelectorAll("a.nav")), map={};
+ navs.forEach(function(a){map[a.getAttribute("href").slice(1)]=a});
+ var io2=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){navs.forEach(function(a){a.classList.remove("on")});var a=map[en.target.id];if(a)a.classList.add("on")}})},{rootMargin:"-45% 0px -50% 0px"});
+ Object.keys(map).forEach(function(id){var el=document.getElementById(id);if(el)io2.observe(el)});
+}
 var saved="ar"; try{saved=localStorage.getItem("lang")||"ar"}catch(e){}
 setLang(saved==="en"?"en":"ar");
+openFromHash(false);
 })();
