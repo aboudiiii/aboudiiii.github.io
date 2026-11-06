@@ -10,7 +10,15 @@ var P={
  f:{p:3,img:"floral_cover",ar:"زخارف نباتية (٦)",en:"Floral Ornaments (6)",
     d_ar:"أغصان وزهور وأكاليل وأوراق بتفاصيل ناعمة.",d_en:"Vines, flowers, garlands and leaves in soft detail."},
  s:{p:4,img:"stars_cover",ar:"نجوم وبلاطات هندسية (١٧)",en:"Stars and Tiles (17)",
-    d_ar:"سبعة عشر نمطاً من البلاطات الإسلامية المتكررة.",d_en:"Seventeen repeating Islamic tile patterns."}
+    d_ar:"سبعة عشر نمطاً من البلاطات الإسلامية المتكررة.",d_en:"Seventeen repeating Islamic tile patterns."},
+ p:{p:4,img:"planner_cover",ar:"مخطط الدراسة والامتحانات (١١ صفحة)",en:"Study and Exam Planner (11 pages)",
+    d_ar:"جدول أسبوعي، عدّ تنازلي للامتحانات، متابعة المواد، سجل مذاكرة ودرجات. PDF للطباعة.",d_en:"Weekly timetable, exam countdown, subject tracker, study log and grades. Printable PDF."},
+ c:{p:4,img:"cv_cover",ar:"قوالب السيرة الذاتية (٨ قوالب Word)",en:"Editable CV Templates (8 Word designs)",
+    d_ar:"أربعة تصاميم بالعربية وأربعة بالإنجليزية. ملف Word قابل للتعديل (وليس PDF).",d_en:"Four designs in English and four in Arabic. Editable Word file (not a PDF)."},
+ e:{p:4,img:"learn_cover",ar:"كتاب التعلّم الممتع للأطفال (٤٤ صفحة)",en:"Fun Learning Book for Kids (44 pages)",
+    d_ar:"الحروف العربية الثمانية والعشرون، الأعداد، الأشكال، وتتبّع الخطوط وشهادة إنجاز.",d_en:"All 28 Arabic letters, numbers, shapes, line tracing and a certificate."},
+ t:{p:3,img:"tracker_cover",ar:"متتبع الصلوات والعادات (٦ صفحات)",en:"Prayer and Habit Tracker (6 pages)",
+    d_ar:"متابعة الصلوات، العادات، ختمة القرآن، عدّاد التسبيح وخطة أسبوعية.",d_en:"Prayer, habit and Quran khatma trackers, a dhikr counter and a weekly plan."}
 };
 var root=document.documentElement;
 function iq(u){return (Math.round(u*IQD_RATE/250)*250).toLocaleString("en-US")}
@@ -22,12 +30,18 @@ var g=document.getElementById("packs"), h="";
   +'<h3>'+sp(x.ar,x.en)+'</h3><p>'+sp(x.d_ar,x.d_en)+'</p>'
   +'<div class="bar"><div class="price">$'+x.p+'</div><button type="button" data-pick="'+k+'">'+sp("أضف للطلب","Add to order")+'</button></div></article>'});
 g.innerHTML=h;
+var tg2=document.getElementById("tools"); h="";
+["p","c","e","t"].forEach(function(k){var x=P[k];
+ h+='<article class="pk"><div class="book"><img class="cover" width="520" height="673" loading="lazy" alt="" src="assets/'+x.img+'.jpg?v=1"></div>'
+  +'<h3>'+sp(x.ar,x.en)+'</h3><p>'+sp(x.d_ar,x.d_en)+'</p>'
+  +'<div class="bar"><div class="price">$'+x.p+'</div><button type="button" data-pick="'+k+'">'+sp("أضف للطلب","Add to order")+'</button></div></article>'});
+tg2.innerHTML=h;
 document.querySelectorAll(".price").forEach(function(p){
  var m=(p.firstChild&&p.firstChild.textContent||"").match(/\$(\d+)/); if(!m)return;
  var e=document.createElement("em"); e.className="iqd"; e.innerHTML='<span data-l="ar">≈ '+iq(+m[1])+' د.ع</span><span data-l="en">≈ '+iq(+m[1])+' IQD</span>';
  p.insertBefore(e,p.querySelector("small")||null)});
 var list=document.getElementById("items"); h="";
-["i","k","m","a","f","s"].forEach(function(k){
+["i","k","m","a","f","s","p","c","e","t"].forEach(function(k){
  h+='<label class="item"><input type="checkbox" value="'+k+'" id="c_'+k+'"><img alt="" loading="lazy" src="assets/'+P[k].img+'.jpg?v=3"><span class="n" data-name="'+k+'"></span><span class="p">$'+P[k].p+'</span></label>'});
 list.innerHTML=h;
 var boxes=[].slice.call(list.querySelectorAll("input")), msg=document.getElementById("msg"),
