@@ -49,7 +49,7 @@ function refresh(){
  var c=calc(), t=text(c);
  totalEl.textContent="$"+c.total; msg.textContent=t;
  saveEl.textContent=c.saved?((L()==="ar"?"وفّرت ":"You save ")+"⁦$"+c.saved+"⁩ — "+c.deal):"";
- tg.href="https://t.me/"+TELEGRAM_USER+"?text="+encodeURIComponent(t);
+ tg.href="https://t.me/SmartZaki_Bot?start=web";
  [].forEach.call(document.querySelectorAll("[data-name]"),function(n){n.textContent=P[n.getAttribute("data-name")][L()]});
  bar.classList.toggle("on",c.sel.length>0);
  cartn.textContent=c.sel.length+(L()==="ar"?" في الطلب":" in order"); cartt.textContent="$"+c.total;
