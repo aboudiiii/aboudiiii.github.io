@@ -201,13 +201,13 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){retur
 function stars(n){var s="";for(var i=1;i<=5;i++)s+=i<=n?"★":"☆";return s}
 function rvOf(k){return RV.filter(function(r){return r.p&&r.p.indexOf(k)>-1})}
 function rvStat(k){var a=rvOf(k);if(!a.length)return null;var s=0;a.forEach(function(r){s+=r.r});return {n:a.length,avg:Math.round(s/a.length*10)/10}}
-function rvLine(k){var s=rvStat(k);return s?'<div class="rvline"><span class="rvs">'+stars(Math.round(s.avg))+'</span> <b>'+s.avg+'</b> <small>('+s.n+')</small></div>':''}
+function rvLine(k){var s=rvStat(k),lk='<a class="rvlink" href="https://t.me/SmartZaki_Bot?start=rv_'+k+'" target="_blank" rel="noopener">'+sp("اكتب تقييمك","Write a review")+'</a>';return '<div class="rvline">'+(s?'<span class="rvs">'+stars(Math.round(s.avg))+'</span> <b>'+s.avg+'</b> <small>('+s.n+')</small> ':'')+lk+'</div>'}
 function rvCard(r){
  var names=(r.p||[]).filter(function(k){return P[k]}).map(function(k){return sp(esc(P[k].ar),esc(P[k].en))}).join(" · ");
- return '<article class="rvc"><div class="rvs" aria-label="'+(+r.r)+'/5">'+stars(+r.r)+'</div>'+(r.text?'<p>'+esc(r.text)+'</p>':'')+'<div class="rvm"><b>'+esc(r.name)+'</b> · <bdi>'+esc(r.date||"")+'</bdi>'+(names?'<br><small>'+names+'</small>':'')+'</div></article>'}
+ return '<article class="rvc"><div class="rvs" aria-label="'+(+r.r)+'/5">'+stars(+r.r)+'</div>'+(r.text?'<p>'+esc(r.text)+'</p>':'')+'<div class="rvm"><b>'+esc(r.name)+'</b>'+(r.v?' <span class="rvbadge">'+sp("\u2713 مشترٍ موثّق","\u2713 Verified buyer")+'</span>':'')+' · <bdi>'+esc(r.date||"")+'</bdi>'+(names?'<br><small>'+names+'</small>':'')+'</div></article>'}
 function renderReviews(){
  var sec=document.getElementById("reviews"),box=document.getElementById("rv");if(!sec||!box)return;sec.hidden=false;
- var note='<p class="rvnote">'+sp("التقييم متاح للمشترين فقط: بعد تسليم الطلب يطلب منك البوت تقييمك، وتظهر الآراء هنا بعد المراجعة.","Reviews are from verified buyers only: after delivery the bot asks for your rating, and reviews appear here after moderation.")+'</p>';
+ var note='<p class="rvnote">'+sp("يمكنك كتابة تقييمك عبر البوت، وتظهر الآراء هنا بعد المراجعة. شارة «مشترٍ موثّق» تعني أن صاحب الرأي اشترى المنتج فعلاً.","You can write a review through the bot, and reviews appear here after moderation. The “Verified buyer” badge means the reviewer actually bought the product.")+'</p><p class="rvnote"><a class="rvlink big" href="https://t.me/SmartZaki_Bot?start=review" target="_blank" rel="noopener">'+sp("اكتب تقييمك","Write a review")+'</a>'+'</p>';
  if(!RV.length){box.innerHTML='<p class="rvnote">'+sp("لا توجد تقييمات بعد.","No reviews yet.")+'</p>'+note;return}
  var sum=0;RV.forEach(function(r){sum+=+r.r});var avg=Math.round(sum/RV.length*10)/10;
  box.innerHTML='<div class="rvtop"><b>'+avg+'</b> <span class="rvs">'+stars(Math.round(avg))+'</span> <small>('+RV.length+')</small></div><div class="rvgrid">'+RV.slice(0,12).map(rvCard).join("")+'</div>'+note;
