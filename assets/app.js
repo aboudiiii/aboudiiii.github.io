@@ -212,7 +212,7 @@ function renderReviews(){
  var sum=0;RV.forEach(function(r){sum+=+r.r});var avg=Math.round(sum/RV.length*10)/10;
  box.innerHTML='<div class="rvtop"><b>'+avg+'</b> <span class="rvs">'+stars(Math.round(avg))+'</span> <small>('+RV.length+')</small></div><div class="rvgrid">'+RV.slice(0,12).map(rvCard).join("")+'</div>'+note;
 }
-try{fetch("assets/reviews.json?t="+Date.now()).then(function(r){return r.ok?r.json():{reviews:[]}}).then(function(d){RV=(d&&d.reviews)||[];renderReviews();renderDetail(false)}).catch(function(){renderReviews()})}catch(e){renderReviews()}
+try{fetch("assets/reviews.json?t="+Date.now()).then(function(r){return r.ok?r.json():{reviews:[]}}).then(function(d){RV=((d&&d.reviews)||[]).filter(function(r){return r&&typeof r==="object"}).map(function(r){return {id:r.id,p:Array.isArray(r.p)?r.p.filter(function(k){return P[k]}):[],r:Math.max(0,Math.min(5,Math.round(+r.r)||0)),name:String(r.name||"").slice(0,40),text:String(r.text||"").slice(0,400),v:r.v?1:0,date:String(r.date||"").slice(0,10)}}).filter(function(r){return r.r>=1&&r.p.length});renderReviews();renderDetail(false)}).catch(function(){renderReviews()})}catch(e){renderReviews()}
 
 
 /* ---------- mini cart ---------- */
@@ -229,7 +229,7 @@ clist.addEventListener("click",function(e){var b=e.target.closest("[data-rm]");i
 /* ---------- theme, progress, active nav ---------- */
 var tb=document.getElementById("theme");
 function dark(){var t=root.getAttribute("data-theme");return t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches}
-try{var th=localStorage.getItem("theme");if(th)root.setAttribute("data-theme",th)}catch(e){}
+try{var th=localStorage.getItem("theme");if(th==="dark"||th==="light")root.setAttribute("data-theme",th)}catch(e){}
 tb.addEventListener("click",function(){var n=dark()?"light":"dark";root.setAttribute("data-theme",n);try{localStorage.setItem("theme",n)}catch(e){}});
 var prog=document.getElementById("prog");
 function onScroll(){var h=document.documentElement.scrollHeight-innerHeight;prog.style.setProperty("--p",(h>0?Math.min(100,scrollY/h*100):0)+"%")}
