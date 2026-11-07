@@ -195,6 +195,7 @@ sdet.addEventListener("click",function(e){
 function openFromHash(scroll){var m=/^#shop-([a-z])$/.exec(location.hash);if(m&&P[m[1]]){selectKey(m[1],scroll)}}
 window.addEventListener("hashchange",function(){openFromHash(true)});
 renderChips();renderList();renderDetail(false);
+[].forEach.call(document.querySelectorAll("[data-pp]"),function(n){var k=n.getAttribute("data-pp");if(P[k]){n.dir="ltr";n.textContent="$"+P[k].p+" \u00b7 \u2248 "+iq(P[k].p)+" IQD"}});
 /* ---------- customer reviews (verified buyers, moderated; data in assets/reviews.json) ---------- */
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function stars(n){var s="";for(var i=1;i<=5;i++)s+=i<=n?"★":"☆";return s}
