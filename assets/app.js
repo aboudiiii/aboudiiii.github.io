@@ -105,7 +105,9 @@ function refresh(){
  cartn.textContent=c.sel.length+(L()==="ar"?" في الطلب":" in order"); cartt.textContent="$"+c.total;
  renderCart(c); syncShop(c);
 }
-function go(){document.getElementById("order").scrollIntoView({behavior:"smooth"})}
+function go(){var any=document.querySelector("#items input:checked"),b=document.getElementById("tg");
+ if(any&&b){b.scrollIntoView({behavior:"smooth",block:"center"});b.classList.remove("pulse");void b.offsetWidth;b.classList.add("pulse");setTimeout(function(){b.classList.remove("pulse")},2600)}
+ else document.getElementById("order").scrollIntoView({behavior:"smooth"})}
 [].forEach.call(document.querySelectorAll("[data-pick]"),function(b){b.addEventListener("click",function(){
  var k=b.getAttribute("data-pick");
  if(k==="b"){document.getElementById("c_i").checked=true;document.getElementById("c_k").checked=true}
@@ -242,7 +244,8 @@ function renderCart(c){
 }
 cpill.addEventListener("click",function(){var o=cpanel.hidden;cpanel.hidden=!o;cpill.setAttribute("aria-expanded",String(o))});
 document.getElementById("cartx").addEventListener("click",function(){cpanel.hidden=true;cpill.setAttribute("aria-expanded","false")});
-document.getElementById("cartgo").addEventListener("click",function(){cpanel.hidden=true;cpill.setAttribute("aria-expanded","false")});
+document.getElementById("cartgo").addEventListener("click",function(e){e.preventDefault();cpanel.hidden=true;cpill.setAttribute("aria-expanded","false");go()});
+[].forEach.call(document.querySelectorAll('a.btn[href="#order"]'),function(a){if(a.id!=="cartgo")a.addEventListener("click",function(e){if(document.querySelector("#items input:checked")){e.preventDefault();go()}})});
 clist.addEventListener("click",function(e){var b=e.target.closest("[data-rm]");if(b)setOn(b.getAttribute("data-rm"),false)});
 
 /* ---------- theme, progress, active nav ---------- */
