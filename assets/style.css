@@ -442,3 +442,17 @@ button.add,a.btn,.cartpill,.chips button,.sec2,#pdl{position:relative;overflow:h
  .srow{transition:transform .18s,border-color .18s,background .18s}.srow:hover{transform:translateX(-4px)}
  html[dir="ltr"] .srow:hover{transform:translateX(4px)}
 }
+
+/* book pages */
+.bkhead{display:grid;grid-template-columns:minmax(0,210px) minmax(0,1fr);gap:26px;align-items:start}
+.bkhead>img{width:100%;height:auto;border-radius:4px;box-shadow:0 14px 28px -10px rgba(0,0,0,.5)}
+.bktag{margin:0;color:var(--gold);font-weight:600;font-size:14px}
+.bkprice{display:flex;gap:12px;align-items:baseline;margin:10px 0}.bkprice b{font:700 34px var(--f-display);color:var(--head)}.bkprice span{color:var(--muted)}
+.bkcta{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 0}
+.bkprev{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.bkprev img{width:100%;height:auto;border-radius:6px;border:1px solid var(--line);background:#fff}
+.bkrel{padding-inline-start:20px}
+.bkfoot{text-align:center;color:var(--muted);font-size:14px;margin:26px 0 6px}
+.art table.cmp{width:100%;border-collapse:collapse;margin:14px 0;font-size:15.5px}.art .cmp th,.art .cmp td{border:1px solid var(--line);padding:9px 12px;text-align:start;vertical-align:top}.art .cmp th{background:var(--surface2);color:var(--fg)}
+.art p,.art li{line-height:1.95}
+.seoc a{display:block}
+@media (max-width:600px){.bkhead{grid-template-columns:minmax(0,1fr)}.bkhead>img{max-width:200px}}

@@ -60,10 +60,10 @@ var X={
  c:{cat:["work"],tag_ar:"عمل",tag_en:"Work"},
  e:{cat:["kids"],tag_ar:"للأطفال",tag_en:"Kids"},
  t:{cat:["faith"],tag_ar:"إيمان وعادات",tag_en:"Faith and habits"},
- y:{cat:["code"],tag_ar:"برمجة",tag_en:"Code"},
- j:{cat:["code"],tag_ar:"برمجة",tag_en:"Code"},
- v:{cat:["code"],tag_ar:"برمجة",tag_en:"Code"},
- x:{cat:["code"],tag_ar:"برمجة",tag_en:"Code"}
+ y:{cat:["code"],tag_ar:"برمجة",tag_en:"Code",th:["y1","y2","y3"],big:["big_y1","big_y2","big_y3"]},
+ j:{cat:["code"],tag_ar:"برمجة",tag_en:"Code",th:["j1","j2","j3"],big:["big_j1","big_j2","big_j3"]},
+ v:{cat:["code"],tag_ar:"برمجة",tag_en:"Code",th:["v1","v2","v3"],big:["big_v1","big_v2","big_v3"]},
+ x:{cat:["code"],tag_ar:"برمجة",tag_en:"Code",th:["x1","x2","x3"],big:["big_x1","big_x2","big_x3"]}
 };
 Object.keys(X).forEach(function(k){for(var f in X[k]){if(P[k][f]===undefined)P[k][f]=X[k][f]}});
 var root=document.documentElement;
@@ -136,6 +136,7 @@ function setLang(l){
 document.getElementById("lang").addEventListener("click",function(){setLang(L()==="ar"?"en":"ar")});
 
 /* ---------- collection explorer ---------- */
+var SLUG={"n": "echo-city-novel", "r": "three-mirrors-novel", "i": "islamic-patterns-coloring-book", "k": "nature-colors-kids-coloring-book", "m": "geometric-mandala-coloring-book", "a": "mosques-islamic-architecture-coloring-book", "f": "floral-patterns-coloring-book", "s": "geometric-stars-tiles-coloring-book", "p": "study-and-exam-planner", "c": "cv-templates-word", "e": "kids-fun-learning-book", "t": "prayer-and-habit-tracker", "y": "learn-python-arabic-book", "j": "learn-java-arabic-book", "v": "learn-javascript-arabic-book", "x": "learn-cpp-arabic-book"};
 var ORDER=["n","r","i","k","m","a","f","s","p","c","e","t","y","j","v","x"], CATS=[["all","الكل","All"],["novel","رواية","Novel"],["color","كتب تلوين","Coloring"],["kids","للأطفال","Kids"],["study","دراسة","Study"],["work","عمل","Work"],["faith","إيمان","Faith"],["code","برمجة","Code"],["saved","♥ المحفوظة","♥ Saved"]];
 var curK="p", curCat="all", curQ="", RV=[], SAVED=[];
 try{var _s=JSON.parse(localStorage.getItem("saved")||"[]");if(Array.isArray(_s))SAVED=_s.filter(function(k){return typeof k==="string"&&P[k]})}catch(e){}
@@ -174,7 +175,7 @@ function renderDetail(anim){
   +'<div><span class="tag i">'+sp(x.tag_ar,x.tag_en)+'</span><h3>'+sp(x.ar,x.en)+'</h3>'+rvLine(k)+'<p class="desc">'+sp(x.d_ar,x.d_en)+'</p>'
   +'<ul class="chk">'+x.inc_ar.map(function(t,i){return '<li>'+sp(t,x.inc_en[i])+'</li>'}).join("")+'</ul>'
   +'<div class="buy"><div class="price">$'+x.p+iqd+'</div></div>'
-  +'<div class="sact"><button type="button" class="add'+(on?' on':'')+'" data-add="'+k+'">'+(on?sp("✓ في طلبك (إزالة)","✓ In your order (remove)"):sp("أضف للطلب","Add to order"))+'</button><button type="button" class="share" data-save="'+k+'" aria-pressed="'+isSaved(k)+'">'+(isSaved(k)?sp("♥ محفوظ (إزالة)","♥ Saved (remove)"):sp("♡ احفظ للاحقاً","♡ Save for later"))+'</button><button type="button" class="share" data-share="'+k+'">'+sp("شارك المنتج","Share product")+'</button>'+(x.cat.indexOf("code")>-1?'<a class="share" href="#code">'+sp("جرّب الكود الآن","Try coding now")+'</a>':"")+''+(k==="n"?'<a class="share" href="samples/Echo-City-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':(k==="r"?'<a class="share" href="samples/Mirrors-Three-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':""))+'</div>'
+  +'<div class="sact"><button type="button" class="add'+(on?' on':'')+'" data-add="'+k+'">'+(on?sp("✓ في طلبك (إزالة)","✓ In your order (remove)"):sp("أضف للطلب","Add to order"))+'</button><button type="button" class="share" data-save="'+k+'" aria-pressed="'+isSaved(k)+'">'+(isSaved(k)?sp("♥ محفوظ (إزالة)","♥ Saved (remove)"):sp("♡ احفظ للاحقاً","♡ Save for later"))+'</button><button type="button" class="share" data-share="'+k+'">'+sp("شارك المنتج","Share product")+'</button><a class="share" href="books/'+SLUG[k]+'.html">'+sp("صفحة المنتج","Product page")+'</a>'+(x.cat.indexOf("code")>-1?'<a class="share" href="#code">'+sp("جرّب الكود الآن","Try coding now")+'</a>':"")+''+(k==="n"?'<a class="share" href="samples/Echo-City-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':(k==="r"?'<a class="share" href="samples/Mirrors-Three-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':""))+'</div>'
   +dealHtml(k)+'</div>'+th;
  if(anim){sdet.classList.remove("swap");void sdet.offsetWidth;sdet.classList.add("swap")}
 }
