@@ -137,7 +137,7 @@ document.getElementById("lang").addEventListener("click",function(){setLang(L()=
 
 /* ---------- collection explorer ---------- */
 var ORDER=["n","r","i","k","m","a","f","s","p","c","e","t","y","j","v","x"], CATS=[["all","الكل","All"],["novel","رواية","Novel"],["color","كتب تلوين","Coloring"],["kids","للأطفال","Kids"],["study","دراسة","Study"],["work","عمل","Work"],["faith","إيمان","Faith"],["code","برمجة","Code"]];
-var curK="p", curCat="all";
+var curK="p", curCat="all", RV=[];
 var chipsEl=document.getElementById("chips"), slist=document.getElementById("slist"), sdet=document.getElementById("sdetail");
 function isOn(k){var b=document.getElementById("c_"+k);return !!(b&&b.checked)}
 function setOn(k,v){var b=document.getElementById("c_"+k);if(b&&b.checked!==v){b.checked=v;b.dispatchEvent(new Event("change",{bubbles:true}))}}
@@ -162,7 +162,7 @@ function renderDetail(anim){
  if(x.th){th='<div class="thumbs'+(x.th.length===3?' three':'')+'">'+x.th.map(function(t,i){var big=x.big?x.big[i]:t;return '<button class="z" type="button" data-big="assets/'+big+'.jpg" aria-label="preview '+(i+1)+'"><img alt="" loading="lazy" src="assets/'+t+'.jpg"></button>'}).join("")+'<p class="hint">'+sp("اضغط على أي صفحة لتكبيرها","Tap a page to enlarge")+'</p></div>'}
  var iqd='<em class="iqd">'+sp("≈ "+iq(x.p)+" د.ع","≈ "+iq(x.p)+" IQD")+'</em>';
  sdet.innerHTML='<div><div class="book"><img class="cover" width="520" height="673" alt="" src="assets/'+x.img+'.jpg?v=4"></div></div>'
-  +'<div><span class="tag i">'+sp(x.tag_ar,x.tag_en)+'</span><h3>'+sp(x.ar,x.en)+'</h3><p class="desc">'+sp(x.d_ar,x.d_en)+'</p>'
+  +'<div><span class="tag i">'+sp(x.tag_ar,x.tag_en)+'</span><h3>'+sp(x.ar,x.en)+'</h3>'+rvLine(k)+'<p class="desc">'+sp(x.d_ar,x.d_en)+'</p>'
   +'<ul class="chk">'+x.inc_ar.map(function(t,i){return '<li>'+sp(t,x.inc_en[i])+'</li>'}).join("")+'</ul>'
   +'<div class="buy"><div class="price">$'+x.p+iqd+'</div></div>'
   +'<div class="sact"><button type="button" class="add'+(on?' on':'')+'" data-add="'+k+'">'+(on?sp("✓ في طلبك (إزالة)","✓ In your order (remove)"):sp("أضف للطلب","Add to order"))+'</button><button type="button" class="share" data-share="'+k+'">'+sp("انسخ رابط المنتج","Copy product link")+'</button>'+(k==="n"?'<a class="share" href="samples/Echo-City-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':(k==="r"?'<a class="share" href="samples/Mirrors-Three-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':""))+'</div>'
@@ -195,6 +195,24 @@ sdet.addEventListener("click",function(e){
 function openFromHash(scroll){var m=/^#shop-([a-z])$/.exec(location.hash);if(m&&P[m[1]]){selectKey(m[1],scroll)}}
 window.addEventListener("hashchange",function(){openFromHash(true)});
 renderChips();renderList();renderDetail(false);
+/* ---------- customer reviews (verified buyers, moderated; data in assets/reviews.json) ---------- */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function stars(n){var s="";for(var i=1;i<=5;i++)s+=i<=n?"★":"☆";return s}
+function rvOf(k){return RV.filter(function(r){return r.p&&r.p.indexOf(k)>-1})}
+function rvStat(k){var a=rvOf(k);if(!a.length)return null;var s=0;a.forEach(function(r){s+=r.r});return {n:a.length,avg:Math.round(s/a.length*10)/10}}
+function rvLine(k){var s=rvStat(k);return s?'<div class="rvline"><span class="rvs">'+stars(Math.round(s.avg))+'</span> <b>'+s.avg+'</b> <small>('+s.n+')</small></div>':''}
+function rvCard(r){
+ var names=(r.p||[]).filter(function(k){return P[k]}).map(function(k){return sp(esc(P[k].ar),esc(P[k].en))}).join(" · ");
+ return '<article class="rvc"><div class="rvs" aria-label="'+(+r.r)+'/5">'+stars(+r.r)+'</div>'+(r.text?'<p>'+esc(r.text)+'</p>':'')+'<div class="rvm"><b>'+esc(r.name)+'</b> · <bdi>'+esc(r.date||"")+'</bdi>'+(names?'<br><small>'+names+'</small>':'')+'</div></article>'}
+function renderReviews(){
+ var sec=document.getElementById("reviews"),box=document.getElementById("rv");if(!sec||!box)return;sec.hidden=false;
+ var note='<p class="rvnote">'+sp("التقييم متاح للمشترين فقط: بعد تسليم الطلب يطلب منك البوت تقييمك، وتظهر الآراء هنا بعد المراجعة.","Reviews are from verified buyers only: after delivery the bot asks for your rating, and reviews appear here after moderation.")+'</p>';
+ if(!RV.length){box.innerHTML='<p class="rvnote">'+sp("لا توجد تقييمات بعد.","No reviews yet.")+'</p>'+note;return}
+ var sum=0;RV.forEach(function(r){sum+=+r.r});var avg=Math.round(sum/RV.length*10)/10;
+ box.innerHTML='<div class="rvtop"><b>'+avg+'</b> <span class="rvs">'+stars(Math.round(avg))+'</span> <small>('+RV.length+')</small></div><div class="rvgrid">'+RV.slice(0,12).map(rvCard).join("")+'</div>'+note;
+}
+try{fetch("assets/reviews.json?t="+Date.now()).then(function(r){return r.ok?r.json():{reviews:[]}}).then(function(d){RV=(d&&d.reviews)||[];renderReviews();renderDetail(false)}).catch(function(){renderReviews()})}catch(e){renderReviews()}
+
 
 /* ---------- mini cart ---------- */
 var cpanel=document.getElementById("cartpanel"), cpill=document.getElementById("cartpill"), clist=document.getElementById("cartlist");
