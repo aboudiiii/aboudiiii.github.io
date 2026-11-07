@@ -1,6 +1,18 @@
 (function(){
 var IQD_RATE=1500; // approximate dollar rate in Iraqi dinar; keep equal to USD_IQD in the bot config
 var P={
+ y:{p:3.33,img:"python_cover",ar:"تعلّم بايثون من الصفر (٥٣ صفحة)",en:"Learn Python from Scratch (53 pages)",
+    d_ar:"كتاب شرح مفصّل لتعلّم بايثون للمبتدئين بلهجة بسيطة: تثبيت وأول برنامج، ثم الأساسيات خطوة خطوة بأمثلة وتمارين. نسخة PDF بحجم A4 للقراءة على الجوال والحاسوب أو الطباعة.",d_en:"A detailed book for beginners to learn Python in a simple, friendly style: setup and your first program, then the fundamentals step by step with examples and exercises. An A4 PDF for phone, computer or print.",
+    inc_ar:["٥٣ صفحة بغلاف ملوّن", "شرح من التثبيت وأول برنامج حتى المواضيع المتقدمة", "أمثلة كاملة وتمارين بنهاية الفصول", "ملف واحد بحجم A4 يُقرأ على الجوال أو يُطبع"],inc_en:["53 pages with a color cover", "From setup and your first program to advanced topics", "Complete examples and exercises at chapter ends", "One A4 file to read on your phone or print"]},
+ j:{p:3.33,img:"java_cover",ar:"تعلّم Java من الصفر (٦٢ صفحة)",en:"Learn Java from Scratch (62 pages)",
+    d_ar:"كتاب شرح مفصّل لتعلّم Java للمبتدئين بلهجة بسيطة: تثبيت وأول برنامج، ثم الأساسيات خطوة خطوة بأمثلة وتمارين. نسخة PDF بحجم A4 للقراءة على الجوال والحاسوب أو الطباعة.",d_en:"A detailed book for beginners to learn Java in a simple, friendly style: setup and your first program, then the fundamentals step by step with examples and exercises. An A4 PDF for phone, computer or print.",
+    inc_ar:["٦٢ صفحة بغلاف ملوّن", "شرح من التثبيت وأول برنامج حتى المواضيع المتقدمة", "أمثلة كاملة وتمارين بنهاية الفصول", "ملف واحد بحجم A4 يُقرأ على الجوال أو يُطبع"],inc_en:["62 pages with a color cover", "From setup and your first program to advanced topics", "Complete examples and exercises at chapter ends", "One A4 file to read on your phone or print"]},
+ v:{p:3.33,img:"js_cover",ar:"تعلّم JavaScript من الصفر (٤٧ صفحة)",en:"Learn JavaScript from Scratch (47 pages)",
+    d_ar:"كتاب شرح مفصّل لتعلّم JavaScript للمبتدئين بلهجة بسيطة: تثبيت وأول برنامج، ثم الأساسيات خطوة خطوة بأمثلة وتمارين. نسخة PDF بحجم A4 للقراءة على الجوال والحاسوب أو الطباعة.",d_en:"A detailed book for beginners to learn JavaScript in a simple, friendly style: setup and your first program, then the fundamentals step by step with examples and exercises. An A4 PDF for phone, computer or print.",
+    inc_ar:["٤٧ صفحة بغلاف ملوّن", "شرح من التثبيت وأول برنامج حتى المواضيع المتقدمة", "أمثلة كاملة وتمارين بنهاية الفصول", "ملف واحد بحجم A4 يُقرأ على الجوال أو يُطبع"],inc_en:["47 pages with a color cover", "From setup and your first program to advanced topics", "Complete examples and exercises at chapter ends", "One A4 file to read on your phone or print"]},
+ x:{p:3.33,img:"cpp_cover",ar:"تعلّم C++ من الصفر (٩٣ صفحة)",en:"Learn C++ from Scratch (93 pages)",
+    d_ar:"كتاب شرح مفصّل لتعلّم C++ للمبتدئين بلهجة بسيطة: تثبيت وأول برنامج، ثم الأساسيات خطوة خطوة بأمثلة وتمارين. نسخة PDF بحجم A4 للقراءة على الجوال والحاسوب أو الطباعة.",d_en:"A detailed book for beginners to learn C++ in a simple, friendly style: setup and your first program, then the fundamentals step by step with examples and exercises. An A4 PDF for phone, computer or print.",
+    inc_ar:["٩٣ صفحة بغلاف ملوّن", "شرح من التثبيت وأول برنامج حتى المواضيع المتقدمة", "أمثلة كاملة وتمارين بنهاية الفصول", "ملف واحد بحجم A4 يُقرأ على الجوال أو يُطبع"],inc_en:["93 pages with a color cover", "From setup and your first program to advanced topics", "Complete examples and exercises at chapter ends", "One A4 file to read on your phone or print"]},
  r:{p:6.67,img:"mirrors_cover",ar:"المرايا الثلاث (رواية، ١٦ فصلاً)",en:"The Three Mirrors (novel, 16 chapters)",
     d_ar:"رواية نفسية غامضة: رهام مرمّمة مرايا ترث بيتًا مغلقًا بشرط غريب: أربعون يومًا لترميم ثلاث مرايا، وكل مرآة تكشف طبقة من ماضٍ دُفن. نسخة PDF بحجم كتاب للقراءة على الجوال أو الطباعة.",d_en:"A psychological mystery: Riham, a mirror restorer, inherits a sealed house on one strange condition: forty days to restore three mirrors, each revealing a layer of a buried past. A book-size PDF for reading on your phone or printing.",
     inc_ar:["١٦ فصلاً (١٠٩ صفحات)","غلاف ملوّن وفهرس للفصول","ملف واحد بحجم كتاب A5 يناسب الجوال والطباعة","عيّنة مجانية: الفصلان الأولان"],inc_en:["16 chapters (109 pages)","Color cover and a chapter index","One book-size A5 file for phone or print","Free sample: the first two chapters"]},
@@ -47,7 +59,11 @@ var X={
  p:{cat:["study"],tag_ar:"دراسة",tag_en:"Study"},
  c:{cat:["work"],tag_ar:"عمل",tag_en:"Work"},
  e:{cat:["kids"],tag_ar:"للأطفال",tag_en:"Kids"},
- t:{cat:["faith"],tag_ar:"إيمان وعادات",tag_en:"Faith and habits"}
+ t:{cat:["faith"],tag_ar:"إيمان وعادات",tag_en:"Faith and habits"},
+ y:{cat:["code"],tag_ar:"برمجة",tag_en:"Code"},
+ j:{cat:["code"],tag_ar:"برمجة",tag_en:"Code"},
+ v:{cat:["code"],tag_ar:"برمجة",tag_en:"Code"},
+ x:{cat:["code"],tag_ar:"برمجة",tag_en:"Code"}
 };
 Object.keys(X).forEach(function(k){for(var f in X[k]){if(P[k][f]===undefined)P[k][f]=X[k][f]}});
 var root=document.documentElement;
@@ -56,7 +72,7 @@ function L(){return root.getAttribute("data-lang")==="en"?"en":"ar"}
 function sp(a,e){return '<span data-l="ar">'+a+'</span><span data-l="en">'+e+'</span>'}
 var h="";
 var list=document.getElementById("items"); h="";
-["n","r","i","k","m","a","f","s","p","c","e","t"].forEach(function(k){
+["n","r","i","k","m","a","f","s","p","c","e","t","y","j","v","x"].forEach(function(k){
  h+='<label class="item"><input type="checkbox" value="'+k+'" id="c_'+k+'"><img alt="" loading="lazy" src="assets/'+P[k].img+'.jpg?v=4"><span class="n" data-name="'+k+'"></span><span class="p">$'+P[k].p+'</span></label>'});
 list.innerHTML=h;
 var boxes=[].slice.call(list.querySelectorAll("input")), msg=document.getElementById("msg"),
@@ -73,7 +89,7 @@ function calc(){
  total=Math.round(total*100)/100; return {sel:sel,total:total,saved:Math.round((sum-total)*100)/100,deal:deal};
 }
 function text(c){
- var l=L(), onlyN=c.sel.length>0&&c.sel.every(function(k){return k==="n"||k==="r"}), szAr=onlyN?"":"\nالحجم: "+sizeVal(), szEn=onlyN?"":"\nSize: "+sizeVal(), lines=c.sel.map(function(k){return "- "+P[k][l]+" ("+P[k].p+" USD)"}).join("\n");
+ var l=L(), onlyN=c.sel.length>0&&c.sel.every(function(k){return "nryjvx".indexOf(k)>-1}), szAr=onlyN?"":"\nالحجم: "+sizeVal(), szEn=onlyN?"":"\nSize: "+sizeVal(), lines=c.sel.map(function(k){return "- "+P[k][l]+" ("+P[k].p+" USD)"}).join("\n");
  if(!c.sel.length) lines=l==="ar"?"(اختر دفتراً من القائمة)":"(pick a book from the list)";
  return l==="ar"
   ?"السلام عليكم، أريد شراء نسخ PDF إلكترونية:\n"+lines+szAr+"\nالمجموع: "+c.total+" USD\nأعلم أنها ملفات رقمية فقط بدون طباعة أو شحن."
@@ -120,7 +136,7 @@ function setLang(l){
 document.getElementById("lang").addEventListener("click",function(){setLang(L()==="ar"?"en":"ar")});
 
 /* ---------- collection explorer ---------- */
-var ORDER=["n","r","i","k","m","a","f","s","p","c","e","t"], CATS=[["all","الكل","All"],["novel","رواية","Novel"],["color","كتب تلوين","Coloring"],["kids","للأطفال","Kids"],["study","دراسة","Study"],["work","عمل","Work"],["faith","إيمان","Faith"]];
+var ORDER=["n","r","i","k","m","a","f","s","p","c","e","t","y","j","v","x"], CATS=[["all","الكل","All"],["novel","رواية","Novel"],["color","كتب تلوين","Coloring"],["kids","للأطفال","Kids"],["study","دراسة","Study"],["work","عمل","Work"],["faith","إيمان","Faith"],["code","برمجة","Code"]];
 var curK="p", curCat="all";
 var chipsEl=document.getElementById("chips"), slist=document.getElementById("slist"), sdet=document.getElementById("sdetail");
 function isOn(k){var b=document.getElementById("c_"+k);return !!(b&&b.checked)}
