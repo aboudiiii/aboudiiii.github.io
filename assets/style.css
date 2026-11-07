@@ -392,3 +392,53 @@ footer{background:var(--navy-deep)}
 .pgm .note{margin:6px 22px 0;color:var(--muted);font-size:14px}
 .pgcta{margin:14px 22px 0}
 @media (max-width:520px){nav.top .brand{min-width:0;overflow:hidden;white-space:nowrap}nav.top .brand span{overflow:hidden;text-overflow:ellipsis}.links{flex-shrink:0}.links button{padding:6px 10px}.links .btn{padding:7px 12px}}
+
+/* motion layer */
+.hero{outline:none!important;box-shadow:none;border:0}
+html[dir="rtl"] .hero h1{line-height:1.5;padding-top:.1em}
+html[dir="rtl"] .hero .lead{line-height:1.95}
+@media (min-width:521px) and (max-width:1000px){.strip{grid-template-columns:repeat(2,minmax(0,1fr))}.strip div{border-bottom:1px solid var(--line);border-inline-end:1px solid var(--line)}.strip div:nth-child(2n){border-inline-end:0}.strip div:nth-last-child(-n+2){border-bottom:0}}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-top:22px;text-align:center}
+.stats div{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 10px}
+.stats b{display:block;font:700 clamp(30px,5vw,44px) var(--f-display);color:var(--head);line-height:1.1;direction:ltr}
+.stats span{color:var(--muted);font-size:14.5px}
+.spark{position:absolute;width:var(--s,8px);height:var(--s,8px);background:var(--gold-bright);opacity:0;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);pointer-events:none;z-index:0}
+.hero>*:not(.spark){position:relative;z-index:1}
+.hero::after{display:block!important;content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(340px circle at var(--mx,50%) var(--my,35%),rgba(227,185,92,.14),transparent 70%)}
+.shelf img{transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+.shelf a:hover img,.shelf a:focus-visible img{transform:perspective(800px) translateY(-14px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+.shelf img.tilting{transition:transform .08s,box-shadow .25s}
+.ncard.tilting{transform:perspective(800px) translateY(-6px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .08s}
+.sdetail .book .cover{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+.sdetail .book.tilting .cover{transition:transform .08s}
+button.add,a.btn,.cartpill,.chips button,.sec2,#pdl{position:relative;overflow:hidden}
+.rip{position:absolute;border-radius:50%;background:currentColor;opacity:.25;transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(2.6);opacity:0}}
+.flyimg{position:fixed;z-index:80;border-radius:4px;box-shadow:0 10px 24px -6px rgba(0,0,0,.6);pointer-events:none;object-fit:cover}
+.bst{position:fixed;z-index:81;width:9px;height:9px;margin:-4px 0 0 -4px;background:var(--gold-bright);pointer-events:none;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:bst .6s ease-out forwards}
+@keyframes bst{to{transform:translate(var(--dx),var(--dy)) scale(.2) rotate(120deg);opacity:0}}
+.cartpill.bump{animation:bump .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.14)}100%{transform:scale(1)}}
+.totop{position:fixed;inset-inline-end:16px;bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:44;width:44px;height:44px;border-radius:50%;padding:0;font-size:20px;display:grid;place-items:center;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .25s,transform .25s}
+.totop.on{opacity:1;transform:none;pointer-events:auto}
+@media (min-width:861px){.totop{bottom:22px}}
+@media (prefers-reduced-motion:no-preference){
+ .hero .kick,.hero h1,.hero .lead,.hero .cta,.hero .pills{animation:heroIn .85s cubic-bezier(.2,.75,.2,1) backwards}
+ .hero .kick{animation-delay:.05s}.hero h1{animation-delay:.15s}.hero .lead{animation-delay:.3s}.hero .cta{animation-delay:.42s}.hero .pills{animation-delay:.9s}
+ @keyframes heroIn{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+ .shelf a:nth-child(1){--i:0}.shelf a:nth-child(2){--i:1}.shelf a:nth-child(3){--i:2}.shelf a:nth-child(4){--i:3}.shelf a:nth-child(5){--i:4}
+ .shelf a{animation:bookRise .9s cubic-bezier(.2,.8,.2,1) backwards,bob 7s ease-in-out infinite;animation-delay:calc(.45s + var(--i,0)*.11s),calc(1.5s + var(--i,0)*.35s)}
+ @keyframes bookRise{from{opacity:0;transform:translateY(60px) rotate(4deg)}to{opacity:1;transform:none}}
+ @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+ .hero .plank{animation:plankIn .8s ease .35s backwards;transform-origin:center}
+ @keyframes plankIn{from{transform:scaleX(.2);opacity:0}to{transform:none;opacity:1}}
+ .spark{animation:drift var(--t,9s) ease-in-out var(--dl,0s) infinite}
+ @keyframes drift{0%{opacity:0;transform:translateY(10px) rotate(0) scale(.6)}30%{opacity:.8}70%{opacity:.5}100%{opacity:0;transform:translateY(-34px) rotate(90deg) scale(1.1)}}
+ .pop{opacity:0}
+ .pop.in{opacity:1;animation:popIn .7s cubic-bezier(.2,.8,.2,1) var(--d,0ms) backwards}
+ @keyframes popIn{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
+ .sdetail.swap .cover{animation:coverIn .5s cubic-bezier(.2,.8,.2,1)}
+ @keyframes coverIn{from{opacity:0;transform:scale(.9) rotate(-3deg)}to{opacity:1;transform:none}}
+ .srow{transition:transform .18s,border-color .18s,background .18s}.srow:hover{transform:translateX(-4px)}
+ html[dir="ltr"] .srow:hover{transform:translateX(4px)}
+}
