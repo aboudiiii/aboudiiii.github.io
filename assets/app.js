@@ -136,20 +136,29 @@ function setLang(l){
 document.getElementById("lang").addEventListener("click",function(){setLang(L()==="ar"?"en":"ar")});
 
 /* ---------- collection explorer ---------- */
-var ORDER=["n","r","i","k","m","a","f","s","p","c","e","t","y","j","v","x"], CATS=[["all","الكل","All"],["novel","رواية","Novel"],["color","كتب تلوين","Coloring"],["kids","للأطفال","Kids"],["study","دراسة","Study"],["work","عمل","Work"],["faith","إيمان","Faith"],["code","برمجة","Code"]];
-var curK="p", curCat="all", RV=[];
+var ORDER=["n","r","i","k","m","a","f","s","p","c","e","t","y","j","v","x"], CATS=[["all","الكل","All"],["novel","رواية","Novel"],["color","كتب تلوين","Coloring"],["kids","للأطفال","Kids"],["study","دراسة","Study"],["work","عمل","Work"],["faith","إيمان","Faith"],["code","برمجة","Code"],["saved","♥ المحفوظة","♥ Saved"]];
+var curK="p", curCat="all", curQ="", RV=[], SAVED=[];
+try{var _s=JSON.parse(localStorage.getItem("saved")||"[]");if(Array.isArray(_s))SAVED=_s.filter(function(k){return typeof k==="string"&&P[k]})}catch(e){}
+function persistSaved(){try{localStorage.setItem("saved",JSON.stringify(SAVED))}catch(e){}}
+function isSaved(k){return SAVED.indexOf(k)>-1}
+function inCat(k){return curCat==="all"||(curCat==="saved"?isSaved(k):P[k].cat.indexOf(curCat)>-1)}
+function inQ(k){if(!curQ)return true;var x=P[k],h=(x.ar+" "+x.en+" "+x.tag_ar+" "+x.tag_en+" "+x.d_ar+" "+x.d_en).toLowerCase();return curQ.toLowerCase().split(/\s+/).every(function(w){return h.indexOf(w)>-1})}
+
 var chipsEl=document.getElementById("chips"), slist=document.getElementById("slist"), sdet=document.getElementById("sdetail");
 function isOn(k){var b=document.getElementById("c_"+k);return !!(b&&b.checked)}
 function setOn(k,v){var b=document.getElementById("c_"+k);if(b&&b.checked!==v){b.checked=v;b.dispatchEvent(new Event("change",{bubbles:true}))}}
 function toast(a,e){var t=document.getElementById("toast");t.innerHTML=sp(a,e);t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove("on")},2200)}
 function renderChips(){
- chipsEl.innerHTML=CATS.map(function(c){return '<button type="button" data-cat="'+c[0]+'" aria-pressed="'+(c[0]===curCat)+'">'+sp(c[1],c[2])+'</button>'}).join("");
+ chipsEl.innerHTML=CATS.map(function(c){var n=c[0]==="saved"&&SAVED.length?' ('+SAVED.length+')':'';return '<button type="button" data-cat="'+c[0]+'" aria-pressed="'+(c[0]===curCat)+'">'+sp(c[1]+n,c[2]+n)+'</button>'}).join("");
 }
 function renderList(){
- var keys=ORDER.filter(function(k){return curCat==="all"||P[k].cat.indexOf(curCat)>-1});
+ var keys=ORDER.filter(function(k){return inCat(k)&&inQ(k)});
  if(keys.indexOf(curK)<0&&keys.length)curK=keys[0];
+ var cnt=document.getElementById("qcount");if(cnt)cnt.innerHTML=curQ||curCat!=="all"?sp(keys.length+" نتيجة",keys.length+(keys.length===1?" result":" results")):"";
+ if(!keys.length){slist.innerHTML='<p class="empty">'+(curCat==="saved"&&!curQ?sp("لم تحفظ أي منتج بعد. اضغط ♡ في صفحة المنتج لحفظه.","Nothing saved yet. Tap ♡ on a product to save it."):sp("لا توجد نتائج. جرّب كلمة أخرى.","No results. Try another word."))+'</p>';return}
  slist.innerHTML=keys.map(function(k){var x=P[k];
-  return '<button type="button" class="srow'+(isOn(k)?' has':'')+'" role="option" data-k="'+k+'" aria-selected="'+(k===curK)+'"><img alt="" loading="lazy" src="assets/'+x.img+'.jpg?v=4"><span class="nm">'+sp(x.ar,x.en)+'</span><span class="pr">$'+x.p+'</span><span class="in" aria-hidden="true">✓</span></button>'}).join("");
+  return '<button type="button" class="srow'+(isOn(k)?' has':'')+'" role="option" data-k="'+k+'" aria-selected="'+(k===curK)+'"><img alt="" loading="lazy" src="assets/'+x.img+'.jpg?v=4"><span class="nm">'+sp(x.ar,x.en)+'</span><span class="pr">$'+x.p+'</span><span class="in" aria-hidden="true">✓</span></button>'}).join("")
+  +(curCat==="saved"&&keys.length?'<button type="button" class="sec2 addsaved" data-addsaved="1">'+sp("أضف كل المحفوظات إلى الطلب","Add all saved to my order")+'</button>':"");
 }
 function dealHtml(k){
  var x=P[k];
@@ -165,13 +174,13 @@ function renderDetail(anim){
   +'<div><span class="tag i">'+sp(x.tag_ar,x.tag_en)+'</span><h3>'+sp(x.ar,x.en)+'</h3>'+rvLine(k)+'<p class="desc">'+sp(x.d_ar,x.d_en)+'</p>'
   +'<ul class="chk">'+x.inc_ar.map(function(t,i){return '<li>'+sp(t,x.inc_en[i])+'</li>'}).join("")+'</ul>'
   +'<div class="buy"><div class="price">$'+x.p+iqd+'</div></div>'
-  +'<div class="sact"><button type="button" class="add'+(on?' on':'')+'" data-add="'+k+'">'+(on?sp("✓ في طلبك (إزالة)","✓ In your order (remove)"):sp("أضف للطلب","Add to order"))+'</button><button type="button" class="share" data-share="'+k+'">'+sp("انسخ رابط المنتج","Copy product link")+'</button>'+(k==="n"?'<a class="share" href="samples/Echo-City-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':(k==="r"?'<a class="share" href="samples/Mirrors-Three-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':""))+'</div>'
+  +'<div class="sact"><button type="button" class="add'+(on?' on':'')+'" data-add="'+k+'">'+(on?sp("✓ في طلبك (إزالة)","✓ In your order (remove)"):sp("أضف للطلب","Add to order"))+'</button><button type="button" class="share" data-save="'+k+'" aria-pressed="'+isSaved(k)+'">'+(isSaved(k)?sp("♥ محفوظ (إزالة)","♥ Saved (remove)"):sp("♡ احفظ للاحقاً","♡ Save for later"))+'</button><button type="button" class="share" data-share="'+k+'">'+sp("شارك المنتج","Share product")+'</button>'+(x.cat.indexOf("code")>-1?'<a class="share" href="#code">'+sp("جرّب الكود الآن","Try coding now")+'</a>':"")+''+(k==="n"?'<a class="share" href="samples/Echo-City-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':(k==="r"?'<a class="share" href="samples/Mirrors-Three-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':""))+'</div>'
   +dealHtml(k)+'</div>'+th;
  if(anim){sdet.classList.remove("swap");void sdet.offsetWidth;sdet.classList.add("swap")}
 }
 function selectKey(k,scroll){
  if(!P[k])return; curK=k;
- if(curCat!=="all"&&P[k].cat.indexOf(curCat)<0){curCat="all";renderChips()}
+ if(!inCat(k)||!inQ(k)){curCat="all";curQ="";var qi=document.getElementById("q");if(qi)qi.value="";renderChips()}
  renderList();renderDetail(true);
  try{history.replaceState(null,"","#shop-"+k)}catch(e){}
  if(scroll)sdet.scrollIntoView({behavior:"smooth",block:"start"});
@@ -182,19 +191,28 @@ function syncShop(){
  renderDetail(false);
 }
 chipsEl.addEventListener("click",function(e){var b=e.target.closest("button[data-cat]");if(!b)return;curCat=b.getAttribute("data-cat");renderChips();renderList();renderDetail(true)});
-slist.addEventListener("click",function(e){var b=e.target.closest(".srow");if(!b)return;selectKey(b.getAttribute("data-k"),window.innerWidth<=900)});
+slist.addEventListener("click",function(e){var as=e.target.closest("[data-addsaved]");if(as){var n=0;SAVED.forEach(function(k){if(!isOn(k)){setOn(k,true);n++}});toast(n?"أُضيفت المحفوظات إلى طلبك":"كلها في طلبك مسبقاً",n?"Saved items added to your order":"All already in your order");return}var b=e.target.closest(".srow");if(!b)return;selectKey(b.getAttribute("data-k"),window.innerWidth<=900)});
 sdet.addEventListener("click",function(e){
  var a=e.target.closest("[data-add]");
  if(a){var k=a.getAttribute("data-add"),v=!isOn(k);setOn(k,v);toast(v?"أُضيف إلى طلبك":"أُزيل من طلبك",v?"Added to your order":"Removed from your order");return}
  var d=e.target.closest("[data-addboth]");
  if(d){var ks=d.getAttribute("data-addboth").split(","),all=ks.every(isOn);ks.forEach(function(k){setOn(k,!all)});toast(all?"أُزيل من طلبك":"أُضيف مع الخصم",all?"Removed from your order":"Added with the discount");return}
+ var sv=e.target.closest("[data-save]");
+ if(sv){var sk=sv.getAttribute("data-save"),i=SAVED.indexOf(sk);if(i>-1)SAVED.splice(i,1);else SAVED.push(sk);persistSaved();renderChips();renderList();renderDetail(false);toast(i>-1?"أُزيل من المحفوظات":"حُفظ في المحفوظات",i>-1?"Removed from saved":"Saved for later");return}
  var s2=e.target.closest("[data-share]");
- if(s2){var url=location.origin+location.pathname+"#shop-"+s2.getAttribute("data-share");
+ if(s2){var sk2=s2.getAttribute("data-share"),url=location.origin+location.pathname+"#shop-"+sk2;
+  if(navigator.share){navigator.share({title:P[sk2].ar,text:P[sk2].ar+" - "+P[sk2].en,url:url}).catch(function(){});return}
   try{navigator.clipboard.writeText(url).then(function(){toast("تم نسخ الرابط","Link copied")},function(){toast(url,url)})}catch(er){toast(url,url)}}
 });
 function openFromHash(scroll){var m=/^#shop-([a-z])$/.exec(location.hash);if(m&&P[m[1]]){selectKey(m[1],scroll)}}
 window.addEventListener("hashchange",function(){openFromHash(true)});
 renderChips();renderList();renderDetail(false);
+(function(){var q=document.getElementById("q"),t;if(!q)return;
+ function ph(){q.placeholder=L()==="en"?"Search books, e.g. python, novel, planner":"ابحث: بايثون، رواية، مخطط…"}
+ ph();document.getElementById("lang").addEventListener("click",function(){setTimeout(ph,0)});
+ q.addEventListener("input",function(){clearTimeout(t);t=setTimeout(function(){curQ=q.value.trim().slice(0,60);renderList();renderDetail(true)},120)});
+ q.addEventListener("keydown",function(e){if(e.key==="Escape"){q.value="";curQ="";renderList();renderDetail(true)}});
+})();
 [].forEach.call(document.querySelectorAll("[data-pp]"),function(n){var k=n.getAttribute("data-pp");if(P[k]){n.dir="ltr";n.textContent="$"+P[k].p+" \u00b7 \u2248 "+iq(P[k].p)+" IQD"}});
 /* ---------- customer reviews (verified buyers, moderated; data in assets/reviews.json) ---------- */
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
