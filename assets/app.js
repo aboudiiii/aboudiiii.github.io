@@ -1,6 +1,9 @@
 (function(){
 var IQD_RATE=1500; // approximate dollar rate in Iraqi dinar; keep equal to USD_IQD in the bot config
 var P={
+ r:{p:6.67,img:"mirrors_cover",ar:"المرايا الثلاث (رواية، ١٦ فصلاً)",en:"The Three Mirrors (novel, 16 chapters)",
+    d_ar:"رواية نفسية غامضة: رهام مرمّمة مرايا ترث بيتًا مغلقًا بشرط غريب: أربعون يومًا لترميم ثلاث مرايا، وكل مرآة تكشف طبقة من ماضٍ دُفن. نسخة PDF بحجم كتاب للقراءة على الجوال أو الطباعة.",d_en:"A psychological mystery: Riham, a mirror restorer, inherits a sealed house on one strange condition: forty days to restore three mirrors, each revealing a layer of a buried past. A book-size PDF for reading on your phone or printing.",
+    inc_ar:["١٦ فصلاً (١٠٩ صفحات)","غلاف ملوّن وفهرس للفصول","ملف واحد بحجم كتاب A5 يناسب الجوال والطباعة","عيّنة مجانية: الفصلان الأولان"],inc_en:["16 chapters (109 pages)","Color cover and a chapter index","One book-size A5 file for phone or print","Free sample: the first two chapters"]},
  n:{p:6.67,img:"novel_cover",ar:"مدينة الأصداء (رواية، ١٦ فصلاً)",en:"Echo City (novel, 16 chapters)",
     d_ar:"رواية خيالية: سدرة منظّفة أصداء تنصت إلى جدران مدينة رنين وتكتشف سرّ أمها. نسخة PDF بحجم كتاب للقراءة على الجوال أو الطباعة.",d_en:"A fantasy novel: Sidra, an echo cleaner, listens to the walls of the city of Rannin and uncovers her mother's secret. A book-size PDF for reading on your phone or printing.",
     inc_ar:["١٦ فصلاً (حوالي ١٢٠ صفحة)","غلاف ملوّن وفهرس للفصول","ملف واحد بحجم كتاب A5 يناسب الجوال والطباعة","عيّنة مجانية: الفصلان الأولان"],inc_en:["16 chapters (about 120 pages)","Color cover and a chapter index","One book-size A5 file for phone or print","Free sample: the first two chapters"]},
@@ -40,6 +43,7 @@ var X={
  f:{cat:["color"],inc_ar:["٦ تصاميم نباتية","أغصان وزهور وأكاليل وأوراق","حجما A4 وLetter"],inc_en:["6 floral designs","Vines, flowers, garlands and leaves","Both A4 and Letter sizes"],th:["floral_1","floral_2","floral_3"],tag_ar:"حزمة",tag_en:"Pack",packs:1},
  s:{cat:["color"],inc_ar:["١٧ نمطاً من البلاطات المتكررة","نجوم هندسية بأحجام متدرجة","حجما A4 وLetter"],inc_en:["17 repeating tile patterns","Geometric stars in graded sizes","Both A4 and Letter sizes"],th:["stars_1","stars_2","stars_3"],tag_ar:"حزمة",tag_en:"Pack",packs:1},
  n:{cat:["novel"],tag_ar:"رواية",tag_en:"Novel"},
+ r:{cat:["novel"],tag_ar:"رواية",tag_en:"Novel"},
  p:{cat:["study"],tag_ar:"دراسة",tag_en:"Study"},
  c:{cat:["work"],tag_ar:"عمل",tag_en:"Work"},
  e:{cat:["kids"],tag_ar:"للأطفال",tag_en:"Kids"},
@@ -52,7 +56,7 @@ function L(){return root.getAttribute("data-lang")==="en"?"en":"ar"}
 function sp(a,e){return '<span data-l="ar">'+a+'</span><span data-l="en">'+e+'</span>'}
 var h="";
 var list=document.getElementById("items"); h="";
-["n","i","k","m","a","f","s","p","c","e","t"].forEach(function(k){
+["n","r","i","k","m","a","f","s","p","c","e","t"].forEach(function(k){
  h+='<label class="item"><input type="checkbox" value="'+k+'" id="c_'+k+'"><img alt="" loading="lazy" src="assets/'+P[k].img+'.jpg?v=4"><span class="n" data-name="'+k+'"></span><span class="p">$'+P[k].p+'</span></label>'});
 list.innerHTML=h;
 var boxes=[].slice.call(list.querySelectorAll("input")), msg=document.getElementById("msg"),
@@ -69,7 +73,7 @@ function calc(){
  total=Math.round(total*100)/100; return {sel:sel,total:total,saved:Math.round((sum-total)*100)/100,deal:deal};
 }
 function text(c){
- var l=L(), onlyN=c.sel.length>0&&c.sel.every(function(k){return k==="n"}), szAr=onlyN?"":"\nالحجم: "+sizeVal(), szEn=onlyN?"":"\nSize: "+sizeVal(), lines=c.sel.map(function(k){return "- "+P[k][l]+" ("+P[k].p+" USD)"}).join("\n");
+ var l=L(), onlyN=c.sel.length>0&&c.sel.every(function(k){return k==="n"||k==="r"}), szAr=onlyN?"":"\nالحجم: "+sizeVal(), szEn=onlyN?"":"\nSize: "+sizeVal(), lines=c.sel.map(function(k){return "- "+P[k][l]+" ("+P[k].p+" USD)"}).join("\n");
  if(!c.sel.length) lines=l==="ar"?"(اختر دفتراً من القائمة)":"(pick a book from the list)";
  return l==="ar"
   ?"السلام عليكم، أريد شراء نسخ PDF إلكترونية:\n"+lines+szAr+"\nالمجموع: "+c.total+" USD\nأعلم أنها ملفات رقمية فقط بدون طباعة أو شحن."
@@ -116,7 +120,7 @@ function setLang(l){
 document.getElementById("lang").addEventListener("click",function(){setLang(L()==="ar"?"en":"ar")});
 
 /* ---------- collection explorer ---------- */
-var ORDER=["n","i","k","m","a","f","s","p","c","e","t"], CATS=[["all","الكل","All"],["novel","رواية","Novel"],["color","كتب تلوين","Coloring"],["kids","للأطفال","Kids"],["study","دراسة","Study"],["work","عمل","Work"],["faith","إيمان","Faith"]];
+var ORDER=["n","r","i","k","m","a","f","s","p","c","e","t"], CATS=[["all","الكل","All"],["novel","رواية","Novel"],["color","كتب تلوين","Coloring"],["kids","للأطفال","Kids"],["study","دراسة","Study"],["work","عمل","Work"],["faith","إيمان","Faith"]];
 var curK="p", curCat="all";
 var chipsEl=document.getElementById("chips"), slist=document.getElementById("slist"), sdet=document.getElementById("sdetail");
 function isOn(k){var b=document.getElementById("c_"+k);return !!(b&&b.checked)}
@@ -145,7 +149,7 @@ function renderDetail(anim){
   +'<div><span class="tag i">'+sp(x.tag_ar,x.tag_en)+'</span><h3>'+sp(x.ar,x.en)+'</h3><p class="desc">'+sp(x.d_ar,x.d_en)+'</p>'
   +'<ul class="chk">'+x.inc_ar.map(function(t,i){return '<li>'+sp(t,x.inc_en[i])+'</li>'}).join("")+'</ul>'
   +'<div class="buy"><div class="price">$'+x.p+iqd+'</div></div>'
-  +'<div class="sact"><button type="button" class="add'+(on?' on':'')+'" data-add="'+k+'">'+(on?sp("✓ في طلبك (إزالة)","✓ In your order (remove)"):sp("أضف للطلب","Add to order"))+'</button><button type="button" class="share" data-share="'+k+'">'+sp("انسخ رابط المنتج","Copy product link")+'</button>'+(k==="n"?'<a class="share" href="samples/Echo-City-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':"")+'</div>'
+  +'<div class="sact"><button type="button" class="add'+(on?' on':'')+'" data-add="'+k+'">'+(on?sp("✓ في طلبك (إزالة)","✓ In your order (remove)"):sp("أضف للطلب","Add to order"))+'</button><button type="button" class="share" data-share="'+k+'">'+sp("انسخ رابط المنتج","Copy product link")+'</button>'+(k==="n"?'<a class="share" href="samples/Echo-City-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':(k==="r"?'<a class="share" href="samples/Mirrors-Three-Free-Sample.pdf" target="_blank" rel="noopener">'+sp("عيّنة مجانية (الفصلان الأولان)","Free sample (first 2 chapters)")+'</a>':""))+'</div>'
   +dealHtml(k)+'</div>'+th;
  if(anim){sdet.classList.remove("swap");void sdet.offsetWidth;sdet.classList.add("swap")}
 }
