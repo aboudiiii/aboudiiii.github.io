@@ -547,3 +547,26 @@ html[dir="rtl"] .hero h1{line-height:1.4}
 .rvbrk ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .rvbrk li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .rvbrk .rvpn{flex:1 1 100%;font-weight:600}
+
+/* ---- boost: sort, nudge, extras, undo, daily ---- */
+.sortsel{margin-inline-start:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;max-width:100%}
+.srow .start{display:inline-block;margin-inline-start:6px;padding:1px 8px;border-radius:999px;background:var(--green-soft);color:var(--green);font-size:.72em;font-weight:700}
+.nudge{margin-top:10px;padding:10px 12px;border:1px dashed var(--gold);border-radius:12px;background:var(--gold-soft);color:var(--fg)}
+.nudge .nt{font-weight:700;font-size:.95em}
+.nbar{height:8px;margin-top:8px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.nbar i{display:block;height:100%;background:var(--gold-bright);border-radius:99px;transition:width .3s}
+.extras{margin-top:14px;display:grid;gap:10px}
+.xrow b{display:block;margin-bottom:6px;font-size:.9em;color:var(--muted)}
+.xrow>div{display:flex;flex-wrap:wrap;gap:8px}
+.xp{display:inline-block;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg)!important;font:inherit;font-size:.88em;text-decoration:none;cursor:pointer}
+.xp:hover{border-color:var(--gold)}
+.undo{position:fixed;inset-inline:0;margin-inline:auto;width:fit-content;max-width:92vw;bottom:140px;z-index:56;display:flex;gap:12px;align-items:center;background:var(--fg);color:var(--bg);padding:8px 8px 8px 18px;border-radius:999px;font-weight:600}
+.undo[hidden]{display:none}
+.undo button{border:0;border-radius:999px;padding:6px 14px;background:var(--gold-bright);color:#1d2a2a;font:inherit;font-weight:700;cursor:pointer}
+.dqt{font-size:1.15em;font-weight:700;margin:0 0 12px}
+.dqo{display:grid;gap:8px}
+.dqb{padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg)!important;font:inherit;text-align:start;cursor:pointer}
+.dqb.good{border-color:var(--green);background:var(--green-soft)}
+.dqb.bad{border-color:#b3412f;background:rgba(179,65,47,.15)}
+.dqe,.dqs{margin:10px 0 0}
+.dqs{color:var(--muted);font-size:.92em}

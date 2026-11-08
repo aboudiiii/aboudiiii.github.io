@@ -23,11 +23,11 @@ function badge(k){var n=ORD[k]|0;return n>=MIN?n:0}
 function decorate(){
  [].forEach.call(document.querySelectorAll("#slist .srow[data-k]"),function(b){var k=b.getAttribute("data-k");
   if(b.querySelector(".hot"))return;var n=badge(k);if(n&&topK()===k){var s=document.createElement("span");s.className="hot";s.innerHTML="🔥 "+sp("الأكثر طلبًا","Most ordered");b.querySelector(".nm").appendChild(s)}});
- var add=document.querySelector("#sdet [data-add]");
- if(add&&!document.querySelector("#sdet .ordn")){var k=add.getAttribute("data-add"),n=badge(k),h=document.querySelector("#sdet h3");
+ var add=document.querySelector("#sdetail [data-add]");
+ if(add&&!document.querySelector("#sdetail .ordn")){var k=add.getAttribute("data-add"),n=badge(k),h=document.querySelector("#sdetail h3");
   if(n&&h){var p=document.createElement("p");p.className="ordn";p.innerHTML=(topK()===k?"🔥 "+sp("الأكثر طلبًا","Most ordered")+" · ":"")+sp("طُلب "+n+" مرة","Ordered "+n+" times");h.insertAdjacentElement("afterend",p)}}}
 function topK(){var b=null,m=0;for(var k in ORD){if(ORD[k]>m){m=ORD[k];b=k}}return m>=MIN?b:null}
-var mo;function watch(){["slist","sdet"].forEach(function(id){var n=$(id);if(n)mo.observe(n,{childList:true})})}
+var mo;function watch(){["slist","sdetail"].forEach(function(id){var n=$(id);if(n)mo.observe(n,{childList:true})})}
 mo=new MutationObserver(function(){mo.disconnect();decorate();watch()});
 api("/api/stats").then(function(d){if(d&&d.ok&&d.orders){ORD=d.orders;decorate();watch()}});
 
