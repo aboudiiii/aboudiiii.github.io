@@ -14,7 +14,7 @@ export default {
     if (m === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     const reply = async (fn) => { const [b, s] = await fn(); return json(b, s, cors); };
     try {
-      if (p === '/api/feed' && m === 'GET') return json(await feed(env), 200, { ...cors, 'Cache-Control': 'public, max-age=60' });
+      if (p === '/api/feed' && m === 'GET') return json(await feed(env), 200, { ...cors, 'Cache-Control': 'no-store' });
       if (p === '/api/stats' && m === 'GET') return json(await stats(env), 200, { ...cors, 'Cache-Control': 'public, max-age=300' });
       if (p === '/api/rating' && m === 'POST') return reply(() => submit(req, env, 'rating'));
       if (p === '/api/comment' && m === 'POST') return reply(() => submit(req, env, 'comment'));

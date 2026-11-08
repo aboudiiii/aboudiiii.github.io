@@ -301,7 +301,7 @@ document.addEventListener("click",function(e){var a=e.target.closest&&e.target.c
  var k=a.getAttribute("data-rvk");buildForms();showTab("rate");var rp=document.getElementById("rp");if(rp&&P[k])rp.value=k;
  var s=document.getElementById("reviews");if(s)setTimeout(function(){s.scrollIntoView({behavior:"smooth",block:"start"})},0);e.preventDefault()});
 new MutationObserver(function(){if(API&&formsBuilt){buildForms();renderComments()}}).observe(root,{attributes:true,attributeFilter:["data-lang"]});
-if(API){try{fetch(API+"/api/feed").then(function(r){return r.ok?r.json():null}).then(function(d){if(!d)return;
+if(API){try{fetch(API+"/api/feed?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(!d)return;
  RT=(d.ratings||[]).map(function(r){return {id:r.id,p:Array.isArray(r.p)?r.p.filter(function(k){return P[k]}):[],r:Math.max(0,Math.min(5,Math.round(+r.r)||0)),date:String(r.date||"").slice(0,10)}}).filter(function(r){return r.r>=1&&r.p.length});
  CM=(d.comments||[]).map(function(c){return {id:c.id,p:Array.isArray(c.p)?c.p.filter(function(k){return P[k]}):[],name:String(c.name||"").slice(0,40),text:String(c.text||"").slice(0,400),date:String(c.date||"").slice(0,10)}}).filter(function(c){return c.text&&c.name});
  renderReviews();renderDetail(false)}).catch(function(){})}catch(e){}}
