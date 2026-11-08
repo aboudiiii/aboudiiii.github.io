@@ -13,7 +13,16 @@
 | `POST /api/subscribe` + `/api/confirm` + `/api/unsubscribe` | الاشتراك بالبريد (تأكيد مزدوج) |
 | `/tg/<secret>` | webhook بوت الإعلانات (`/start` و`/stop` و`/announce` للمالك) |
 
-## الإعداد (مرة واحدة، من جهازك)
+## الإعداد من الموبايل بدون تيرمكس (الأسهل)
+Wrangler ما يشتغل على تيرمكس، فننشر عن طريق GitHub Actions:
+1. بالريبو: Settings ← Secrets and variables ← Actions ← New repository secret، وأضف:
+   `CLOUDFLARE_API_TOKEN`، `CLOUDFLARE_ACCOUNT_ID`، `TG_TOKEN`، `TG_OWNER_ID` (اكتب `0` أول مرة)، `TG_WEBHOOK_SECRET`، `RATE_SALT`، `BOT_API_KEY`، `BREVO_API_KEY` (الأخير بعد ما تجهز Brevo، ويمكن تأخيره).
+2. Actions ← **Deploy worker** ← Run workflow. يسوي القاعدة والجداول وينشر ويضع الأسرار.
+3. من سجل الـ run انسخ عنوان الـ Worker (workers.dev)، وافتح `https://<العنوان>/setup/<TG_WEBHOOK_SECRET>`.
+4. أرسل `/start` لبوت الإعلانات، خذ Chat ID، حدّث السر `TG_OWNER_ID` وأعد تشغيل الـ workflow.
+5. ضع العنوان في `assets/config.js`.
+
+## الإعداد اليدوي (حاسبة عادية، من جهازك)
 1. `cd worker && npx wrangler login`
 2. `npx wrangler d1 create hayali` ثم ضع `database_id` في `wrangler.toml`.
 3. `npx wrangler d1 migrations apply hayali --remote`
