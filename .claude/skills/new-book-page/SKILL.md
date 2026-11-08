@@ -8,6 +8,6 @@ disable-model-invocation: true
 2. Update title, description, canonical, `og:*`, JSON-LD (name, price, image), `<h1>` with both `data-l` languages.
 3. Cover image `<img>`: descriptive Arabic/English `alt`, `fetchpriority="high"`, width/height set. Other images `loading="lazy"`.
 4. Add the product to the `P` object in `assets/app.js` and bump the `?v=` of `app.js` in `index.html`.
-5. Add the URL to `sitemap.xml` with today's `lastmod`, and link it from `index.html`.
+5. Link it from `index.html`, then run `python3 scripts/update_sitemap.py` to regenerate `sitemap.xml`.
 6. Run `python3 scripts/check_site.py` and fix every `ERROR`.
 Do not change existing prices, texts or bot links.

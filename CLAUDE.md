@@ -7,7 +7,7 @@ Static site, no build step. Arabic-first (RTL) with an AR/EN toggle via `<span d
 - `index.html` — الصفحة الرئيسية والسلة والمتجر؛ المنتجات معرّفة في `assets/app.js` (الكائن `P`).
 - `books/*.html` — صفحة لكل منتج (قالب موحد). `articles/*.html` — مقالات. `about/terms/privacy.html`.
 - `assets/` — الصور والـ JS/CSS. `samples/` — ملفات PDF مجانية. `assets/reviews.json` — تقييمات يديرها البوت (لا تعدّله يدويًا).
-- `sitemap.xml` يدوي: كل صفحة جديدة لازم تُضاف إليه.
+- `sitemap.xml` يُولَّد بالأمر `python3 scripts/update_sitemap.py` (التواريخ من git، يحتاج clone كاملًا). شغّله بعد إضافة أي صفحة أو تعديلها.
 
 ## Rules
 - **CSP صارمة** (`default-src 'none'`): لا تضف نطاقات خارجية (سكربتات/صور/خطوط) إلا بعد تعديل وسم CSP في كل الصفحات.
