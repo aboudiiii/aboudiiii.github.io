@@ -18,3 +18,8 @@ Static site, no build step. Arabic-first (RTL) with an AR/EN toggle via `<span d
 
 ## Check before pushing
 `python3 scripts/check_site.py` — يفحص الـ sitemap والروابط المحلية وصور og وبيانات الصفحات. يجب أن ينتهي بدون `ERROR`.
+
+## Live ratings and comments
+- `worker/` — Cloudflare Worker (no dependencies) that receives ratings/comments, notifies the owner on Telegram with Approve/Reject buttons and serves approved items at `/api/feed`. Setup: `worker/README.ar.md`. Tests: `cd worker && npm test`.
+- `assets/config.js` holds `window.HAYALI_API` (empty = feature off, old Telegram review link stays). The CSP allows `https://*.workers.dev`.
+- Ratings (stars) and comments are separate on purpose; verified-buyer reviews still come from `assets/reviews.json`.
