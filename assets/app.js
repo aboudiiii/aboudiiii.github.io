@@ -264,5 +264,6 @@ if("IntersectionObserver" in window){
 }
 var saved="ar"; try{saved=localStorage.getItem("lang")||"ar"}catch(e){}
 setLang(saved==="en"?"en":"ar");
+(function(){var m=/[?&]add=([a-z])(?:&|$)/.exec(location.search);if(m&&P[m[1]]){setOn(m[1],true);try{history.replaceState(null,"",location.pathname+location.hash)}catch(e){}setTimeout(function(){go();toast("أُضيف إلى طلبك","Added to your order")},400)}})();
 openFromHash(false);
 })();
