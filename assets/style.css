@@ -540,3 +540,10 @@ html[dir="rtl"] .hero h1{line-height:1.4}
 .jbox,.jform,.jform label{min-width:0;box-sizing:border-box}
 .jform input:not(.hpf){width:100%;box-sizing:border-box}
 .jbox button,.jbox a.btn{width:100%;box-sizing:border-box}
+
+/* hero frame must never show; strip stays above anything overlapping it */
+.strip{position:relative;z-index:1}
+.rvbrk{margin:14px auto 0;max-width:640px}
+.rvbrk ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.rvbrk li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.rvbrk .rvpn{flex:1 1 100%;font-weight:600}
