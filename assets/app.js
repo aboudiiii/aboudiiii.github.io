@@ -67,6 +67,7 @@ var X={
 };
 Object.keys(X).forEach(function(k){for(var f in X[k]){if(P[k][f]===undefined)P[k][f]=X[k][f]}});
 var root=document.documentElement;
+var API=(window.HAYALI_API||"").replace(/\/$/,"");
 function iq(u){return (Math.round(u*IQD_RATE/250)*250).toLocaleString("en-US")}
 function L(){return root.getAttribute("data-lang")==="en"?"en":"ar"}
 function sp(a,e){return '<span data-l="ar">'+a+'</span><span data-l="en">'+e+'</span>'}
@@ -140,7 +141,7 @@ document.getElementById("lang").addEventListener("click",function(){setLang(L()=
 /* ---------- collection explorer ---------- */
 var SLUG={"n": "echo-city-novel", "r": "three-mirrors-novel", "i": "islamic-patterns-coloring-book", "k": "nature-colors-kids-coloring-book", "m": "geometric-mandala-coloring-book", "a": "mosques-islamic-architecture-coloring-book", "f": "floral-patterns-coloring-book", "s": "geometric-stars-tiles-coloring-book", "p": "study-and-exam-planner", "c": "cv-templates-word", "e": "kids-fun-learning-book", "t": "prayer-and-habit-tracker", "y": "learn-python-arabic-book", "j": "learn-java-arabic-book", "v": "learn-javascript-arabic-book", "x": "learn-cpp-arabic-book"};
 var ORDER=["n","r","i","k","m","a","f","s","p","c","e","t","y","j","v","x"], CATS=[["all","الكل","All"],["novel","رواية","Novel"],["color","كتب تلوين","Coloring"],["kids","للأطفال","Kids"],["study","دراسة","Study"],["work","عمل","Work"],["faith","إيمان","Faith"],["code","برمجة","Code"],["saved","♥ المحفوظة","♥ Saved"]];
-var curK="p", curCat="all", curQ="", RV=[], SAVED=[];
+var curK="p", curCat="all", curQ="", RV=[], RT=[], CM=[], SAVED=[];
 try{var _s=JSON.parse(localStorage.getItem("saved")||"[]");if(Array.isArray(_s))SAVED=_s.filter(function(k){return typeof k==="string"&&P[k]})}catch(e){}
 function persistSaved(){try{localStorage.setItem("saved",JSON.stringify(SAVED))}catch(e){}}
 function isSaved(k){return SAVED.indexOf(k)>-1}
@@ -225,19 +226,77 @@ heroMeta(0,0);
 /* ---------- customer reviews (verified buyers, moderated; data in assets/reviews.json) ---------- */
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function stars(n){var s="";for(var i=1;i<=5;i++)s+=i<=n?"★":"☆";return s}
-function rvOf(k){return RV.filter(function(r){return r.p&&r.p.indexOf(k)>-1})}
+function allRt(){return RV.concat(RT)}
+function rvOf(k){return allRt().filter(function(r){return r.p&&r.p.indexOf(k)>-1})}
 function rvStat(k){var a=rvOf(k);if(!a.length)return null;var s=0;a.forEach(function(r){s+=r.r});return {n:a.length,avg:Math.round(s/a.length*10)/10}}
-function rvLine(k){var s=rvStat(k),lk='<a class="rvlink" href="https://t.me/SmartZaki_Bot?start=rv_'+k+'" target="_blank" rel="noopener">'+sp("اكتب تقييمك","Write a review")+'</a>';return '<div class="rvline">'+(s?'<span class="rvs">'+stars(Math.round(s.avg))+'</span> <b>'+s.avg+'</b> <small>('+s.n+')</small> ':'')+lk+'</div>'}
+function rvLine(k){var s=rvStat(k),lk=API?'<a class="rvlink" href="#reviews" data-rvk="'+k+'">'+sp("قيّم هذا المنتج","Rate this product")+'</a>':'<a class="rvlink" href="https://t.me/SmartZaki_Bot?start=rv_'+k+'" target="_blank" rel="noopener">'+sp("اكتب تقييمك","Write a review")+'</a>';return '<div class="rvline">'+(s?'<span class="rvs">'+stars(Math.round(s.avg))+'</span> <b>'+s.avg+'</b> <small>('+s.n+')</small> ':'')+lk+'</div>'}
 function rvCard(r){
  var names=(r.p||[]).filter(function(k){return P[k]}).map(function(k){return sp(esc(P[k].ar),esc(P[k].en))}).join(" · ");
  return '<article class="rvc"><div class="rvs" aria-label="'+(+r.r)+'/5">'+stars(+r.r)+'</div>'+(r.text?'<p>'+esc(r.text)+'</p>':'')+'<div class="rvm"><b>'+esc(r.name)+'</b>'+(r.v?' <span class="rvbadge">'+sp("\u2713 مشترٍ موثّق","\u2713 Verified buyer")+'</span>':'')+' · <bdi>'+esc(r.date||"")+'</bdi>'+(names?'<br><small>'+names+'</small>':'')+'</div></article>'}
 function renderReviews(){
  var sec=document.getElementById("reviews"),box=document.getElementById("rv");if(!sec||!box)return;sec.hidden=false;
  var note='<p class="rvnote">'+sp("يمكنك كتابة تقييمك عبر البوت، وتظهر الآراء هنا بعد المراجعة. شارة «مشترٍ موثّق» تعني أن صاحب الرأي اشترى المنتج فعلاً.","You can write a review through the bot, and reviews appear here after moderation. The “Verified buyer” badge means the reviewer actually bought the product.")+'</p><p class="rvnote"><a class="rvlink big" href="https://t.me/SmartZaki_Bot?start=review" target="_blank" rel="noopener">'+sp("اكتب تقييمك","Write a review")+'</a>'+'</p>';
- if(!RV.length){box.innerHTML='<p class="rvnote">'+sp("لا توجد تقييمات بعد.","No reviews yet.")+'</p>'+note;return}
- var sum=0;RV.forEach(function(r){sum+=+r.r});var avg=Math.round(sum/RV.length*10)/10;heroMeta(avg,RV.length);
- box.innerHTML='<div class="rvtop"><b>'+avg+'</b> <span class="rvs">'+stars(Math.round(avg))+'</span> <small>('+RV.length+')</small></div><div class="rvgrid">'+RV.slice(0,12).map(rvCard).join("")+'</div>'+note;
+ var rvx=document.getElementById("rvx");if(rvx&&API){rvx.hidden=false;buildForms();renderComments()}
+ var ALL=allRt();
+ if(!ALL.length){box.innerHTML=(API?"":'<p class="rvnote">'+sp("لا توجد تقييمات بعد.","No reviews yet.")+'</p>'+note);return}
+ var sum=0;ALL.forEach(function(r){sum+=+r.r});var avg=Math.round(sum/ALL.length*10)/10;heroMeta(avg,ALL.length);
+ box.innerHTML='<div class="rvtop"><b>'+avg+'</b> <span class="rvs">'+stars(Math.round(avg))+'</span> <small>('+ALL.length+')</small></div><div class="rvgrid">'+RV.filter(function(r){return r.text}).slice(0,12).map(rvCard).join("")+'</div>'+(API?"":note);
 }
+
+/* ---------- live ratings and comments (active when assets/config.js sets window.HAYALI_API) ---------- */
+var T0=Date.now(),formsBuilt=false;
+function opts(withGeneral){var o=withGeneral?'<option value="">'+(L()==="ar"?"عام (غير مرتبط بمنتج)":"General (no product)")+'</option>':'';
+ for(var k in P){if(P[k])o+='<option value="'+esc(k)+'">'+esc(L()==="ar"?P[k].ar:P[k].en)+'</option>'}return o}
+function buildForms(){
+ var rp=document.getElementById("rp"),cp=document.getElementById("cp");if(!rp||!cp)return;
+ var a=rp.value,b=cp.value;rp.innerHTML=opts(false);cp.innerHTML=opts(true);if(a)rp.value=a;if(b)cp.value=b;
+ if(formsBuilt)return;formsBuilt=true;
+ var stp=document.getElementById("stp"),h="";
+ for(var i=5;i>=1;i--)h+='<input type="radio" name="r" id="st'+i+'" value="'+i+'"><label for="st'+i+'" title="'+i+'/5" aria-label="'+i+'/5">★</label>';
+ stp.innerHTML=h;
+ [].forEach.call(document.querySelectorAll(".rvtabs button"),function(btn){btn.addEventListener("click",function(){showTab(btn.getAttribute("data-tab"))})});
+ var ct=document.getElementById("ct"),cc=document.getElementById("cc");ct.addEventListener("input",function(){cc.textContent=ct.value.length+"/400"});
+ document.getElementById("panRate").addEventListener("submit",function(e){e.preventDefault();sendRating(this)});
+ document.getElementById("panCom").addEventListener("submit",function(e){e.preventDefault();sendComment(this)});
+}
+function showTab(t){
+ var rate=t==="rate";document.getElementById("panRate").hidden=!rate;document.getElementById("panCom").hidden=rate;
+ var tr=document.getElementById("tabRate"),tc=document.getElementById("tabCom");
+ tr.classList.toggle("on",rate);tc.classList.toggle("on",!rate);tr.setAttribute("aria-selected",rate);tc.setAttribute("aria-selected",!rate)}
+function say(id,ar,en,bad){var n=document.getElementById(id);n.className="rvst"+(bad?" bad":" good");n.innerHTML=sp(ar,en)}
+var ERR={too_fast:["انتظر لحظات ثم أعد المحاولة.","Please wait a moment and try again."],rate_limited:["أرسلت عددًا كبيرًا من الطلبات. حاول لاحقًا.","Too many submissions. Please try later."],
+ already_rated:["قيّمت هذا المنتج اليوم بالفعل.","You already rated this product today."],links_not_allowed:["لا نقبل الروابط في الاسم أو التعليق.","Links are not allowed in the name or comment."],
+ text_short:["التعليق قصير جدًا.","The comment is too short."],name_required:["اكتب اسمك.","Please enter your name."],bad_rating:["اختر عدد النجوم.","Choose a star rating."]};
+function fail(id,code){var m=ERR[code]||["تعذّر الإرسال الآن. حاول لاحقًا.","Could not send right now. Please try again later."];say(id,m[0],m[1],true)}
+function post(path,body,sid,btn,done){
+ btn.disabled=true;body.t=T0;
+ fetch(API+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+  .then(function(r){return r.json().catch(function(){return {ok:false}})})
+  .then(function(d){btn.disabled=false;if(d&&d.ok){done()}else{fail(sid,d&&d.error)}})
+  .catch(function(){btn.disabled=false;fail(sid)})}
+function sendRating(f){
+ var r=f.querySelector("input[name=r]:checked"),p=f.p.value;
+ if(!r){fail("rs","bad_rating");return}
+ post("/api/rating",{p:p,r:+r.value,name:f.name.value,website:f.website.value,pl:P[p]?P[p].ar:""},"rs",f.querySelector("button[type=submit]"),function(){
+  f.reset();say("rs","شكرًا! وصل تقييمك وسيظهر بعد المراجعة.","Thank you! Your rating was received and will appear after review.")})}
+function sendComment(f){
+ var p=f.p.value;
+ post("/api/comment",{p:p,name:f.name.value,text:f.text.value,website:f.website.value,pl:P[p]?P[p].ar:""},"cs",f.querySelector("button[type=submit]"),function(){
+  f.reset();document.getElementById("cc").textContent="0/400";say("cs","شكرًا! وصل تعليقك وسيظهر بعد المراجعة.","Thank you! Your comment was received and will appear after review.")})}
+function cmCard(c){
+ var names=(c.p||[]).filter(function(k){return P[k]}).map(function(k){return sp(esc(P[k].ar),esc(P[k].en))}).join(" · ");
+ return '<article class="rvc cmc"><p>'+esc(c.text)+'</p><div class="rvm"><b>'+esc(c.name)+'</b> · <bdi>'+esc(c.date||"")+'</bdi>'+(names?'<br><small>'+names+'</small>':'')+'</div></article>'}
+function renderComments(){
+ var box=document.getElementById("cml");if(!box)return;
+ box.innerHTML=CM.length?'<h3 class="cmh">'+sp("تعليقات الزبائن","Customer comments")+'</h3><div class="rvgrid">'+CM.slice(0,12).map(cmCard).join("")+'</div>':""}
+document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("[data-rvk]");if(!a||!API)return;
+ var k=a.getAttribute("data-rvk");buildForms();showTab("rate");var rp=document.getElementById("rp");if(rp&&P[k])rp.value=k;
+ var s=document.getElementById("reviews");if(s)setTimeout(function(){s.scrollIntoView({behavior:"smooth",block:"start"})},0);e.preventDefault()});
+new MutationObserver(function(){if(API&&formsBuilt){buildForms();renderComments()}}).observe(root,{attributes:true,attributeFilter:["data-lang"]});
+if(API){try{fetch(API+"/api/feed").then(function(r){return r.ok?r.json():null}).then(function(d){if(!d)return;
+ RT=(d.ratings||[]).map(function(r){return {id:r.id,p:Array.isArray(r.p)?r.p.filter(function(k){return P[k]}):[],r:Math.max(0,Math.min(5,Math.round(+r.r)||0)),date:String(r.date||"").slice(0,10)}}).filter(function(r){return r.r>=1&&r.p.length});
+ CM=(d.comments||[]).map(function(c){return {id:c.id,p:Array.isArray(c.p)?c.p.filter(function(k){return P[k]}):[],name:String(c.name||"").slice(0,40),text:String(c.text||"").slice(0,400),date:String(c.date||"").slice(0,10)}}).filter(function(c){return c.text&&c.name});
+ renderReviews();renderDetail(false)}).catch(function(){})}catch(e){}}
 try{fetch("assets/reviews.json?t="+Date.now()).then(function(r){return r.ok?r.json():{reviews:[]}}).then(function(d){RV=((d&&d.reviews)||[]).filter(function(r){return r&&typeof r==="object"}).map(function(r){return {id:r.id,p:Array.isArray(r.p)?r.p.filter(function(k){return P[k]}):[],r:Math.max(0,Math.min(5,Math.round(+r.r)||0)),name:String(r.name||"").slice(0,40),text:String(r.text||"").slice(0,400),v:r.v?1:0,date:String(r.date||"").slice(0,10)}}).filter(function(r){return r.r>=1&&r.p.length});renderReviews();renderDetail(false)}).catch(function(){renderReviews()})}catch(e){renderReviews()}
 
 

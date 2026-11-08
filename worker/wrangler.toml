@@ -1,0 +1,13 @@
+name = "hayali-reviews"
+main = "index.js"
+compatibility_date = "2025-01-01"
+
+# Created with: npx wrangler kv namespace create REVIEWS  (paste the printed id below)
+[[kv_namespaces]]
+binding = "REVIEWS"
+id = "PUT_KV_ID_HERE"
+
+[vars]
+ALLOWED_ORIGINS = "https://aboudiiii.github.io"
+
+# Secrets (set with `npx wrangler secret put NAME`): TG_TOKEN, TG_OWNER_ID, TG_WEBHOOK_SECRET, RATE_SALT
