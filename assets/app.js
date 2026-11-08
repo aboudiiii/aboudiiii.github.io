@@ -264,6 +264,12 @@ if("IntersectionObserver" in window){
 }
 var saved="ar"; try{saved=localStorage.getItem("lang")||"ar"}catch(e){}
 setLang(saved==="en"?"en":"ar");
-(function(){var m=/[?&]add=([a-z])(?:&|$)/.exec(location.search);if(m&&P[m[1]]){setOn(m[1],true);try{history.replaceState(null,"",location.pathname+location.hash)}catch(e){}setTimeout(function(){go();toast("أُضيف إلى طلبك","Added to your order")},400)}})();
+(function(){var cart=[];try{cart=JSON.parse(localStorage.getItem("cart")||"[]")}catch(e){}
+ if(Array.isArray(cart))cart.forEach(function(k){if(typeof k==="string"&&P[k])setOn(k,true)});
+ function save(){try{localStorage.setItem("cart",JSON.stringify([].map.call(document.querySelectorAll("#items input:checked"),function(x){return x.id.slice(2)})))}catch(e){}}
+ var items=document.getElementById("items");if(items)items.addEventListener("change",save);
+ var m=/[?&]add=([a-z])(?:&|$)/.exec(location.search),r=/^#shop-([a-z])$/.exec(location.hash),k=m?m[1]:(r&&/\/books\//.test(document.referrer)?r[1]:null);
+ if(k&&P[k]){setOn(k,true);try{history.replaceState(null,"",location.pathname+"#order")}catch(e){}setTimeout(function(){go();toast("أُضيف إلى طلبك","Added to your order")},400)}
+ save()})();
 openFromHash(false);
 })();
