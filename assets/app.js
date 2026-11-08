@@ -241,7 +241,7 @@ function renderReviews(){
  var ALL=allRt();
  if(!ALL.length){box.innerHTML=(API?"":'<p class="rvnote">'+sp("لا توجد تقييمات بعد.","No reviews yet.")+'</p>'+note);return}
  var sum=0;ALL.forEach(function(r){sum+=+r.r});var avg=Math.round(sum/ALL.length*10)/10;heroMeta(avg,ALL.length);
- box.innerHTML='<div class="rvtop"><b>'+avg+'</b> <span class="rvs">'+stars(Math.round(avg))+'</span> <small>('+ALL.length+')</small></div><div class="rvgrid">'+RV.filter(function(r){return r.text}).slice(0,12).map(rvCard).join("")+'</div>'+(API?"":note);
+ box.innerHTML='<div class="rvtop"><b>'+avg+'</b> <span class="rvs">'+stars(Math.round(avg))+'</span> <small>('+ALL.length+')</small></div>'+(API?"":'<div class="rvgrid">'+RV.filter(function(r){return r.text}).slice(0,12).map(rvCard).join("")+'</div>'+note);
 }
 
 /* ---------- live ratings and comments (active when assets/config.js sets window.HAYALI_API) ---------- */
@@ -286,10 +286,11 @@ function sendComment(f){
   f.reset();document.getElementById("cc").textContent="0/400";say("cs","شكرًا! وصل تعليقك وسيظهر بعد المراجعة.","Thank you! Your comment was received and will appear after review.")})}
 function cmCard(c){
  var names=(c.p||[]).filter(function(k){return P[k]}).map(function(k){return sp(esc(P[k].ar),esc(P[k].en))}).join(" · ");
- return '<article class="rvc cmc"><p>'+esc(c.text)+'</p><div class="rvm"><b>'+esc(c.name)+'</b> · <bdi>'+esc(c.date||"")+'</bdi>'+(names?'<br><small>'+names+'</small>':'')+'</div></article>'}
+ return '<article class="rvc cmc"><p>'+esc(c.text)+'</p><div class="rvm"><b>'+esc(c.name)+'</b>'+(c.v?' <span class="rvbadge">'+sp("\u2713 مشترٍ موثّق","\u2713 Verified buyer")+'</span>':'')+' · <bdi>'+esc(c.date||"")+'</bdi>'+(names?'<br><small>'+names+'</small>':'')+'</div></article>'}
 function renderComments(){
  var box=document.getElementById("cml");if(!box)return;
- box.innerHTML=CM.length?'<h3 class="cmh">'+sp("تعليقات الزبائن","Customer comments")+'</h3><div class="rvgrid">'+CM.slice(0,12).map(cmCard).join("")+'</div>':""}
+ var L2=RV.filter(function(r){return r.text}).concat(CM).slice(0,12);
+ box.innerHTML=L2.length?'<h3 class="cmh">'+sp("تعليقات الزبائن","Customer comments")+'</h3><div class="rvgrid">'+L2.map(cmCard).join("")+'</div>':""}
 document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("[data-rvk]");if(!a||!API)return;
  var k=a.getAttribute("data-rvk");buildForms();showTab("rate");var rp=document.getElementById("rp");if(rp&&P[k])rp.value=k;
  var s=document.getElementById("reviews");if(s)setTimeout(function(){s.scrollIntoView({behavior:"smooth",block:"start"})},0);e.preventDefault()});

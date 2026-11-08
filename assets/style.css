@@ -532,3 +532,11 @@ html[dir="rtl"] .hero h1{line-height:1.4}
 .acclist{list-style:none;margin:0;padding:0;display:grid;gap:8px}.acclist li{padding:10px 12px;border:1px solid var(--line);border-radius:12px}
 .hot{display:inline-block;margin-inline-start:8px;padding:1px 8px;border-radius:99px;background:var(--gold-soft);border:1px solid var(--gold);font-size:12px;font-weight:700;white-space:nowrap}
 .ordn{margin:4px 0 0;font-size:14px;color:var(--muted);font-weight:600}
+
+/* fixes: tab labels in dark mode, join section overflow */
+.rvx .rvtabs button:not(.on){color:var(--fg)!important;background:var(--surface);border-color:var(--line)}
+.rvx .rvtabs button.on{color:var(--head)!important;background:var(--gold-soft);border-color:var(--gold)}
+.joingrid{grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr))}
+.jbox,.jform,.jform label{min-width:0;box-sizing:border-box}
+.jform input:not(.hpf){width:100%;box-sizing:border-box}
+.jbox button,.jbox a.btn{width:100%;box-sizing:border-box}
