@@ -171,9 +171,9 @@ function dealHtml(k){
 }
 function renderDetail(anim){
  var k=curK,x=P[k],on=isOn(k),th="";
- if(x.th){th='<div class="thumbs'+(x.th.length===3?' three':'')+'">'+x.th.map(function(t,i){var big=x.big?x.big[i]:t;return '<button class="z" type="button" data-big="assets/'+big+'.jpg" aria-label="preview '+(i+1)+'"><img alt="" loading="lazy" src="assets/'+t+'.jpg"></button>'}).join("")+'<p class="hint">'+sp("اضغط على أي صفحة لتكبيرها","Tap a page to enlarge")+'</p></div>'}
+ if(x.th){th='<div class="thumbs'+(x.th.length===3?' three':'')+'">'+x.th.map(function(t,i){var big=x.big?x.big[i]:t;return '<button class="z" type="button" data-big="assets/'+big+'.jpg" aria-label="preview '+(i+1)+'"><img alt="'+esc(x.ar+" — "+(i+1))+'" loading="lazy" src="assets/'+t+'.jpg"></button>'}).join("")+'<p class="hint">'+sp("اضغط على أي صفحة لتكبيرها","Tap a page to enlarge")+'</p></div>'}
  var iqd='<em class="iqd">'+sp("≈ "+iq(x.p)+" د.ع","≈ "+iq(x.p)+" IQD")+'</em>';
- sdet.innerHTML='<div><div class="book"><img class="cover" width="520" height="673" alt="" src="assets/'+x.img+'.jpg?v=4"></div></div>'
+ sdet.innerHTML='<div><div class="book"><img class="cover" width="520" height="673" alt="'+esc("غلاف "+x.ar+" / "+x.en+" cover")+'" src="assets/'+x.img+'.jpg?v=4"></div></div>'
   +'<div><span class="tag i">'+sp(x.tag_ar,x.tag_en)+'</span><h3>'+sp(x.ar,x.en)+'</h3>'+rvLine(k)+'<p class="desc">'+sp(x.d_ar,x.d_en)+'</p>'
   +'<ul class="chk">'+x.inc_ar.map(function(t,i){return '<li>'+sp(t,x.inc_en[i])+'</li>'}).join("")+'</ul>'
   +'<div class="buy"><div class="price">$'+x.p+iqd+'</div></div>'
@@ -239,7 +239,7 @@ try{fetch("assets/reviews.json?t="+Date.now()).then(function(r){return r.ok?r.js
 /* ---------- mini cart ---------- */
 var cpanel=document.getElementById("cartpanel"), cpill=document.getElementById("cartpill"), clist=document.getElementById("cartlist");
 function renderCart(c){
- clist.innerHTML=c.sel.map(function(k){var x=P[k];return '<li><img alt="" src="assets/'+x.img+'.jpg?v=4"><span class="nm">'+sp(x.ar,x.en)+'</span><span class="pr">$'+x.p+'</span><button type="button" data-rm="'+k+'" aria-label="remove">✕</button></li>'}).join("");
+ clist.innerHTML=c.sel.map(function(k){var x=P[k];return '<li><img alt="'+esc(x.ar+" / "+x.en)+'" src="assets/'+x.img+'.jpg?v=4"><span class="nm">'+sp(x.ar,x.en)+'</span><span class="pr">$'+x.p+'</span><button type="button" data-rm="'+k+'" aria-label="remove">✕</button></li>'}).join("");
  if(!c.sel.length){cpanel.hidden=true;cpill.setAttribute("aria-expanded","false")}
 }
 cpill.addEventListener("click",function(){var o=cpanel.hidden;cpanel.hidden=!o;cpill.setAttribute("aria-expanded",String(o))});
