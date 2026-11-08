@@ -234,6 +234,12 @@ function rvLine(k){var s=rvStat(k),lk=API?'<a class="rvlink" href="#reviews" dat
 function rvCard(r){
  var names=(r.p||[]).filter(function(k){return P[k]}).map(function(k){return sp(esc(P[k].ar),esc(P[k].en))}).join(" · ");
  return '<article class="rvc"><div class="rvs" aria-label="'+(+r.r)+'/5">'+stars(+r.r)+'</div>'+(r.text?'<p>'+esc(r.text)+'</p>':'')+'<div class="rvm"><b>'+esc(r.name)+'</b>'+(r.v?' <span class="rvbadge">'+sp("\u2713 مشترٍ موثّق","\u2713 Verified buyer")+'</span>':'')+' · <bdi>'+esc(r.date||"")+'</bdi>'+(names?'<br><small>'+names+'</small>':'')+'</div></article>'}
+function rvBreak(ALL){
+ var by={};ALL.forEach(function(r){(r.p||[]).forEach(function(k){if(!P[k])return;var o=by[k]||(by[k]={n:0,s:0});o.n++;o.s+=+r.r})});
+ var ks=Object.keys(by).sort(function(a,b){return by[b].n-by[a].n||by[b].s/by[b].n-by[a].s/by[a].n});
+ if(!ks.length)return "";
+ return '<div class="rvbrk"><h3 class="cmh">'+sp("التقييم حسب المنتج","Ratings by product")+'</h3><ul>'+ks.map(function(k){var o=by[k],a=Math.round(o.s/o.n*10)/10;
+  return '<li><span class="rvs">'+stars(Math.round(a))+'</span> <b>'+a+'</b> <small>('+o.n+')</small> <span class="rvpn">'+sp(esc(P[k].ar),esc(P[k].en))+'</span></li>'}).join("")+'</ul></div>'}
 function renderReviews(){
  var sec=document.getElementById("reviews"),box=document.getElementById("rv");if(!sec||!box)return;sec.hidden=false;
  var note='<p class="rvnote">'+sp("يمكنك كتابة تقييمك عبر البوت، وتظهر الآراء هنا بعد المراجعة. شارة «مشترٍ موثّق» تعني أن صاحب الرأي اشترى المنتج فعلاً.","You can write a review through the bot, and reviews appear here after moderation. The “Verified buyer” badge means the reviewer actually bought the product.")+'</p><p class="rvnote"><a class="rvlink big" href="https://t.me/SmartZaki_Bot?start=review" target="_blank" rel="noopener">'+sp("اكتب تقييمك","Write a review")+'</a>'+'</p>';
@@ -241,7 +247,7 @@ function renderReviews(){
  var ALL=allRt();
  if(!ALL.length){box.innerHTML=(API?"":'<p class="rvnote">'+sp("لا توجد تقييمات بعد.","No reviews yet.")+'</p>'+note);return}
  var sum=0;ALL.forEach(function(r){sum+=+r.r});var avg=Math.round(sum/ALL.length*10)/10;heroMeta(avg,ALL.length);
- box.innerHTML='<div class="rvtop"><b>'+avg+'</b> <span class="rvs">'+stars(Math.round(avg))+'</span> <small>('+ALL.length+')</small></div>'+(API?"":'<div class="rvgrid">'+RV.filter(function(r){return r.text}).slice(0,12).map(rvCard).join("")+'</div>'+note);
+ box.innerHTML='<div class="rvtop"><b>'+avg+'</b> <span class="rvs">'+stars(Math.round(avg))+'</span> <small>('+ALL.length+')</small></div>'+rvBreak(ALL)+(API?"":'<div class="rvgrid">'+RV.filter(function(r){return r.text}).slice(0,12).map(rvCard).join("")+'</div>'+note);
 }
 
 /* ---------- live ratings and comments (active when assets/config.js sets window.HAYALI_API) ---------- */

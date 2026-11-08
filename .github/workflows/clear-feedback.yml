@@ -1,0 +1,31 @@
+name: Clear ratings and comments
+# Manual and destructive: deletes every rating/comment (pending, approved, rejected) from the D1 database.
+# Orders, subscribers and accounts are not touched.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type DELETE to confirm'
+        required: true
+jobs:
+  clear:
+    if: ${{ github.event.inputs.confirm == 'DELETE' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Delete all feedback rows
+        run: |
+          ID=$(npx wrangler@4 d1 list --json | jq -r '.[] | select(.name=="hayali") | .uuid')
+          test -n "$ID"
+          sed -i "s/PUT_D1_ID_HERE/$ID/" wrangler.toml
+          npx wrangler@4 d1 execute hayali --remote --command "DELETE FROM feedback"
+          npx wrangler@4 d1 execute hayali --remote --command "SELECT COUNT(*) AS left FROM feedback"
