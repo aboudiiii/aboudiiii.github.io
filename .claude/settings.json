@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/check_site.py\" \"$CLAUDE_PROJECT_DIR\" 2>&1 | grep -E 'ERROR' | head -20; true"
+          }
+        ]
+      }
+    ]
+  }
+}
