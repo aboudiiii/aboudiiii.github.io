@@ -217,6 +217,11 @@ renderChips();renderList();renderDetail(false);
  q.addEventListener("keydown",function(e){if(e.key==="Escape"){q.value="";curQ="";renderList();renderDetail(true)}});
 })();
 [].forEach.call(document.querySelectorAll("[data-pp]"),function(n){var k=n.getAttribute("data-pp");if(P[k]){n.dir="ltr";n.textContent="$"+P[k].p+" \u00b7 \u2248 "+iq(P[k].p)+" IQD"}});
+/* hero meta: lowest price and average rating */
+function heroMeta(avg,n){var m=Infinity;for(var k in P){if(P[k]&&+P[k].p>0&&+P[k].p<m)m=+P[k].p}
+ if(isFinite(m)){var a1=document.getElementById("hminp"),a2=document.getElementById("hminpe");if(a1)a1.textContent="$"+m;if(a2)a2.textContent="$"+m}
+ var r=document.getElementById("hrate");if(r&&n){r.hidden=false;r.innerHTML='<span class="rvs">'+stars(Math.round(avg))+'</span> <b>'+avg+'</b> <small>('+n+')</small>'}}
+heroMeta(0,0);
 /* ---------- customer reviews (verified buyers, moderated; data in assets/reviews.json) ---------- */
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function stars(n){var s="";for(var i=1;i<=5;i++)s+=i<=n?"★":"☆";return s}
@@ -230,7 +235,7 @@ function renderReviews(){
  var sec=document.getElementById("reviews"),box=document.getElementById("rv");if(!sec||!box)return;sec.hidden=false;
  var note='<p class="rvnote">'+sp("يمكنك كتابة تقييمك عبر البوت، وتظهر الآراء هنا بعد المراجعة. شارة «مشترٍ موثّق» تعني أن صاحب الرأي اشترى المنتج فعلاً.","You can write a review through the bot, and reviews appear here after moderation. The “Verified buyer” badge means the reviewer actually bought the product.")+'</p><p class="rvnote"><a class="rvlink big" href="https://t.me/SmartZaki_Bot?start=review" target="_blank" rel="noopener">'+sp("اكتب تقييمك","Write a review")+'</a>'+'</p>';
  if(!RV.length){box.innerHTML='<p class="rvnote">'+sp("لا توجد تقييمات بعد.","No reviews yet.")+'</p>'+note;return}
- var sum=0;RV.forEach(function(r){sum+=+r.r});var avg=Math.round(sum/RV.length*10)/10;
+ var sum=0;RV.forEach(function(r){sum+=+r.r});var avg=Math.round(sum/RV.length*10)/10;heroMeta(avg,RV.length);
  box.innerHTML='<div class="rvtop"><b>'+avg+'</b> <span class="rvs">'+stars(Math.round(avg))+'</span> <small>('+RV.length+')</small></div><div class="rvgrid">'+RV.slice(0,12).map(rvCard).join("")+'</div>'+note;
 }
 try{fetch("assets/reviews.json?t="+Date.now()).then(function(r){return r.ok?r.json():{reviews:[]}}).then(function(d){RV=((d&&d.reviews)||[]).filter(function(r){return r&&typeof r==="object"}).map(function(r){return {id:r.id,p:Array.isArray(r.p)?r.p.filter(function(k){return P[k]}):[],r:Math.max(0,Math.min(5,Math.round(+r.r)||0)),name:String(r.name||"").slice(0,40),text:String(r.text||"").slice(0,400),v:r.v?1:0,date:String(r.date||"").slice(0,10)}}).filter(function(r){return r.r>=1&&r.p.length});renderReviews();renderDetail(false)}).catch(function(){renderReviews()})}catch(e){renderReviews()}

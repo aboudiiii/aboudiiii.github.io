@@ -460,3 +460,40 @@ button.add,a.btn,.cartpill,.chips button,.sec2,#pdl{position:relative;overflow:h
 /* pulse the final button */
 @media (prefers-reduced-motion:no-preference){#tg.pulse{animation:tgpulse 1.1s ease 2}}
 @keyframes tgpulse{0%{box-shadow:0 0 0 0 rgba(227,185,92,.7)}70%{box-shadow:0 0 0 18px rgba(227,185,92,0)}100%{box-shadow:0 0 0 0 rgba(227,185,92,0)}}
+
+
+/* ===== design pass: header, hero, covers, mobile length ===== */
+/* brand name is never truncated: it wraps to a second line instead */
+@media (max-width:520px){
+ .brand{font-size:17px;gap:6px}
+ nav.top .brand{min-width:0;flex:1 1 auto;overflow:visible;white-space:normal;line-height:1.2}
+ nav.top .brand span{overflow:visible;text-overflow:clip;white-space:normal}
+ .links{flex:0 0 auto}
+}
+/* hero: smaller heading on large screens so covers and CTA fit the first screen */
+.hero h1{font-size:clamp(38px,5vw,62px);line-height:1.2}
+html[dir="rtl"] .hero h1{line-height:1.4}
+@media (min-width:861px){.hero{padding-top:40px}}
+.hmeta{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 12px;margin:18px 0 0}
+.hmeta .hp{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:1.5px solid var(--gold);background:var(--gold-soft);color:var(--head);font-weight:700;font-size:15px}
+.hmeta .hp bdi{direction:ltr}
+.hmeta .hr{display:inline-flex;align-items:center;gap:6px;font-size:15px;color:var(--fg)}
+.hmeta .hr .rvs{font-size:16px}
+.hmeta .hr[hidden]{display:none}
+.hero .cta{margin-top:20px;justify-content:center}
+/* bigger covers in product lists */
+.srow img{width:54px;height:70px}
+.item img{width:46px;height:60px}
+#cartlist img{width:36px;height:48px}
+/* new-in-library: horizontal swipe row on phones */
+@media (max-width:640px){
+ .sec .ngrid{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;margin-inline:-4px;padding-inline:4px;-webkit-overflow-scrolling:touch}
+ .sec .ngrid .ncard{flex:0 0 150px;max-width:150px;scroll-snap-align:start}
+}
+/* collapsible printing guide */
+.fold{border:1.5px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.fold>summary{cursor:pointer;list-style:none;padding:14px 18px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fold>summary::-webkit-details-marker{display:none}
+.fold>summary::after{content:"+";font-size:22px;line-height:1;color:var(--gold)}
+.fold[open]>summary::after{content:"\2212"}
+.fold>.guide{padding:4px 16px 16px}
