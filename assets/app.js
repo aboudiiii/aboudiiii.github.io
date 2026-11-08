@@ -66,6 +66,7 @@ var X={
  x:{cat:["code"],tag_ar:"برمجة",tag_en:"Code",th:["x1","x2","x3"],big:["big_x1","big_x2","big_x3"]}
 };
 Object.keys(X).forEach(function(k){for(var f in X[k]){if(P[k][f]===undefined)P[k][f]=X[k][f]}});
+window.HAYALI_NAMES=P;
 var root=document.documentElement;
 var API=(window.HAYALI_API||"").replace(/\/$/,"");
 function iq(u){return (Math.round(u*IQD_RATE/250)*250).toLocaleString("en-US")}

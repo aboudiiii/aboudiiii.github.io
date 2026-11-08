@@ -523,3 +523,12 @@ html[dir="rtl"] .hero h1{line-height:1.4}
 .rvst.good{color:#1c7a45}.rvst.bad{color:#b3261e}
 .cmh{margin:14px 0 8px;font-size:20px}
 .cmc p{margin:0 0 8px}
+
+/* subscribe + account */
+.joingrid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.jbox{border:1.5px solid var(--line);border-radius:16px;padding:20px;background:var(--bg);display:grid;gap:12px;align-content:start}
+.jbox h3{margin:0}.jform{display:grid;gap:10px}.jform label{display:grid;gap:6px;font-weight:600}
+.jform input:not(.hp){font:inherit;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg)}
+.acclist{list-style:none;margin:0;padding:0;display:grid;gap:8px}.acclist li{padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.hot{display:inline-block;margin-inline-start:8px;padding:1px 8px;border-radius:99px;background:var(--gold-soft);border:1px solid var(--gold);font-size:12px;font-weight:700;white-space:nowrap}
+.ordn{margin:4px 0 0;font-size:14px;color:var(--muted);font-weight:600}

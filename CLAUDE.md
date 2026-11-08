@@ -19,7 +19,8 @@ Static site, no build step. Arabic-first (RTL) with an AR/EN toggle via `<span d
 ## Check before pushing
 `python3 scripts/check_site.py` — يفحص الـ sitemap والروابط المحلية وصور og وبيانات الصفحات. يجب أن ينتهي بدون `ERROR`.
 
-## Live ratings and comments
-- `worker/` — Cloudflare Worker (no dependencies) that receives ratings/comments, notifies the owner on Telegram with Approve/Reject buttons and serves approved items at `/api/feed`. Setup: `worker/README.ar.md`. Tests: `cd worker && npm test`.
-- `assets/config.js` holds `window.HAYALI_API` (empty = feature off, old Telegram review link stays). The CSP allows `https://*.workers.dev`.
+## Worker: ratings, orders, subscribers, accounts
+- `worker/` — Cloudflare Worker + D1 (no dependencies): moderated ratings/comments (Telegram approve/reject), `/api/orders` from the store bot, `/api/stats` ("most ordered"), email-code customer login, email/Telegram subscribers and `/announce`. Setup: `worker/README.ar.md`. Tests: `cd worker && npm test`. Schema: `worker/migrations/`.
+- `assets/config.js` holds `window.HAYALI_API` (empty = all of it off; the subscribe/account section is hidden) and `HAYALI_TG_BOT`. `assets/account.js` is the UI for stats badges, subscribe and account. The CSP allows `https://*.workers.dev`.
+- Don't reuse the class `.hp` for honeypots (it is the hero pill); use `.hpf`.
 - Ratings (stars) and comments are separate on purpose; verified-buyer reviews still come from `assets/reviews.json`.

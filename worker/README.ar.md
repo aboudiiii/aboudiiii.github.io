@@ -1,52 +1,54 @@
-# تشغيل التقييمات والتعليقات المباشرة
+# الـ Worker: تقييمات وتعليقات وطلبات واشتراكات وحسابات
 
-الفكرة: الزائر يقيّم أو يعلّق **داخل الموقع** (كل واحد في نموذج منفصل). يصلك إشعار على تيليجرام مع زرّين **✅ نشر / ❌ حذف**. ما توافق عليه فقط يظهر في الموقع، ويمكنك لاحقًا الضغط على **↩️ إلغاء النشر**.
+يعمل على Cloudflare Workers (مجاني) مع قاعدة D1. بدون أي مكتبات.
 
-التشغيل مجاني (Cloudflare Workers + KV). لا يتأثر بوت المتجر `SmartZaki_Bot` لأننا نستخدم **بوت جديدًا** للموافقات فقط.
+| المسار | الوظيفة |
+|---|---|
+| `POST /api/rating`, `/api/comment` | تقييم/تعليق من الموقع، يصلك على تيليجرام للموافقة |
+| `GET /api/feed` | المقبول فقط |
+| `POST /api/orders` | البوت يبلّغ عن طلب مدفوع (مفتاح `X-Bot-Key`) |
+| `GET /api/stats` | عدد الطلبات لكل كتاب («الأكثر طلبًا») |
+| `POST /api/auth/request` ثم `/verify` | دخول الزبون برمز يصل بالبريد |
+| `GET /api/me` | مشتريات الزبون (يحتاج Bearer token) |
+| `POST /api/subscribe` + `/api/confirm` + `/api/unsubscribe` | الاشتراك بالبريد (تأكيد مزدوج) |
+| `/tg/<secret>` | webhook بوت الإعلانات (`/start` و`/stop` و`/announce` للمالك) |
 
-> إلى أن تضع عنوان الـ Worker في `assets/config.js` يبقى الموقع كما هو (رابط التقييم عبر تيليجرام). لذلك الدمج آمن قبل التشغيل.
+## الإعداد (مرة واحدة، من جهازك)
+1. `cd worker && npx wrangler login`
+2. `npx wrangler d1 create hayali` ثم ضع `database_id` في `wrangler.toml`.
+3. `npx wrangler d1 migrations apply hayali --remote`
+4. **بوت الإعلانات:** من @BotFather أنشئ بوتًا جديدًا (غير بوت المتجر) وخذ التوكن.
+5. **البريد (Brevo، مجاني):** أنشئ حسابًا، فعّل مرسلًا (Sender) وخذ مفتاح API. ضع بريد المرسل في `MAIL_FROM` داخل `wrangler.toml`. بدون نطاق خاص قد تصل الرسائل إلى «Spam».
+6. الأسرار، كل واحد بأمر `npx wrangler secret put NAME`:
+   `TG_TOKEN` (توكن بوت الإعلانات)، `TG_OWNER_ID` (اكتب `0` أولًا)، `TG_WEBHOOK_SECRET` (أي نص عشوائي طويل)، `RATE_SALT` (نص عشوائي)، `BOT_API_KEY` (نص عشوائي طويل، تعطيه للبوت)، `BREVO_API_KEY`.
+7. `npx wrangler deploy` وانسخ العنوان `https://hayali-reviews.xxx.workers.dev` وضعه في `WORKER_URL`:
+   `npx wrangler secret put WORKER_URL` (أو `[vars]` في `wrangler.toml`) ثم انشر مرة ثانية.
+8. افتح `https://<عنوان-الworker>/setup/<TG_WEBHOOK_SECRET>` لتسجيل الـ webhook.
+9. أرسل `/start` لبوت الإعلانات؛ سيرد بـ Chat ID. ضعه في `TG_OWNER_ID` وانشر مرة ثانية.
+10. في الموقع: `assets/config.js` ضع عنوان الـ Worker في `HAYALI_API` واسم بوت الإعلانات في `HAYALI_TG_BOT`.
 
-## الخطوات (مرة واحدة، حوالي 10 دقائق، على الكمبيوتر)
+## الإعلان عن كتاب جديد
+أرسل للبوت: `/announce نص الإعلان`. يعرض لك معاينة وعدد المشتركين، اضغط «إرسال». الإرسال على دفعات (حد Cloudflare المجاني)؛ إن بقي أحد اضغط الزر مرة ثانية للمتابعة.
 
-1. **بوت الموافقات:** في تيليجرام افتح `@BotFather` ← `/newbot` ← اختر اسمًا ← انسخ **التوكن**.
-2. **حساب Cloudflare:** سجّل مجانًا على cloudflare.com.
-3. افتح PowerShell داخل مجلد `worker` من المستودع ونفّذ:
+## ربط بوت المتجر (الجزء الذي عليك إضافته)
+أضف هذه الدالة في بوت المتجر واستدعِها عند تأكيد الدفع. المفاتيح: y,j,v,x,r,n,i,k,m,a,f,s,p,c,e,t. وضع `email` إن كان عندك.
 
-```powershell
-npx wrangler login
-npx wrangler kv namespace create REVIEWS
+```python
+import httpx
+
+async def report_paid_order(code, items, total_usd, email=None, telegram_id=None):
+    try:
+        async with httpx.AsyncClient(timeout=10) as c:
+            await c.post(
+                "https://<عنوان-الworker>/api/orders",
+                headers={"X-Bot-Key": BOT_API_KEY},
+                json={"code": code, "items": items, "total_usd": total_usd,
+                      "email": email, "telegram_id": telegram_id},
+            )
+    except Exception:
+        pass  # لا توقف التسليم بسبب الإحصائيات
 ```
-انسخ الـ `id` الذي يظهر وضعه في `wrangler.toml` مكان `PUT_KV_ID_HERE`. ثم:
-
-```powershell
-npx wrangler secret put TG_TOKEN            # الصق توكن البوت
-npx wrangler secret put TG_WEBHOOK_SECRET   # أي كلمة سرية طويلة (حروف وأرقام فقط)
-npx wrangler secret put RATE_SALT           # أي نص عشوائي
-npx wrangler secret put TG_OWNER_ID         # اكتب 0 مؤقتًا
-npx wrangler deploy
-```
-سيطبع عنوانًا مثل `https://hayali-reviews.XXXX.workers.dev`.
-
-4. **ربط تيليجرام بالـ Worker:** افتح في المتصفح مرة واحدة:
-   `https://hayali-reviews.XXXX.workers.dev/setup/<TG_WEBHOOK_SECRET>`
-   ويجب أن تظهر «Webhook registered».
-5. **رقم حسابك:** أرسل `/start` لبوتك الجديد، فيرد بـ `Chat ID: 123456789`. ثم:
-```powershell
-npx wrangler secret put TG_OWNER_ID         # الصق الرقم الحقيقي
-```
-6. **ربط الموقع:** افتح `assets/config.js` وضع العنوان:
-   `window.HAYALI_API = "https://hayali-reviews.XXXX.workers.dev";`
-   وارفع التعديل (أو أرسل لي العنوان وأنا أرفعه).
+الطلب متكرر الأمان (نفس `code` مرتين لا يُحسب مرتين). الزبون يرى مشترياته فقط إذا طابق بريده بريد الطلب.
 
 ## الاختبار
-افتح الموقع ← قسم «آراء الزبائن» ← أرسل تقييمًا. يصلك إشعار فيه أزرار. اضغط **نشر** وحدّث الموقع بعد دقيقة.
-
-## حماية من السبام (مفعّلة)
-- لا روابط في الاسم أو التعليق، وحقل مخفي للروبوتات، وحد أدنى للزمن قبل الإرسال.
-- حد لكل زائر: 4 في الساعة و12 في اليوم، وتقييم واحد لكل منتج يوميًا (يُخزَّن الـ IP مشفّرًا فقط).
-- كل شيء يمرّ عبر موافقتك قبل أن يظهر.
-
-## ملاحظات
-- الخطة المجانية لـ KV تسمح بنحو 1000 عملية كتابة يوميًا (تقريبًا 250 تقييمًا أو تعليقًا في اليوم)، وهذا أكثر من كافٍ.
-- لاستخدام دومين خاص لاحقًا عدّل `connect-src` في وسم CSP في `index.html`.
-- الاختبارات: `cd worker && npm test`.
+`cd worker && npm test` (يستخدم SQLite محلية بدل D1 وبريد/تيليجرام وهميين).
