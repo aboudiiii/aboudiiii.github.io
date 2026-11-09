@@ -2,6 +2,7 @@
 var root=document.documentElement;
 function L(){return root.getAttribute("data-lang")==="en"?"en":"ar"}
 function sp(a,e){return '<span data-l="ar">'+a+'</span><span data-l="en">'+e+'</span>'}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function $(i){return document.getElementById(i)}
 
 /* ---------- online coloring ---------- */
@@ -140,7 +141,7 @@ rq();
 /* ---------- reviews: shown only when real reviews exist ---------- */
 // Add real customer reviews here only after collecting their permission, e.g. {ar:"نص",en:"text",name:"اسم"}
 var REVIEWS=[];
-if(REVIEWS.length){$("reviews").hidden=false;$("rv").innerHTML=REVIEWS.map(function(r){return '<figure><blockquote>'+sp(r.ar||r.en,r.en||r.ar)+'</blockquote><figcaption>'+(r.name||"")+'</figcaption></figure>'}).join("")}
+if(REVIEWS.length){$("reviews").hidden=false;$("rv").innerHTML=REVIEWS.map(function(r){var ar=esc(r.ar||r.en),en=esc(r.en||r.ar);return '<figure><blockquote>'+sp(ar,en)+'</blockquote><figcaption>'+esc(r.name||"")+'</figcaption></figure>'}).join("")}
 
 /* ---------- deal meter in order section ---------- */
 var sv=$("saving"), mt=document.createElement("div"); mt.className="meter"; mt.innerHTML='<div class="mt" id="mtt"></div><div class="mb"><i id="mti"></i></div>'; sv.parentNode.insertBefore(mt,sv);
