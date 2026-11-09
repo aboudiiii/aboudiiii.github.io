@@ -24,7 +24,7 @@ required_csp = ("default-src 'none'", "object-src 'none'", "base-uri 'self'", "f
 for page in pages:
     source = page.read_text(encoding="utf-8")
     match = re.search(
-        r'<meta[^>]+http-equiv=["\']Content-Security-Policy["\'][^>]+content=["\']([^"\']+)',
+        r'<meta[^>]+http-equiv=["\']Content-Security-Policy["\'][^>]+content="([^"]+)"',
         source,
         re.IGNORECASE,
     )
