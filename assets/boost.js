@@ -140,20 +140,28 @@ var QL={
 var Q=[];(function(){var n=Math.max(QL.y.length,QL.j.length,QL.v.length,QL.x.length);for(var i=0;i<n;i++)["y","j","v","x"].forEach(function(l){if(QL[l][i])Q.push(QL[l][i].concat(l))})})();
 (function(){
  var host=$("daily-box");if(!host)return;
- var day=Math.floor((Date.now()+3*3600000)/86400000),q=Q[day%Q.length],key="daily_"+day,done=store(key);
+ var day=Math.floor((Date.now()+3*3600000)/86400000),key="daily_"+day,done=store(key);
  var st=parseInt(store("daily_streak")||"0",10)||0,last=parseInt(store("daily_last")||"0",10)||0;
  if(last<day-1)st=0;
+ function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+ function shuffled(n,r){var a=[],i,j,t;for(i=0;i<n;i++)a.push(i);for(i=n-1;i>0;i--){j=Math.floor(r()*(i+1));t=a[i];a[i]=a[j];a[j]=t}return a}
+ var qi=day%Q.length,practice=false,q,order;
+ function setQ(i,r){qi=i;q=Q[i];order=shuffled(q[1].length,r)}
+ setQ(qi,rng(day*7919+13));
  function paint(sel){
-  var ok=sel!=null&&sel===q[2];
-  host.innerHTML='<div class="dq" lang="ar" dir="rtl"><p class="dqt">'+esc(q[0])+'</p><div class="dqo">'+q[1].map(function(o,i){
-   var c=sel==null?"":(i===q[2]?" good":(i===sel?" bad":""));
-   return '<button type="button" class="dqb'+c+'" data-i="'+i+'"'+(sel!=null?" disabled":"")+'><bdi dir="ltr">'+esc(o)+'</bdi></button>'}).join("")+'</div>'
+  var good=order.indexOf(q[2]),ok=sel!=null&&sel===good;
+  host.innerHTML='<div class="dq" lang="ar" dir="rtl">'+(practice?'<p class="dqs">'+sp("سؤال تمرين (لا يؤثر على السلسلة)","Practice question (does not affect your streak)")+'</p>':"")+'<p class="dqt">'+esc(q[0])+'</p><div class="dqo">'+order.map(function(o,i){
+   var c=sel==null?"":(i===good?" good":(i===sel?" bad":""));
+   return '<button type="button" class="dqb'+c+'" data-i="'+i+'"'+(sel!=null?" disabled":"")+'><bdi dir="ltr">'+esc(q[1][o])+'</bdi></button>'}).join("")+'</div>'
    +(sel!=null?'<p class="dqe" aria-live="polite">'+(ok?"✅ صحيح! ":"❌ ليس هذا. ")+esc(q[3])+'</p>':"")
-   +'<p class="dqs">🔥 '+sp("أيام متتالية: "+st,"Day streak: "+st)+'</p>'+(sel!=null?'<p class="dqs">'+sp("عُد غداً لسؤال جديد. وللتعمّق، دفاترنا تشرح هذا خطوة بخطوة.","Come back tomorrow for a new one. Our books explain all of this step by step.")+'</p><a class="btn" href="#shop-'+q[4]+'">'+(L()==="ar"?"شاهد الدفتر المناسب":"See the matching book")+'</a>':"")+'</div>'}
+   +'<p class="dqs">🔥 '+sp("أيام متتالية: "+st,"Day streak: "+st)+'</p>'+(sel!=null?'<div class="row"><button type="button" class="btn ghost" id="dqmore">'+(L()==="ar"?"سؤال آخر للتمرين":"Another practice question")+'</button><a class="btn" href="#shop-'+q[4]+'">'+(L()==="ar"?"شاهد الدفتر المناسب":"See the matching book")+'</a></div>'+(practice?"":'<p class="dqs">'+sp("سؤال اليوم الرسمي تغيّر غداً.","Tomorrow brings a new daily question.")+'</p>'):"")+'</div>'}
  paint(done==null?null:parseInt(done,10));
- host.addEventListener("click",function(e){var b=e.target.closest(".dqb");if(!b||store(key)!=null)return;
-  var i=parseInt(b.getAttribute("data-i"),10);store(key,String(i));
-  if(i===q[2]){st=(last===day-1?st:0)+1;last=day;store("daily_streak",String(st));store("daily_last",String(day))}
+ host.addEventListener("click",function(e){
+  if(e.target.closest("#dqmore")){var n;do{n=Math.floor(Math.random()*Q.length)}while(n===qi&&Q.length>1);practice=true;setQ(n,Math.random);paint(null);return}
+  var b=e.target.closest(".dqb");if(!b||b.disabled)return;
+  var i=parseInt(b.getAttribute("data-i"),10);
+  if(!practice){if(store(key)!=null)return;store(key,String(i));
+   if(i===order.indexOf(q[2])){st=(last===day-1?st:0)+1;last=day;store("daily_streak",String(st));store("daily_last",String(day))}}
   paint(i)});
 })();
 })();
