@@ -154,7 +154,7 @@ var Q=[];(function(){var n=Math.max(QL.y.length,QL.j.length,QL.v.length,QL.x.len
    var c=sel==null?"":(i===good?" good":(i===sel?" bad":""));
    return '<button type="button" class="dqb'+c+'" data-i="'+i+'"'+(sel!=null?" disabled":"")+'><bdi dir="ltr">'+esc(q[1][o])+'</bdi></button>'}).join("")+'</div>'
    +(sel!=null?'<p class="dqe" aria-live="polite">'+(ok?"✅ صحيح! ":"❌ ليس هذا. ")+esc(q[3])+'</p>':"")
-   +'<p class="dqs">🔥 '+sp("أيام متتالية: "+st,"Day streak: "+st)+'</p>'+(sel!=null?'<div class="row"><button type="button" class="btn ghost" id="dqmore">'+(L()==="ar"?"سؤال آخر للتمرين":"Another practice question")+'</button><a class="btn" href="#shop-'+q[4]+'">'+(L()==="ar"?"شاهد الدفتر المناسب":"See the matching book")+'</a></div>'+(practice?"":'<p class="dqs">'+sp("سؤال اليوم الرسمي تغيّر غداً.","Tomorrow brings a new daily question.")+'</p>'):"")+'</div>'}
+   +'<p class="dqs">🔥 '+sp("أيام متتالية: "+st,"Day streak: "+st)+(st>=30?" · "+sp("🏆 وسام المثابر","🏆 Persistent"):st>=7?" · "+sp("🥇 أسبوع كامل","🥇 A full week"):st>=3?" · "+sp("🥈 ثلاثة أيام","🥈 Three days"):"")+'</p>'+(sel!=null?'<div class="row"><button type="button" class="btn ghost" id="dqmore">'+(L()==="ar"?"سؤال آخر للتمرين":"Another practice question")+'</button><a class="btn" href="#shop-'+q[4]+'">'+(L()==="ar"?"شاهد الدفتر المناسب":"See the matching book")+'</a></div>'+(practice?"":'<p class="dqs">'+sp("سؤال اليوم الرسمي تغيّر غداً.","Tomorrow brings a new daily question.")+'</p>'):"")+'</div>'}
  paint(done==null?null:parseInt(done,10));
  host.addEventListener("click",function(e){
   if(e.target.closest("#dqmore")){var n;do{n=Math.floor(Math.random()*Q.length)}while(n===qi&&Q.length>1);practice=true;setQ(n,Math.random);paint(null);return}
