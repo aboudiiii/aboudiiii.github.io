@@ -45,10 +45,10 @@ if not app.exists():
 else:
     source = app.read_text(encoding="utf-8")
     checks = (
-        (r"esc\\(r\\.text\\)", "review text"),
-        (r"esc\\(r\\.name\\)", "reviewer name"),
-        (r"esc\\(c\\.text\\)", "comment text"),
-        (r"esc\\(c\\.name\\)", "commenter name"),
+        (r"esc\(r\.text\)", "review text"),
+        (r"esc\(r\.name\)", "reviewer name"),
+        (r"esc\(c\.text\)", "comment text"),
+        (r"esc\(c\.name\)", "commenter name"),
     )
     for expression, label in checks:
         if not re.search(expression, source):
