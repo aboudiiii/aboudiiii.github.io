@@ -38,20 +38,19 @@ for page in pages:
     if "script-src 'unsafe-inline'" in policy:
         warnings.append(f"{page.relative_to(ROOT)}: script-src still allows unsafe-inline")
 
-# API-sourced review/comment fields must be escaped before HTML insertion.
-app = ROOT / "assets/app.js"
-if not app.exists():
-    errors.append("assets/app.js is missing")
+# User-provided review content must be escaped before HTML insertion.
+play = ROOT / "assets/play.js"
+if not play.exists():
+    errors.append("assets/play.js is missing")
 else:
-    source = app.read_text(encoding="utf-8")
+    source = play.read_text(encoding="utf-8")
     for expression, label in (
-        ("esc(r.text)", "review text"),
-        ("esc(r.name)", "reviewer name"),
-        ("esc(c.text)", "comment text"),
-        ("esc(c.name)", "commenter name"),
+        ('esc(r.ar||r.en)', "Arabic review text"),
+        ('esc(r.en||r.ar)', "English review text"),
+        ('esc(r.name||"")', "reviewer name"),
     ):
         if expression not in source:
-            errors.append(f"API rendering does not escape {label}")
+            errors.append(f"Static review rendering does not escape {label}")
 
 util = ROOT / "worker/src/util.js"
 if not util.exists():
