@@ -15,5 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run site checks
         run: python3 scripts/check_site.py
+      - name: Security regression checks
+        run: python3 scripts/security_check.py
       - name: Test reviews Worker
         run: cd worker && npm test
