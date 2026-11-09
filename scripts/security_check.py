@@ -44,14 +44,13 @@ if not app.exists():
     errors.append("assets/app.js is missing")
 else:
     source = app.read_text(encoding="utf-8")
-    checks = (
-        (r"esc\(r\.text\)", "review text"),
-        (r"esc\(r\.name\)", "reviewer name"),
-        (r"esc\(c\.text\)", "comment text"),
-        (r"esc\(c\.name\)", "commenter name"),
-    )
-    for expression, label in checks:
-        if not re.search(expression, source):
+    for expression, label in (
+        ("esc(r.text)", "review text"),
+        ("esc(r.name)", "reviewer name"),
+        ("esc(c.text)", "comment text"),
+        ("esc(c.name)", "commenter name"),
+    ):
+        if expression not in source:
             errors.append(f"API rendering does not escape {label}")
 
 util = ROOT / "worker/src/util.js"
