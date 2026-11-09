@@ -38,6 +38,20 @@ for page in pages:
     if "script-src 'unsafe-inline'" in policy:
         warnings.append(f"{page.relative_to(ROOT)}: script-src still allows unsafe-inline")
 
+# Review cards must encode all user-controlled text before HTML insertion.
+play = ROOT / "assets/play.js"
+if not play.exists():
+    errors.append("assets/play.js is missing")
+else:
+    source = play.read_text(encoding="utf-8")
+    if not re.search(r"function\\s+esc\\s*\\(", source):
+        errors.append("Review rendering must define an HTML-escaping helper")
+    for expression, label in ((r"ar\\s*=\\s*esc\\(r\\.ar\\s*\\|\\|\\s*r\\.en\\)", "Arabic/English review text"),
+                              (r"en\\s*=\\s*esc\\(r\\.en\\s*\\|\\|\\s*r\\.ar\\)", "English/Arabic review text"),
+                              (r"esc\\(r\\.name\\s*\\|\\|", "reviewer name")):
+        if not re.search(expression, source):
+            errors.append(f"Review rendering does not escape {label}")
+
 util = ROOT / "worker/src/util.js"
 if not util.exists():
     errors.append("worker/src/util.js is missing")
