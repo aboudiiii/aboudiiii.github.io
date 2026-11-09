@@ -43,7 +43,7 @@ if not util.exists():
     errors.append("worker/src/util.js is missing")
 else:
     source = util.read_text(encoding="utf-8")
-    if not re.search(r"if\s*\(!env\.RATE_SALT\)\s*throw", source):
+    if not re.search(r"function\s+salt\s*\(\s*env\s*\)\s*\{[\s\S]{0,300}?if\s*\(\s*!env\.RATE_SALT\s*\)\s*throw", source):
         errors.append("Worker RATE_SALT must fail closed when missing")
 
 workflows = sorted((ROOT / ".github/workflows").glob("*.yml"))
