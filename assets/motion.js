@@ -62,7 +62,14 @@ if(!reduce){document.addEventListener("pointerdown",function(e){var b=e.target.c
  sp.style.cssText="width:"+s+"px;height:"+s+"px;left:"+(e.clientX-r.left-s/2)+"px;top:"+(e.clientY-r.top-s/2)+"px";b.appendChild(sp);setTimeout(function(){sp.remove()},600)})}
 
 /* ---- back to top ---- */
-var up=document.createElement("button");up.type="button";up.className="totop";up.setAttribute("aria-label","top");up.textContent="↑";document.body.appendChild(up);
+var up=document.createElement("button");up.type="button";up.className="totop";up.setAttribute("aria-label","للأعلى / Back to top");up.textContent="↑";document.body.appendChild(up);
 up.addEventListener("click",function(){window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})});
-var tick=false;addEventListener("scroll",function(){if(tick)return;tick=true;requestAnimationFrame(function(){up.classList.toggle("on",scrollY>900);tick=false})},{passive:true});
+/* Shown only while scrolling up, and hidden again after a short pause, so at rest it never covers text or controls. */
+var tick=false,lastY=scrollY,hideT=0,hide=function(){up.classList.remove("on")},
+ show=function(){up.classList.add("on");clearTimeout(hideT);hideT=setTimeout(hide,2200)};
+addEventListener("scroll",function(){if(tick)return;tick=true;requestAnimationFrame(function(){var y=scrollY;
+ if(y<=900)hide();else if(y<lastY-4)show();else if(y>lastY+4)hide();
+ lastY=y;tick=false})},{passive:true});
+up.addEventListener("touchstart",function(){clearTimeout(hideT)},{passive:true});
+up.addEventListener("focus",function(){if(scrollY>900)show()});
 })();
