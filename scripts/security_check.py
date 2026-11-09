@@ -38,19 +38,21 @@ for page in pages:
     if "script-src 'unsafe-inline'" in policy:
         warnings.append(f"{page.relative_to(ROOT)}: script-src still allows unsafe-inline")
 
-# Review cards must encode all user-controlled text before HTML insertion.
-play = ROOT / "assets/play.js"
-if not play.exists():
-    errors.append("assets/play.js is missing")
+# API-sourced review/comment fields must be escaped before HTML insertion.
+app = ROOT / "assets/app.js"
+if not app.exists():
+    errors.append("assets/app.js is missing")
 else:
-    source = play.read_text(encoding="utf-8")
-    if not re.search(r"function\\s+esc\\s*\\(", source):
-        errors.append("Review rendering must define an HTML-escaping helper")
-    for expression, label in ((r"ar\\s*=\\s*esc\\(r\\.ar\\s*\\|\\|\\s*r\\.en\\)", "Arabic/English review text"),
-                              (r"en\\s*=\\s*esc\\(r\\.en\\s*\\|\\|\\s*r\\.ar\\)", "English/Arabic review text"),
-                              (r"esc\\(r\\.name\\s*\\|\\|", "reviewer name")):
+    source = app.read_text(encoding="utf-8")
+    checks = (
+        (r"esc\\(r\\.text\\)", "review text"),
+        (r"esc\\(r\\.name\\)", "reviewer name"),
+        (r"esc\\(c\\.text\\)", "comment text"),
+        (r"esc\\(c\\.name\\)", "commenter name"),
+    )
+    for expression, label in checks:
         if not re.search(expression, source):
-            errors.append(f"Review rendering does not escape {label}")
+            errors.append(f"API rendering does not escape {label}")
 
 util = ROOT / "worker/src/util.js"
 if not util.exists():
