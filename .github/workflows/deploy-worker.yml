@@ -2,6 +2,8 @@ name: Deploy worker
 # Manual: Actions tab -> "Deploy worker" -> Run workflow. Needs the repo secrets listed in worker/README.ar.md.
 on:
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   deploy:
     runs-on: ubuntu-latest

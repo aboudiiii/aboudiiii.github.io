@@ -42,8 +42,13 @@ export function safeEqual(a, b) {
   for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return d === 0;
 }
+// Fail closed: never fall back to a guessable salt.
+export function salt(env) {
+  if (!env.RATE_SALT) throw new Error('RATE_SALT is not configured');
+  return env.RATE_SALT;
+}
 export async function visitor(req, env) {
-  return sha((req.headers.get('CF-Connecting-IP') || 'unknown') + '|' + (env.RATE_SALT || 'salt'), 16);
+  return sha((req.headers.get('CF-Connecting-IP') || 'unknown') + '|' + salt(env), 16);
 }
 // Fixed-window counter in D1. Returns true when the action is allowed.
 export async function hit(env, key, limit, ttlSec) {

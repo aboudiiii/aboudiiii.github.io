@@ -77,3 +77,9 @@ test('Telegram login: start -> bot /start login_<s> -> poll gives a session with
   assert.equal((await post(ctx.env, '/api/auth/tg/poll', { s })).status, 400); // single use
   assert.equal((await post(ctx.env, '/api/auth/tg/poll', { s: 'a'.repeat(32) })).status, 400);
 });
+
+test('worker refuses to run without RATE_SALT (fail closed)', async () => {
+  const { salt } = await import('../src/util.js');
+  assert.throws(() => salt({}), /RATE_SALT/);
+  assert.equal(salt({ RATE_SALT: 'x' }), 'x');
+});

@@ -1,9 +1,9 @@
-import { clean, normEmail, now, sha, randomHex, safeEqual, hit, visitor, botCheck } from './util.js';
+import { clean, normEmail, now, sha, randomHex, safeEqual, hit, visitor, botCheck, salt } from './util.js';
 import { sendMail, codeMail } from './mail.js';
 import { ordersOf } from './orders.js';
 
 const CODE_TTL = 10 * 60 * 1000, SESSION_TTL = 30 * 24 * 3600 * 1000, RESEND_MS = 60 * 1000;
-const codeHash = (env, email, code) => sha(`${code}|${email}|${env.RATE_SALT || 'salt'}`, 40);
+const codeHash = (env, email, code) => sha(`${code}|${email}|${salt(env)}`, 40);
 
 export async function requestCode(req, env) {
   let b;
