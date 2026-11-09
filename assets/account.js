@@ -43,11 +43,24 @@ var af=$("accForm"),cf=$("codeForm"),mail="";
 function show(v){$("accIn").hidden=v!=="in";$("accCode").hidden=v!=="code";$("accOut").hidden=v!=="out"}
 function money(n){return n?"$"+n:""}
 function renderOrders(d){
- $("accEmail").textContent=d.email;var P=window.HAYALI_NAMES||{};
+ if(/^tg:/.test(d.email)){$("accEmail").innerHTML=sp("حساب تيليجرام","Telegram account")}else $("accEmail").textContent=d.email;var P=window.HAYALI_NAMES||{};
  $("accList").innerHTML=d.orders.length?d.orders.map(function(o){
   var dt=o.paid_at?new Date(o.paid_at).toISOString().slice(0,10):"";
   return '<li><b dir="ltr">'+esc(o.code)+'</b> · <bdi>'+esc(dt)+'</bdi> '+esc(money(o.total))+'<br><small>'+o.items.map(function(k){return esc((P[k]&&P[k][L()])||k)}).join(" · ")+'</small></li>'}).join(""):'<li>'+sp("لا توجد مشتريات مرتبطة بهذا البريد بعد.","No purchases are linked to this email yet.")+'</li>';
  show("out")}
+var tgTimer=null;
+function tgPoll(s,end){if(Date.now()>end){msg("tgSt","انتهت المهلة. اضغط الزر من جديد.","Timed out. Tap the button again.",true);$("tgLogin").disabled=false;return}
+ api("/api/auth/tg/poll",{s:s}).then(function(d){
+  if(d.ok&&d.token){tok=d.token;store(tok);$("tgOpen").hidden=true;$("tgLogin").disabled=false;msg("tgSt","","");load();return}
+  if(d.ok||d.status===undefined){tgTimer=setTimeout(function(){tgPoll(s,end)},2500);return}
+  msg("tgSt","انتهت الصلاحية. اضغط الزر من جديد.","Expired. Tap the button again.",true);$("tgLogin").disabled=false})}
+if(TG&&$("tgBox")){$("tgBox").hidden=false;
+ $("tgLogin").addEventListener("click",function(){var b=this;b.disabled=true;clearTimeout(tgTimer);
+  api("/api/auth/tg/start",{website:""}).then(function(d){
+   if(!d.ok){b.disabled=false;err("tgSt",d);return}
+   var u="https://t.me/"+TG+"?start=login_"+d.s,o=$("tgOpen");o.href=u;o.hidden=false;
+   msg("tgSt","اضغط «افتح تيليجرام» ثم Start في البوت. ننتظر تأكيدك هنا…","Tap “Open Telegram”, then Start in the bot. Waiting for you here…");
+   tgPoll(d.s,Date.now()+5*60*1000)})})}
 function load(){if(!tok){show("in");return}
  api("/api/me",null,true).then(function(d){if(d.ok)renderOrders(d);else{if(d.status===401){tok=null;store("")}show("in")}})}
 if(af)af.addEventListener("submit",function(e){e.preventDefault();var b=af.querySelector("button");b.disabled=true;mail=af.email.value;

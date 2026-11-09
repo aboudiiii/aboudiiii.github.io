@@ -34,7 +34,10 @@ export async function stats(env) {
 }
 
 export async function ordersOf(env, email) {
-  const o = await env.DB.prepare('SELECT code, total_usd, paid_at FROM orders WHERE email = ? ORDER BY paid_at DESC LIMIT 100').bind(email).all();
+  const isTg = /^tg:\d{1,20}$/.test(email);
+  const o = isTg
+    ? await env.DB.prepare('SELECT code, total_usd, paid_at FROM orders WHERE telegram_id = ? ORDER BY paid_at DESC LIMIT 100').bind(email.slice(3)).all()
+    : await env.DB.prepare('SELECT code, total_usd, paid_at FROM orders WHERE email = ? ORDER BY paid_at DESC LIMIT 100').bind(email).all();
   if (!o.results.length) return [];
   const out = [];
   for (const x of o.results) {

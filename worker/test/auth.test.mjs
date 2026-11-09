@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { setup, post, get, old } from './helpers.mjs';
+import { setup, post, get, old, say } from './helpers.mjs';
 
 const codeFrom = (mails) => /(\d{6})/.exec(mails()[mails().length - 1].body.htmlContent)[1];
 
@@ -61,4 +61,19 @@ test('same answer whether or not the email has orders (no account enumeration)',
   const a = await (await post(ctx.env, '/api/auth/request', { email: 'known@test.com', t: old() })).json();
   const b = await (await post(ctx.env, '/api/auth/request', { email: 'unknown@test.com', t: old() }, { ip: '8.8.8.8' })).json();
   assert.deepEqual(a, b);
+});
+
+test('Telegram login: start -> bot /start login_<s> -> poll gives a session with the Telegram purchases', async () => {
+  const ctx = setup();
+  await post(ctx.env, '/api/orders', { code: 'T1', items: ['y'], telegram_id: 777, total_usd: 3.33 }, { headers: { 'X-Bot-Key': 'botkey' } });
+  const { s } = await (await post(ctx.env, '/api/auth/tg/start', { t: old() })).json();
+  assert.match(s, /^[a-f0-9]{32}$/);
+  assert.equal((await (await post(ctx.env, '/api/auth/tg/poll', { s })).json()).pending, true);
+  await say(ctx.env, '/start login_' + s, 777);
+  const r = await (await post(ctx.env, '/api/auth/tg/poll', { s })).json();
+  assert.equal(r.email, 'tg:777');
+  const me = await (await get(ctx.env, '/api/me', { headers: { Authorization: 'Bearer ' + r.token } })).json();
+  assert.equal(me.orders.length, 1);
+  assert.equal((await post(ctx.env, '/api/auth/tg/poll', { s })).status, 400); // single use
+  assert.equal((await post(ctx.env, '/api/auth/tg/poll', { s: 'a'.repeat(32) })).status, 400);
 });
