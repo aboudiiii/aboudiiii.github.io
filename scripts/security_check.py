@@ -35,7 +35,7 @@ for page in pages:
     for directive in required_csp:
         if directive not in policy:
             errors.append(f"{page.relative_to(ROOT)}: CSP missing {directive}")
-    if "script-src 'unsafe-inline'" in policy:
+    if re.search(r"script-src[^;]*['"]unsafe-inline['"]", policy, re.IGNORECASE):
         warnings.append(f"{page.relative_to(ROOT)}: script-src still allows unsafe-inline")
 
 # User-provided review content must be escaped before HTML insertion.
