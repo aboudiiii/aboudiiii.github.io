@@ -7,6 +7,8 @@ on:
       confirm:
         description: 'Type DELETE to confirm'
         required: true
+permissions:
+  contents: read
 jobs:
   clear:
     if: ${{ github.event.inputs.confirm == 'DELETE' }}
