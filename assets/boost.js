@@ -90,7 +90,8 @@ if(sdet){
 })();
 
 /* ---- 8. daily challenge ---- */
-var Q=[
+var QL={
+ y:[
  ["ما ناتج ‎print(2 + 3 * 4)‎ في بايثون؟",["14","20","24"],0,"الضرب قبل الجمع: 3*4=12 ثم 2+12=14."],
  ["أي دالة تعطيك طول القائمة؟",["size()","len()","count()"],1,"len(قائمة) ترجع عدد العناصر."],
  ["ما نوع القيمة ‎3.0‎؟",["int","float","str"],1,"أي رقم فيه فاصلة عشرية هو float."],
@@ -104,8 +105,39 @@ var Q=[
  ["كيف تضيف عنصراً لنهاية قائمة؟",["add()","append()","push()"],1,"قائمة.append(عنصر)."],
  ["ما ناتج ‎'hello'[1]‎؟",["h","e","l"],1,"الفهرسة تبدأ من ٠ فالحرف الثاني e."],
  ["ما ناتج ‎len('Python')‎؟",["5","6","7"],1,"Python ست حروف."],
- ["أي نوع بيانات يحفظ أزواج مفتاح وقيمة؟",["list","dict","tuple"],1,"القاموس dict."]
-];
+ ["أي نوع بيانات يحفظ أزواج مفتاح وقيمة؟",["list","dict","tuple"],1,"القاموس dict."],
+ ["ما ناتج ‎10 ** 2‎ في بايثون؟",["20","100","12"],1,"** تعني الأُس: 10 أُس 2 = 100."],
+ ["ما ناتج ‎'Hi'.upper()‎؟",["HI","hi","Hi"],0,"upper() يحوّل الحروف إلى كبيرة."],
+ ["ما ناتج ‎not True‎؟",["True","False","None"],1,"not يعكس القيمة."],
+ ["أي كلمة تتخطى بقية الدورة وتنتقل للتالية؟",["skip","continue","next"],1,"continue تنتقل إلى الدورة التالية."],
+ ["أي دالة تقرأ نصاً يكتبه المستخدم؟",["input()","read()","scan()"],0,"input() ترجع ما كتبه المستخدم كنص."],
+ ["ما ناتج ‎int('7') + 1‎؟",["71","8","خطأ"],1,"int تحوّل النص إلى رقم فيصير 7+1=8."],
+ ["ما ناتج ‎[1, 2, 3][-1]‎؟",["1","3","خطأ"],1,"الفهرس -1 هو آخر عنصر."],
+ ["ما ناتج ‎x = 5 ثم x += 2‎ ثم طباعة x؟",["5","7","52"],1,"+= تضيف إلى القيمة الحالية."]],
+ j:[
+ ["أي كلمة تجعل المتغير ثابتاً في Java؟",["final","const","static"],0,"المتغير final لا يمكن تغيير قيمته بعد إسنادها."],
+ ["ما اسم الدالة التي يبدأ منها تنفيذ برنامج Java؟",["start","main","run"],1,"التنفيذ يبدأ من public static void main."],
+ ["ما ناتج ‎5 / 2‎ إذا كان الرقمان من نوع int؟",["2.5","2","3"],1,"القسمة بين عددين صحيحين تحذف الكسر."],
+ ["أي نوع يخزّن نصاً في Java؟",["char","String","text"],1,"النص نوعه String (بحرف S كبير)."],
+ ["أي أمر يطبع سطراً في Java؟",["System.out.println","echo","print()"],0,"System.out.println تطبع ثم تنزل سطراً."],
+ ["ما فهرس أول عنصر في المصفوفة؟",["0","1","-1"],0,"الفهرسة تبدأ من صفر."],
+ ["أي كلمة تُنشئ كائناً جديداً؟",["create","new","make"],1,"نكتب new ثم اسم الصنف."]],
+ v:[
+ ["أي كلمة تعرّف متغيراً لا يُعاد إسناده في JavaScript؟",["const","var","set"],0,"const تمنع إعادة الإسناد."],
+ ["ما ناتج ‎typeof \"5\"‎؟",["number","string","text"],1,"أي شيء بين علامتي تنصيص هو string."],
+ ["ما ناتج ‎'5' + 3‎ في JavaScript؟",["8","53","خطأ"],1,"عند الجمع مع نص يُحوَّل الرقم إلى نص فيصير 53."],
+ ["ما ناتج ‎[1, 2, 3].length‎؟",["2","3","4"],1,"length يعطي عدد العناصر."],
+ ["أي علامة هي المساواة الصارمة (القيمة والنوع)؟",["==","===","="],1,"=== تقارن القيمة والنوع معاً."],
+ ["أي أمر يطبع في الكونسول؟",["console.log","print","echo"],0,"console.log تطبع في الكونسول."]],
+ x:[
+ ["أي ملف رأس نحتاجه لاستعمال cout؟",["<iostream>","<stdio>","<cout>"],0,"cout و cin تأتي من iostream."],
+ ["ما ناتج ‎7 / 2‎ إذا كان الرقمان int في C++؟",["3.5","3","4"],1,"القسمة بين int تحذف الكسر."],
+ ["بماذا تنتهي الجملة في C++؟",["نقطة .","فاصلة منقوطة ;","نقطتان :"],1,"كل جملة تنتهي بـ ;"],
+ ["أي رمز يعطي عنوان المتغير في الذاكرة؟",["&","*","#"],0,"&x هو عنوان x."],
+ ["ما اسم الدالة التي يبدأ منها البرنامج؟",["start","main","begin"],1,"التنفيذ يبدأ من int main()."],
+ ["أي كلمة تجعل المتغير ثابتاً؟",["const","fixed","final"],0,"const تمنع تغيير القيمة."]]
+};
+var Q=[];(function(){var n=Math.max(QL.y.length,QL.j.length,QL.v.length,QL.x.length);for(var i=0;i<n;i++)["y","j","v","x"].forEach(function(l){if(QL[l][i])Q.push(QL[l][i].concat(l))})})();
 (function(){
  var host=$("daily-box");if(!host)return;
  var day=Math.floor((Date.now()+3*3600000)/86400000),q=Q[day%Q.length],key="daily_"+day,done=store(key);
@@ -117,7 +149,7 @@ var Q=[
    var c=sel==null?"":(i===q[2]?" good":(i===sel?" bad":""));
    return '<button type="button" class="dqb'+c+'" data-i="'+i+'"'+(sel!=null?" disabled":"")+'><bdi dir="ltr">'+esc(o)+'</bdi></button>'}).join("")+'</div>'
    +(sel!=null?'<p class="dqe" aria-live="polite">'+(ok?"✅ صحيح! ":"❌ ليس هذا. ")+esc(q[3])+'</p>':"")
-   +'<p class="dqs">🔥 '+sp("أيام متتالية: "+st,"Day streak: "+st)+'</p>'+(sel!=null?'<p class="dqs">'+sp("عُد غداً لسؤال جديد. وللتعمّق، دفتر بايثون يشرح كل هذا خطوة بخطوة.","Come back tomorrow for a new one. The Python book explains all of this step by step.")+'</p><a class="btn" href="#shop-y">'+(L()==="ar"?"شاهد دفتر بايثون":"See the Python book")+'</a>':"")+'</div>'}
+   +'<p class="dqs">🔥 '+sp("أيام متتالية: "+st,"Day streak: "+st)+'</p>'+(sel!=null?'<p class="dqs">'+sp("عُد غداً لسؤال جديد. وللتعمّق، دفاترنا تشرح هذا خطوة بخطوة.","Come back tomorrow for a new one. Our books explain all of this step by step.")+'</p><a class="btn" href="#shop-'+q[4]+'">'+(L()==="ar"?"شاهد الدفتر المناسب":"See the matching book")+'</a>':"")+'</div>'}
  paint(done==null?null:parseInt(done,10));
  host.addEventListener("click",function(e){var b=e.target.closest(".dqb");if(!b||store(key)!=null)return;
   var i=parseInt(b.getAttribute("data-i"),10);store(key,String(i));

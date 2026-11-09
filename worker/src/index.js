@@ -3,7 +3,7 @@
 import { json, corsHeaders } from './util.js';
 import { feed, submit } from './feedback.js';
 import { ingest, stats } from './orders.js';
-import { requestCode, verifyCode, me, logout } from './auth.js';
+import { requestCode, verifyCode, tgStart, tgPoll, me, logout } from './auth.js';
 import { subscribeEmail, confirmEmail, unsubscribe } from './subs.js';
 import { webhook, setup } from './tg.js';
 
@@ -21,6 +21,8 @@ export default {
       if (p === '/api/orders' && m === 'POST') return reply(() => ingest(req, env));
       if (p === '/api/auth/request' && m === 'POST') return reply(() => requestCode(req, env));
       if (p === '/api/auth/verify' && m === 'POST') return reply(() => verifyCode(req, env));
+      if (p === '/api/auth/tg/start' && m === 'POST') return reply(() => tgStart(req, env));
+      if (p === '/api/auth/tg/poll' && m === 'POST') return reply(() => tgPoll(req, env));
       if (p === '/api/auth/logout' && m === 'POST') return reply(() => logout(req, env));
       if (p === '/api/me' && m === 'GET') return reply(() => me(req, env));
       if (p === '/api/subscribe' && m === 'POST') return reply(() => subscribeEmail(req, env));

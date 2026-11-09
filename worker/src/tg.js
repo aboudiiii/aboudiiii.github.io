@@ -1,4 +1,4 @@
-import { esc, safeEqual } from './util.js';
+import { esc, safeEqual, sha } from './util.js';
 import { productName } from './products.js';
 import { tg } from './tgapi.js';
 import { addTelegram, removeTelegram, createAnnouncement, cancelAnnouncement, sendAnnouncement } from './subs.js';
@@ -34,6 +34,13 @@ async function onMessage(env, m) {
   const chat = m.chat && m.chat.id;
   if (!chat) return;
   const owner = String(m.from && m.from.id) === String(env.TG_OWNER_ID);
+  const lg = /^\/start(?:@\w+)?\s+login_([a-f0-9]{32})\s*$/.exec(text);
+  if (lg) {
+    const key = 'tgq:' + (await sha(lg[1], 40));
+    const r = await env.DB.prepare("UPDATE login_codes SET code_hash = ? WHERE email = ? AND expires_at > ? AND code_hash = ''").bind('ok:' + chat, key, Date.now()).run();
+    const done = r && r.meta && r.meta.changes > 0;
+    return void (await tg(env, 'sendMessage', { chat_id: chat, text: done ? 'تم تسجيل دخولك ✅ ارجع إلى الموقع، ستفتح حسابك تلقائيًا.' : 'انتهت صلاحية رابط الدخول. ارجع للموقع واضغط الزر من جديد.' }));
+  }
   if (/^\/(start|id)\b/.test(text)) {
     if (String(env.TG_OWNER_ID) === '0') return void (await tg(env, 'sendMessage', { chat_id: chat, text: 'Chat ID: ' + chat }));
     const fresh = await addTelegram(env, chat);
