@@ -189,7 +189,7 @@ function renderDetail(anim){
  var k=curK,x=P[k],on=isOn(k),th="";
  if(x.th){th='<div class="thumbs'+(x.th.length===3?' three':'')+'">'+x.th.map(function(t,i){var big=x.big?x.big[i]:t;return '<button class="z" type="button" data-big="assets/'+big+'.jpg" aria-label="preview '+(i+1)+'"><img alt="'+esc(x.ar+" — "+(i+1))+'" loading="lazy" src="assets/'+t+'.jpg"></button>'}).join("")+'<p class="hint">'+sp("اضغط على أي صفحة لتكبيرها","Tap a page to enlarge")+'</p></div>'}
  var iqd='<em class="iqd">'+sp("≈ "+iq(x.p)+" د.ع","≈ "+iq(x.p)+" IQD")+'</em>';
- sdet.innerHTML='<div><div class="book"><img class="cover" width="520" height="673" alt="'+esc("غلاف "+x.ar+" / "+x.en+" cover")+'" src="assets/'+x.img+'.jpg?v=4"></div></div>'
+ sdet.innerHTML='<div><div class="book" role="button" tabindex="0" aria-label="افتح غلاف الكتاب / Open book cover"><img class="cover" width="520" height="673" alt="'+esc("غلاف "+x.ar+" / "+x.en+" cover")+'" src="assets/'+x.img+'.jpg?v=4"></div></div>'
   +'<div><span class="tag i">'+sp(x.tag_ar,x.tag_en)+'</span><h3>'+sp(x.ar,x.en)+'</h3>'+rvLine(k)+'<p class="desc">'+sp(x.d_ar,x.d_en)+'</p>'
   +'<ul class="chk">'+x.inc_ar.map(function(t,i){return '<li>'+sp(t,x.inc_en[i])+'</li>'}).join("")+'</ul>'
   +'<div class="buy"><div class="price">$'+x.p+iqd+'</div></div>'
@@ -211,7 +211,12 @@ function syncShop(){
 }
 chipsEl.addEventListener("click",function(e){var b=e.target.closest("button[data-cat]");if(!b)return;curCat=b.getAttribute("data-cat");renderChips();renderList();renderDetail(true)});
 slist.addEventListener("click",function(e){var as=e.target.closest("[data-addsaved]");if(as){var n=0;SAVED.forEach(function(k){if(!isOn(k)){setOn(k,true);n++}});toast(n?"أُضيفت المحفوظات إلى طلبك":"كلها في طلبك مسبقاً",n?"Saved items added to your order":"All already in your order");return}var b=e.target.closest(".srow");if(!b)return;selectKey(b.getAttribute("data-k"),window.innerWidth<=900)});
+sdet.addEventListener("keydown",function(e){
+ if((e.key==="Enter"||e.key===" ")&&e.target.classList&&e.target.classList.contains("book")){e.preventDefault();var coverImg=e.target.querySelector("img.cover");if(coverImg&&lb&&lbi){lbi.src=coverImg.currentSrc||coverImg.src;lbi.alt=coverImg.alt;lb.classList.add("on")}}
+});
 sdet.addEventListener("click",function(e){
+ var cover=e.target.closest(".book[role=button]");
+ if(cover){var coverImg=cover.querySelector("img.cover");if(coverImg&&lb&&lbi){lbi.src=coverImg.currentSrc||coverImg.src;lbi.alt=coverImg.alt;lb.classList.add("on")}return}
  var a=e.target.closest("[data-add]");
  if(a){var k=a.getAttribute("data-add"),v=!isOn(k);setOn(k,v);toast(v?"أُضيف إلى طلبك":"أُزيل من طلبك",v?"Added to your order":"Removed from your order");return}
  var d=e.target.closest("[data-addboth]");
