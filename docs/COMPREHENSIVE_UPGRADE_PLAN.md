@@ -37,7 +37,7 @@ The upgrade will extend these pieces, not replace them with a framework or a new
 - Sales analytics expose product order counts, not a complete finance report; historical orders may have missing totals.
 - The customer session token is currently stored in localStorage. CSP still permits inline scripts; these are dedicated security-hardening tasks.
 - The checkout/payment and file-delivery bot is external to this repository. A coupon must not reduce the storefront total until the bot validates the same coupon and amount before accepting payment.
-- An AI assistant needs a configured inference service, server-side credentials/bindings, abuse controls and a defined monthly usage budget. No AI provider is assumed or secretly enabled.
+- AI response/model features are explicitly out of scope by the owner's decision; no model provider, inference binding, AI API or AI usage budget will be added.
 
 ## Delivery phases
 
@@ -52,7 +52,7 @@ The upgrade will extend these pieces, not replace them with a framework or a new
 - Add owner-only endpoints for dashboard summary, order lookup, coupon management and audit events.
 - Never expose an admin key in HTML, JavaScript, Git history or localStorage.
 - Add a D1 migration for coupons and audit records; do not edit `0001_init.sql`.
-- Add tests for unauthenticated access, non-owner Telegram users, invalid input, expiry, usage limits and disabled coupons.
+- Add tests for unauthenticated access, non-owner Telegram users, invalid input and coupon lifecycle.
 - Build a separate `admin.html` interface; hide it from public navigation and search indexing.
 
 ### Phase 3 — Coupons and promotions
