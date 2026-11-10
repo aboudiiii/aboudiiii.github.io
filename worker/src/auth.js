@@ -72,11 +72,22 @@ export async function verifyCode(req, env) {
   return [{ ok: true, token, email }, 200];
 }
 
-async function sessionOf(req, env) {
+export async function sessionOf(req, env) {
   const m = /^Bearer ([a-f0-9]{64})$/.exec(req.headers.get('Authorization') || '');
   if (!m) return null;
   const s = await env.DB.prepare('SELECT email, expires_at FROM sessions WHERE token_hash = ?').bind(await sha(m[1], 64)).first();
   return s && s.expires_at > now() ? { email: s.email, hash: await sha(m[1], 64) } : null;
+}
+
+
+export async function ownerSession(req, env) {
+  const s = await sessionOf(req, env);
+  if (!s) return { ok: false, status: 401, error: 'unauthorized' };
+  const owner = String(env.TG_OWNER_ID || '');
+  if (!/^\d{1,20}$/.test(owner) || owner === '0' || s.email !== 'tg:' + owner) {
+    return { ok: false, status: 403, error: 'forbidden' };
+  }
+  return { ok: true, session: s };
 }
 
 export async function me(req, env) {

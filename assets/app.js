@@ -80,6 +80,19 @@ list.innerHTML=h;
 var boxes=[].slice.call(list.querySelectorAll("input")), msg=document.getElementById("msg"),
     totalEl=document.getElementById("total"), saveEl=document.getElementById("saving"), tg=document.getElementById("tg"), st=document.getElementById("state"),
     bar=document.getElementById("cartbar"), cartn=document.getElementById("cartn"), cartt=document.getElementById("cartt");
+var CART_KEY="hayali_cart_v1";
+function readCart(){
+ try{
+  var raw=JSON.parse(localStorage.getItem(CART_KEY)||"[]");
+  return Array.isArray(raw)?raw.filter(function(k,i,a){return typeof k==="string"&&P[k]&&a.indexOf(k)===i}):[];
+ }catch(e){return []}
+}
+function saveCart(){
+ try{localStorage.setItem(CART_KEY,JSON.stringify(boxes.filter(function(b){return b.checked}).map(function(b){return b.value})))}
+ catch(e){}
+}
+readCart().forEach(function(k){var b=document.getElementById("c_"+k);if(b)b.checked=true});
+
 function sizeVal(){var r=document.querySelector('input[name="size"]:checked');return r?r.value:"A4"}
 function calc(){
  var sel=boxes.filter(function(b){return b.checked}).map(function(b){return b.value});
@@ -98,6 +111,7 @@ function text(c){
   :"Hello, I'd like to buy these PDF copies:\n"+lines+szEn+"\nTotal: "+c.total+" USD\nI understand these are digital files only, with no printing or shipping.";
 }
 function refresh(){
+ saveCart();
  var c=calc(), t=text(c);
  totalEl.textContent="$"+c.total; var ti=document.getElementById("totaliqd"); ti.textContent=c.total?("≈ "+iq(c.total)+(L()==="ar"?" دينار عراقي":" IQD")):""; msg.textContent=t;
  saveEl.textContent=c.saved?((L()==="ar"?"وفّرت ":"You save ")+"⁦$"+c.saved+"⁩ — "+c.deal):"";
