@@ -2,7 +2,7 @@ import { clean, normEmail, now, sha, randomHex, safeEqual, hit, visitor, botChec
 import { sendMail, codeMail } from './mail.js';
 import { ordersOf } from './orders.js';
 
-const CODE_TTL = 10 * 60 * 1000, SESSION_TTL = 30 * 24 * 3600 * 1000, RESEND_MS = 60 * 1000;
+const CODE_TTL = 10 * 60 * 1000, SESSION_TTL = 12 * 60 * 60 * 1000, RESEND_MS = 60 * 1000;
 const codeHash = (env, email, code) => sha(`${code}|${email}|${salt(env)}`, 40);
 
 export async function requestCode(req, env) {
