@@ -37,4 +37,20 @@ for p in pages:
         if m and not os.path.exists(m.group(1)): issues.append('ERROR og:image missing file '+m.group(1)); errors+=1
     if issues: print(p,'|',' ; '.join(issues))
 
+# The interactive preview builds image URLs dynamically; validate those assets too.
+preview_js='assets/play-20261110.js'
+if os.path.exists(preview_js):
+    js=open(preview_js,encoding='utf8').read()
+    for name in re.findall(r'\{f:"([^"]+)"',js):
+        path=f'assets/pg/{name}.png'
+        if not os.path.isfile(path):
+            print('ERROR PREVIEW COLORING ASSET MISSING',path); errors+=1
+    for key,count in re.findall(r'\{k:"([^"]+)",n:(\d+)',js):
+        for page in range(1,int(count)+1):
+            path=f'assets/pg/{key}{page}.jpg'
+            if not os.path.isfile(path):
+                print('ERROR BOOK PREVIEW ASSET MISSING',path); errors+=1
+else:
+    print('ERROR PREVIEW SCRIPT MISSING',preview_js); errors+=1
+
 sys.exit(1 if errors else 0)
