@@ -180,18 +180,6 @@ html[dir="rtl"] .hero .kick{letter-spacing:0}
 
 
 /* Final classic finish: mosque silhouette, refined collection cards and section rhythm. */
-.hero{isolation:isolate}
-.hero-mosque{
-  position:absolute;z-index:0;left:50%;bottom:82px;transform:translateX(-50%);
-  width:min(94%,820px);height:auto;max-height:235px;overflow:visible;
-  color:#e5bd69;opacity:.17;pointer-events:none;
-  filter:drop-shadow(0 3px 12px rgba(224,180,91,.16))
-}
-.hero>*:not(.hero-mosque){position:relative;z-index:1}
-:root[data-theme="light"] .hero-mosque{color:#9a7837;opacity:.15}
-@media(prefers-color-scheme:light){
-  :root:not([data-theme="dark"]) .hero-mosque{color:#9a7837;opacity:.15}
-}
 .sec .head h2{color:var(--text);text-wrap:balance}
 .sec .head:after{
   content:"";display:block;width:min(150px,34vw);height:2px;margin:12px auto 0;
@@ -217,9 +205,28 @@ details{border-color:color-mix(in srgb,var(--gold) 30%,var(--line));background:v
 details[open] summary{color:var(--gold)}
 footer{border-top:1px solid color-mix(in srgb,var(--gold) 48%,var(--line))}
 @media(max-width:640px){
-  .hero-mosque{bottom:74px;width:98%;max-height:175px;opacity:.13}
   .hero .shelf{position:relative}
 }
 @media(prefers-reduced-motion:reduce){
   .ncard:hover,.pk:hover,.step:hover,.plaque:hover,.product:hover{transform:none}
+}
+
+
+/* Refined hero rhythm without illustrated mosque artwork. */
+.hero{padding-top:clamp(30px,4vw,42px)}
+.hero .kick::before{
+  content:"✦";display:block;margin:0 auto 7px;color:#e7c477;
+  font-size:19px;line-height:1;letter-spacing:0;text-shadow:0 2px 12px rgba(231,196,119,.25)
+}
+:root[data-theme="light"] .hero .kick::before{color:#9a7837}
+.hero .shelf{margin-top:28px;max-width:860px}
+.hero .shelf a{flex:0 1 auto}
+.hero .shelf img{object-fit:contain}
+.hero .plank{max-width:860px}
+@media(prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .hero .kick::before{color:#9a7837}
+}
+@media(max-width:640px){
+  .hero{padding-top:24px}
+  .hero .shelf{margin-top:21px}
 }
