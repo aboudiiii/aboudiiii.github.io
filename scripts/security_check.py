@@ -36,7 +36,13 @@ for page in pages:
         if directive not in policy:
             errors.append(f"{page.relative_to(ROOT)}: CSP missing {directive}")
     if re.search(r"""script-src[^;]*['"]unsafe-inline['"]""", policy, re.IGNORECASE):
-        warnings.append(f"{page.relative_to(ROOT)}: script-src still allows unsafe-inline")
+        errors.append(f"{page.relative_to(ROOT)}: script-src must not allow unsafe-inline")
+    executable_inline = re.findall(
+        r"<script\\b([^>]*)>([\\s\\S]*?)</script\\s*>", source, re.IGNORECASE
+    )
+    for attrs, body in executable_inline:
+        if "application/ld+json" not in attrs.lower() and body.strip():
+            errors.append(f"{page.relative_to(ROOT)}: executable inline script must be externalized")
 
 # User-provided review content must be escaped before HTML insertion.
 play = ROOT / "assets/play.js"
@@ -67,8 +73,12 @@ for workflow in workflows:
         errors.append(f"{workflow.relative_to(ROOT)}: explicit least-privilege permissions missing")
 
 account = ROOT / "assets/account.js"
-if account.exists() and re.search(r"localStorage.*hayali_session|hayali_session", account.read_text(encoding="utf-8")):
-    warnings.append("Customer session token is stored in localStorage; mitigate XSS and plan HttpOnly-cookie migration")
+if account.exists():
+    account_source = account.read_text(encoding="utf-8")
+    if re.search(r"localStorage.*hayali_session", account_source):
+        errors.append("Customer session token must not be persisted in localStorage")
+    if "sessionStorage.getItem(KEY)" in account_source:
+        warnings.append("Session token remains JavaScript-readable in sessionStorage; HttpOnly cookies require a same-site API domain")
 
 if errors:
     print("SECURITY CHECK: FAIL")
