@@ -72,4 +72,33 @@ addEventListener("scroll",function(){if(tick)return;tick=true;requestAnimationFr
  lastY=y;tick=false})},{passive:true});
 up.addEventListener("touchstart",function(){clearTimeout(hideT)},{passive:true});
 up.addEventListener("focus",function(){if(scrollY>900)show()});
+
+/* ---- refined section entrances + page-turn feedback ---- */
+if(!reduce&&"IntersectionObserver" in window){
+ var revealObserver=new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+   if(entry.isIntersecting){entry.target.classList.add("motion-in");revealObserver.unobserve(entry.target)}
+  });
+ },{threshold:.14,rootMargin:"0px 0px -36px 0px"});
+ $(".sec>.head,.pv,.qz,.pgm,.order,.dqwrap,.free").forEach(function(el){revealObserver.observe(el)});
+}
+/* Animate a book page only after its new image has actually loaded. */
+var pageImage=$("#vimg");
+if(pageImage&&"MutationObserver" in window){
+ var pageObserver=new MutationObserver(function(){
+  pageImage.addEventListener("load",function(){
+   pageImage.classList.remove("page-turn");void pageImage.offsetWidth;pageImage.classList.add("page-turn");
+  },{once:true});
+ });
+ pageObserver.observe(pageImage,{attributes:true,attributeFilter:["src"]});
+}
+/* Give dynamically selected product details a soft entrance without changing their layout. */
+var detail=$("#sdetail");
+if(detail&&"MutationObserver" in window){
+ var detailObserver=new MutationObserver(function(){
+  detail.classList.remove("detail-arrive");void detail.offsetWidth;detail.classList.add("detail-arrive");
+ });
+ detailObserver.observe(detail,{childList:true,subtree:true});
+}
+
 })();
