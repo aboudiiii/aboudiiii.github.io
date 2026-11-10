@@ -7,7 +7,7 @@ function L(){return root.getAttribute("data-lang")==="en"?"en":"ar"}
 function sp(a,e){return '<span data-l="ar">'+a+'</span><span data-l="en">'+e+'</span>'}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function $(id){return document.getElementById(id)}
-function store(v){try{if(v===undefined)return localStorage.getItem(KEY);if(v)localStorage.setItem(KEY,v);else localStorage.removeItem(KEY)}catch(e){}return null}
+function store(v){try{localStorage.removeItem(KEY);if(v===undefined)return sessionStorage.getItem(KEY);if(v)sessionStorage.setItem(KEY,v);else sessionStorage.removeItem(KEY)}catch(e){}return null}
 var tok=store();
 function api(path,body,auth){
  var h={"Content-Type":"application/json"};if(auth&&tok)h.Authorization="Bearer "+tok;

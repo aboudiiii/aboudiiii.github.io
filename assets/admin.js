@@ -2,7 +2,7 @@
 "use strict";
 var API=(window.HAYALI_API||"").replace(/\/$/,""),BOT=window.HAYALI_TG_BOT||"",KEY="hayali_session";
 function $(id){return document.getElementById(id)}
-function token(v){try{if(v===undefined)return localStorage.getItem(KEY)||"";if(v)localStorage.setItem(KEY,v);else localStorage.removeItem(KEY)}catch(e){}return ""}
+function token(v){try{localStorage.removeItem(KEY);if(v===undefined)return sessionStorage.getItem(KEY)||"";if(v)sessionStorage.setItem(KEY,v);else sessionStorage.removeItem(KEY)}catch(e){}return ""}
 var tok=token(),pollTimer=null,lastSummary=null,lastCoupons=[];
 function status(id,msg,kind){var n=$(id);n.textContent=msg||"";n.className="status"+(kind?" "+kind:"")}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
