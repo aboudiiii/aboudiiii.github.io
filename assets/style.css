@@ -575,3 +575,81 @@ html[dir="rtl"] .hero h1{line-height:1.4}
 .tglogin .note{margin:0}
 .art pre{direction:ltr;text-align:left;overflow-x:auto;padding:12px 14px;border-radius:12px;background:var(--surface2);border:1px solid var(--line);font-size:.95em}
 .rvlink{display:inline-block;padding:7px 4px;margin:-7px -4px}
+
+
+/* ===== Product detail pages: consistent, responsive presentation ===== */
+.doc{
+  width:min(100%,900px);padding:clamp(22px,4vw,42px);
+  border-color:color-mix(in srgb,var(--gold) 38%,var(--line));
+}
+.doc .bkhead{
+  grid-template-columns:minmax(0,clamp(170px,27%,250px)) minmax(0,1fr);
+  gap:clamp(20px,4vw,38px);align-items:center;
+  padding-bottom:clamp(22px,4vw,34px);
+  border-bottom:1px solid color-mix(in srgb,var(--gold) 32%,var(--line));
+}
+.doc .bkhead>img{
+  width:100%;max-width:250px;justify-self:center;aspect-ratio:520/673;
+  object-fit:cover;border:1px solid color-mix(in srgb,var(--gold) 40%,var(--line));
+  border-radius:12px;box-shadow:0 18px 34px -17px rgba(0,0,0,.55);
+}
+.doc .bktag{
+  display:inline-flex;align-items:center;padding:5px 12px;margin-bottom:9px;
+  border:1px solid color-mix(in srgb,var(--gold) 45%,var(--line));
+  border-radius:999px;background:var(--gold-soft);letter-spacing:.02em;
+}
+.doc .bkhead h1{line-height:1.35;text-wrap:balance}
+.doc .bkhead>div>p:not(.bktag):not(.bkprice):not(.bkcta){
+  margin-top:10px;line-height:1.9;font-size:clamp(15px,1.7vw,17px)
+}
+.doc .bkprice{
+  display:flex;flex-wrap:wrap;gap:9px 14px;align-items:baseline;
+  width:max-content;max-width:100%;padding:8px 14px;margin:17px 0 12px;
+  border:1px solid color-mix(in srgb,var(--gold) 35%,var(--line));
+  border-radius:12px;background:var(--surface2)
+}
+.doc .bkprice b{font-size:clamp(29px,4vw,36px);line-height:1.2}
+.doc .bkcta{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}
+.doc .bkcta .btn{min-height:48px;flex:1 1 180px}
+.doc>h2{
+  display:flex;align-items:center;gap:12px;margin:30px 0 12px;
+  padding-bottom:9px;border-bottom:1px solid color-mix(in srgb,var(--gold) 30%,var(--line));
+  font-size:clamp(21px,2.6vw,25px)
+}
+.doc>h2::after{content:"";height:2px;width:34px;flex:none;background:var(--gold);opacity:.8}
+.doc>ul:not(.bkrel){padding-inline-start:1.35em;margin:0}
+.doc>ul:not(.bkrel) li{padding-inline-start:4px;margin:7px 0;line-height:1.8}
+.doc .bkprev{gap:clamp(8px,2vw,14px);margin-top:14px}
+.doc .bkprev a{display:block;min-width:0;padding:5px;border:1px solid var(--line);border-radius:12px;background:var(--surface2);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.doc .bkprev a:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:var(--shadow)}
+.doc .bkprev img{display:block;aspect-ratio:360/509;object-fit:contain;border:0;border-radius:7px}
+.doc .bkrel{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:9px;padding:0;margin:12px 0 0;list-style:none}
+.doc .bkrel li{min-width:0;margin:0}
+.doc .bkrel a{
+  display:block;height:100%;padding:12px 14px;border:1px solid var(--line);
+  border-radius:12px;background:var(--surface2);text-decoration:none;line-height:1.65
+}
+.doc .bkrel a:hover{border-color:var(--gold);color:var(--head)}
+.doc :where(a,button):focus-visible{outline:3px solid var(--green);outline-offset:3px}
+@media(max-width:640px){
+  .doc{margin-top:18px;padding:20px 15px;border-radius:17px}
+  .doc .bkhead{grid-template-columns:minmax(0,1fr);gap:17px;align-items:start;text-align:start}
+  .doc .bkhead>img{width:min(58%,210px);max-width:210px;max-height:270px}
+  .doc .bkhead h1{font-size:clamp(27px,7vw,36px)}
+  .doc .bkprice{margin-top:13px}
+  .doc .bkcta{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+  .doc .bkcta .btn{width:100%;min-height:48px}
+  .doc>h2{margin-top:25px}
+  .doc .bkprev{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .doc .bkprev a{padding:3px;border-radius:8px}
+  .doc .bkrel{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:360px){
+  .doc{padding-inline:12px}
+  .doc .bkhead>img{width:min(68%,190px)}
+  .doc .bkprev{gap:4px}
+}
+@media(prefers-reduced-motion:reduce){
+  .doc .bkprev a{transition:none}
+  .doc .bkprev a:hover{transform:none}
+}
