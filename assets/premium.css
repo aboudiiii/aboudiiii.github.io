@@ -1,0 +1,117 @@
+/* Al-Hayali premium visual refinement — homepage-only, additive and reversible. */
+:root{scroll-padding-top:88px}
+nav.top{box-shadow:0 8px 24px -24px rgba(18,48,47,.55)}
+nav.top .in{min-height:64px}
+.brand{letter-spacing:.01em}
+.links a.nav{transition:background .18s ease,color .18s ease}
+.links .btn,.links button{min-height:40px}
+.btn,button{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease}
+.btn:active,button:active{transform:translateY(1px)}
+.hero{border-radius:28px}
+.hero .lead{max-width:48ch}
+.hero .cta .btn{min-height:48px;padding-inline:22px}
+.hero .pills>span{backdrop-filter:blur(8px);background:color-mix(in srgb,var(--surface) 62%,transparent);border-color:color-mix(in srgb,var(--gold) 55%,transparent);border-radius:999px}
+.shelf img{transform-origin:50% 90%}
+.strip{box-shadow:var(--shadow)}
+.strip div{transition:background .18s ease}
+.strip div:hover{background:var(--surface2)}
+.sec{padding-top:clamp(44px,6vw,76px)}
+.sec .head{max-width:68ch}
+.sec .sub{line-height:1.8}
+.plaque,.pk,.step,.jbox,.rvf,.stats div,.ncard,.rvc{transition:box-shadow .2s ease,border-color .2s ease,transform .2s ease}
+.plaque:hover,.pk:hover,.step:hover,.jbox:hover{box-shadow:0 20px 44px -28px rgba(58,44,16,.72)}
+.srow{min-height:76px;border-radius:15px}
+.srow:focus-visible{outline:3px solid var(--gold-bright);outline-offset:2px}
+.sdetail{border-radius:22px}
+.sdetail .sact .btn,.sdetail .sact button{min-height:44px}
+.chips button{min-height:40px}
+.pk{border-radius:22px}
+.step{border-radius:20px}
+details{border-radius:17px;transition:border-color .18s ease,background .18s ease}
+details[open]{border-color:color-mix(in srgb,var(--gold) 55%,var(--line))}
+summary{line-height:1.55}
+.rvf input,.rvf select,.rvf textarea,.jform input{min-height:46px}
+.jbox{border-radius:20px}
+.acclist li{overflow-wrap:anywhere}
+footer{border-radius:28px 28px 0 0}
+footer a{text-underline-offset:3px}
+.bkhead>img{border-radius:10px}
+.bkcta .btn,.bkcta button{min-height:44px}
+.doc{border-radius:22px}
+:where(a,button,input,select,textarea,summary,[tabindex]):focus-visible{outline:3px solid var(--gold-bright);outline-offset:3px}
+@media (min-width:861px){
+ nav.top .in{padding-block:12px}
+ .hero{padding:clamp(42px,5vw,64px) clamp(30px,4vw,48px)}
+ .shelf a:nth-child(odd) img{transform:translateY(3px)}
+ .shelf a:nth-child(even) img{transform:translateY(-5px)}
+}
+@media (max-width:860px){
+ nav.top .in{gap:8px}
+ .hero{margin-top:12px}
+ .hero .cta{gap:10px}
+ .sec .head{margin-bottom:22px}
+}
+@media (max-width:560px){
+ nav.top .in{min-height:62px;gap:6px;padding-block:7px}
+ nav.top .brand{flex:1 1 auto;max-width:calc(100% - 176px);font-size:clamp(14px,4vw,16px);line-height:1.22;gap:5px;white-space:normal;overflow:visible}
+ nav.top .brand svg{width:22px;height:22px}
+ nav.top .brand span{display:block;white-space:normal!important;overflow:visible;text-overflow:clip;line-height:1.2}
+ .links{flex:0 0 auto;gap:4px}
+ .links .btn{min-height:40px;padding:6px 10px;font-size:14px}
+ .links button{min-height:40px;padding:6px 9px;font-size:13px}
+ .links #lang{min-width:62px}
+ .links #theme{min-width:40px;padding-inline:8px}
+ .hero{padding:26px 15px 22px;border-radius:20px}
+ .hero h1{font-size:clamp(32px,9vw,42px);line-height:1.35;margin:10px 0 12px}
+ html[dir="rtl"] .hero h1{line-height:1.42}
+ .hero .lead{font-size:16px;line-height:1.85}
+ .hero .cta{margin-top:17px;gap:9px}
+ .hero .cta .btn{min-height:46px;padding:9px 14px;font-size:14px}
+ .hero .hmeta{margin-top:13px}
+ .hero .pills{gap:6px;margin-top:17px}
+ .hero .pills>span{font-size:11.5px;padding:5px 9px}
+ .shelf{margin-top:28px;gap:6px;padding-inline:2px}
+ .shelf img{max-height:45vw}
+ .sec{padding-top:48px}
+ .sec .head{margin-bottom:18px}
+ .sec .sub{font-size:15.5px;line-height:1.75}
+ .sec h2{font-size:clamp(26px,7vw,34px)}
+ .strip{margin-top:14px;border-radius:16px}
+ .strip div{padding:13px 15px;gap:11px}
+ .strip .ic{width:38px;height:38px}
+ .strip b{font-size:16px}
+ .strip span.s{font-size:13px}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .stats div{padding:14px 8px;border-radius:14px}
+ .stats b{font-size:32px}
+ .stats span{font-size:13px}
+ .product{padding:19px 15px;gap:20px;border-radius:18px}
+ .product h3{font-size:26px}
+ .product .desc{font-size:16px;line-height:1.8}
+ .srow{padding:10px 11px;gap:10px;font-size:15px;min-height:68px}
+ .srow .pr{font-size:15px}
+ .srow img{width:43px;height:56px}
+ .sdetail{padding:19px 15px;gap:16px}
+ .step{padding:20px 17px;border-radius:17px}
+ details{padding-inline:15px;margin-bottom:9px}
+ summary{font-size:16px;padding-block:13px}
+ details p{font-size:15px;line-height:1.85}
+ .order>div{padding:20px 15px}
+ .jbox{padding:17px 14px}
+ .rvf{padding:14px}
+ footer{margin-top:58px;padding:30px 18px 26px;border-radius:20px 20px 0 0}
+ .doc{padding:20px 15px}
+}
+@media (max-width:360px){
+ nav.top .brand{max-width:calc(100% - 166px);font-size:13.5px}
+ .links{gap:3px}
+ .links .btn{padding-inline:8px}
+ .links button{padding-inline:7px}
+ .hero .cta{flex-direction:column;align-items:stretch}
+ .hero .cta .btn{width:100%;justify-content:center}
+ .srow{gap:8px;padding-inline:9px}
+ .srow img{width:38px;height:50px}
+}
+@media (prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
