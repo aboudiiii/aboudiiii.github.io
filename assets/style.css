@@ -624,3 +624,19 @@ html[dir="rtl"] .hero h1{line-height:1.4}
 @media (max-width:860px){
   .ncard:hover,.ncard:focus-visible{transform:none;box-shadow:none}
 }
+
+
+/* ---- accessible 3D cover reveal ---- */
+@media (prefers-reduced-motion:no-preference){
+  .sdetail .book[role="button"]{cursor:zoom-in;perspective:1000px;transform-style:preserve-3d}
+  .sdetail .book[role="button"] .cover{transition:transform .42s cubic-bezier(.2,.75,.2,1),filter .35s;transform-origin:center}
+  .sdetail .book[role="button"]:hover .cover,
+  .sdetail .book[role="button"]:focus-visible .cover{transform:perspective(1000px) rotateY(-7deg) rotateX(2deg) translateY(-4px);filter:drop-shadow(0 18px 16px rgba(227,185,92,.16))}
+  .lb.on{animation:lightboxFade .24s ease-out both}
+  .lb.on img{animation:coverReveal .52s cubic-bezier(.2,.8,.2,1) both;transform-origin:center}
+  @keyframes lightboxFade{from{opacity:0}to{opacity:1}}
+  @keyframes coverReveal{0%{opacity:.35;transform:perspective(1000px) rotateY(-22deg) rotateX(5deg) scale(.88)}70%{opacity:1;transform:perspective(1000px) rotateY(3deg) scale(1.015)}100%{opacity:1;transform:perspective(1000px) rotateY(0) rotateX(0) scale(1)}}
+}
+@media (prefers-reduced-motion:reduce){
+  .sdetail .book[role="button"] .cover,.lb.on,.lb.on img{animation:none!important;transition:none!important}
+}
