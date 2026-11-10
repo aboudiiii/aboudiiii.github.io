@@ -45,6 +45,7 @@ function load(){
 function renderSummary(d){
  $("orders").textContent=Number(d.orders||0).toLocaleString("en-US");
  $("revenue").textContent="$"+Number(d.recorded_revenue_usd||0).toFixed(2);
+ $("average").textContent="$"+Number(d.average_recorded_order_usd||0).toFixed(2);
  $("missing").textContent=Number(d.orders_missing_totals||0).toLocaleString("en-US");
  $("couponCount").textContent=Number(d.coupon_count||0).toLocaleString("en-US");
  $("topProducts").innerHTML=(d.top_products||[]).map(function(x){return "<tr><td>"+esc(x.product)+"</td><td>"+esc(x.n)+"</td></tr>"}).join("")||'<tr><td colspan="2">لا توجد بيانات بعد</td></tr>';
