@@ -84,7 +84,7 @@ export async function ownerSession(req, env) {
   const s = await sessionOf(req, env);
   if (!s) return { ok: false, status: 401, error: 'unauthorized' };
   const owner = String(env.TG_OWNER_ID || '');
-  if (!/^\\d{1,20}$/.test(owner) || owner === '0' || s.email !== 'tg:' + owner) {
+  if (!/^\d{1,20}$/.test(owner) || owner === '0' || s.email !== 'tg:' + owner) {
     return { ok: false, status: 403, error: 'forbidden' };
   }
   return { ok: true, session: s };
