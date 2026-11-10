@@ -10,7 +10,7 @@ for p in pages:
     if p=='404.html': continue
     source=open(p,encoding='utf8').read()
     # Private noindex pages (for example the owner admin panel) must stay out of the public sitemap.
-    if re.search(r'<meta[^>]+name=["\\']robots["\\'][^>]+content=["\\'][^"\\']*noindex',source,re.I):
+    if re.search(r"""<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex""", source, re.I):
         if (p if p!='index.html' else '') in smurls:
             print('ERROR PRIVATE PAGE IN SITEMAP',p); errors+=1
         continue
