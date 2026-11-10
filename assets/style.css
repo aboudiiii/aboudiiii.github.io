@@ -623,3 +623,37 @@ html[dir="rtl"] .hero h1{line-height:1.4}
   transition:none!important;
   scroll-behavior:auto!important;
 }
+
+
+/* Tablet and phone storefront layout: center the cover inside the product frame. */
+@media (max-width:1100px){
+  #shop .shop{grid-template-columns:minmax(0,1fr);gap:14px}
+  #shop #sdetail{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    justify-items:stretch;
+    width:100%;
+    min-width:0;
+    box-sizing:border-box;
+  }
+  #shop #sdetail>div:first-child{
+    display:flex;
+    width:100%;
+    min-width:0;
+    justify-content:center;
+    align-items:center;
+    box-sizing:border-box;
+    padding:8px;
+  }
+  #shop #sdetail .book{
+    width:min(190px,100%);
+    max-width:190px;
+    margin-inline:auto;
+  }
+  #shop #sdetail>div:not(:first-child){
+    width:100%;
+    min-width:0;
+    box-sizing:border-box;
+    overflow-wrap:anywhere;
+  }
+}
