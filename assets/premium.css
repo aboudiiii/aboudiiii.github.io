@@ -251,3 +251,56 @@ footer{border-top:1px solid color-mix(in srgb,var(--gold) 48%,var(--line))}
 @media (min-width:1101px){
   .hero .shelf img{object-fit:cover}
 }
+
+
+/* Final bookshelf correction: the cover itself defines the frame size. */
+.hero .shelf{
+  box-sizing:border-box;
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  gap:12px!important;
+  width:100%!important;
+  max-width:940px!important;
+  margin:28px auto 0!important;
+  padding:8px 8px 12px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x proximity;
+}
+.hero .shelf>a{
+  display:block!important;
+  flex:0 0 auto!important;
+  width:max-content!important;
+  min-width:0!important;
+  height:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  scroll-snap-align:center;
+}
+.hero .shelf>a>img{
+  display:block!important;
+  flex:none!important;
+  height:var(--h)!important;
+  min-height:0!important;
+  max-height:none!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  aspect-ratio:520 / 673!important;
+  object-fit:contain!important;
+  border:1px solid rgba(231,192,111,.55)!important;
+  border-radius:7px!important;
+  box-shadow:0 12px 24px -13px rgba(0,0,0,.78)!important;
+}
+.hero .plank{width:100%;max-width:940px;margin:8px auto 0}
+@media(max-width:640px){
+  .hero .shelf{max-width:100%!important;gap:10px!important;margin-top:22px!important;padding-inline:5px!important}
+}
