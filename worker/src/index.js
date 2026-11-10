@@ -7,8 +7,10 @@ import { requestCode, verifyCode, tgStart, tgPoll, me, logout } from './auth.js'
 import { subscribeEmail, confirmEmail, unsubscribe } from './subs.js';
 import { webhook, setup } from './tg.js';
 import { adminSummary, adminCoupons } from './admin.js';
+import { sendScheduledReports } from './reports.js';
 
 export default {
+  async scheduled(controller, env, ctx) { ctx.waitUntil(sendScheduledReports(env, controller.scheduledTime)); },
   async fetch(req, env) {
     const url = new URL(req.url), p = url.pathname, m = req.method;
     const cors = corsHeaders(req, env);

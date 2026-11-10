@@ -17,3 +17,7 @@ MAIL_FROM_NAME = "مكتبة الحيالي الرقمية"
 
 # Secrets (npx wrangler secret put NAME):
 #   TG_TOKEN, TG_OWNER_ID, TG_WEBHOOK_SECRET, RATE_SALT, BOT_API_KEY, BREVO_API_KEY
+
+# Daily owner report at 08:00 Baghdad time (05:00 UTC).
+[triggers]
+crons = ["0 5 * * *"]

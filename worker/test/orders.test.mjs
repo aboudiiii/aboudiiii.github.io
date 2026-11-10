@@ -25,3 +25,13 @@ test('a later report adds a missing email to an existing order', async () => {
   await post(env, '/api/orders', { code: 'B1', items: ['y'], email: 'b@test.com' }, H);
   assert.equal(env.DB.db.prepare('SELECT email FROM orders WHERE code = ?').get('B1').email, 'b@test.com');
 });
+
+test('a newly recorded paid order sends an owner Telegram alert', async () => {
+  const ctx = setup();
+  await post(ctx.env, '/api/orders', { code: 'ALERT1', items: ['y', 'n'], total_usd: 12 }, H);
+  const notice = ctx.calls.find((c) => c.url.includes('/sendMessage'));
+  assert.ok(notice);
+  assert.equal(notice.body.chat_id, '111');
+  assert.ok(notice.body.text.includes('$12.00'));
+  assert.match(notice.body.text, /\$12\.00/);
+});

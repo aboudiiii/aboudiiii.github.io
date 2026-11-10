@@ -1,4 +1,5 @@
 import { KEY_RE, clean, normEmail, now, safeEqual } from './util.js';
+import { notifyOwnerNewOrder } from './reports.js';
 
 // Called by the store bot after a payment is confirmed. Idempotent on `code`.
 export async function ingest(req, env) {
@@ -22,6 +23,7 @@ export async function ingest(req, env) {
     env.DB.prepare('INSERT INTO orders (code, email, telegram_id, total_usd, paid_at, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(code, email, tg, total, paid, now()),
     ...items.map((k) => env.DB.prepare('INSERT INTO order_items (code, product) VALUES (?, ?)').bind(code, k)),
   ]);
+  try { await notifyOwnerNewOrder(env, { code, total_usd: total, items: items.length }); } catch { /* notifications must not interrupt order processing */ }
   return [{ ok: true, new: true }, 200];
 }
 

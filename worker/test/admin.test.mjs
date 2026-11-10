@@ -57,3 +57,14 @@ test('owner can create, pause, reactivate and delete coupons with validation', a
   assert.equal(list.coupons.length, 0);
   assert.equal(ctx.env.DB.db.prepare('SELECT COUNT(*) AS n FROM admin_audit').get().n, 3);
 });
+
+test('expanded summary includes customer, monthly and audit data', async () => {
+  const ctx = setup();
+  await post(ctx.env, '/api/orders', { code: 'C1', items: ['y'], total_usd: 4, email: 'one@example.com' }, { headers: { 'X-Bot-Key': 'botkey' } });
+  const token = await telegramLogin(ctx);
+  const r = await get(ctx.env, '/api/admin/summary', { headers: { Authorization: 'Bearer ' + token } });
+  const d = await r.json();
+  assert.equal(d.customers, 1);
+  assert.ok(Array.isArray(d.monthly));
+  assert.ok(Array.isArray(d.audit));
+});
