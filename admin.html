@@ -5,55 +5,97 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.workers.dev; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="theme-color" content="#092c28">
-<title>لوحة إدارة مكتبة الحيالي</title>
+<meta name="theme-color" content="#071e1b">
+<title>إدارة مكتبة الحيالي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <style>
-:root{color-scheme:dark;--bg:#071e1b;--panel:#0d2c27;--panel2:#123a32;--gold:#d7b15b;--gold2:#f0d68f;--text:#f6f0df;--muted:#b9c8bd;--line:#31564a;--danger:#d98a7b;--ok:#8fc9a5}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#123d33 0,#071e1b 58%);color:var(--text);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;line-height:1.65}button,input,select{font:inherit}button{cursor:pointer}.shell{width:min(1120px,calc(100% - 28px));margin:auto;padding:26px 0 56px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:24px}.brand{display:flex;align-items:center;gap:12px}.seal{width:44px;height:44px;border:1px solid var(--gold);border-radius:14px;display:grid;place-items:center;color:var(--gold);font-size:22px}.brand h1{font-family:Amiri,serif;font-size:25px;margin:0}.brand p{color:var(--muted);font-size:12px;margin:0}.panel{background:linear-gradient(145deg,rgba(18,58,50,.96),rgba(10,39,34,.96));border:1px solid var(--line);border-radius:20px;padding:clamp(16px,3vw,26px);box-shadow:0 22px 55px #0003}.login{max-width:520px;margin:9vh auto}.login h2,.section-title{margin:0 0 8px;font-size:22px}.muted{color:var(--muted)}.btn{border:1px solid var(--gold);background:var(--gold);color:#17231b;border-radius:12px;padding:11px 18px;font-weight:700;min-height:44px}.btn.secondary{background:transparent;color:var(--gold2)}.btn.danger{border-color:#88574e;color:#ffd5ca;background:#522d29}.btn:disabled{opacity:.55;cursor:not-allowed}.status{min-height:26px;color:var(--muted);font-size:14px;margin:12px 0 0}.status.error{color:#ffb5a6}.status.ok{color:var(--ok)}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:18px 0}.metric{background:#0a2823;border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}.metric small{display:block;color:var(--muted)}.metric strong{display:block;font-size:clamp(21px,3vw,30px);color:var(--gold2);overflow-wrap:anywhere}.two{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.section{margin-top:18px}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:600px;font-size:14px}th,td{text-align:right;padding:11px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--gold2);font-weight:600}td{color:var(--text)}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.field{display:grid;gap:5px}.field label{font-size:13px;color:var(--muted)}.field input,.field select{width:100%;min-height:44px;background:#061c18;border:1px solid var(--line);border-radius:10px;padding:9px 11px;color:var(--text)}.field input:focus,.field select:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}.wide{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap}.coupon{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.coupon:last-child{border:0}.coupon b{color:var(--gold2);letter-spacing:.04em}.pill{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;color:var(--muted)}.pill.active{color:var(--ok);border-color:#4d8066}.pill.paused{color:#f0c58b;border-color:#8a7147}.hide{display:none!important}.note{font-size:12px;color:var(--muted);margin-top:10px}.empty{color:var(--muted);padding:12px 0}@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.two{grid-template-columns:1fr}}@media(max-width:520px){.shell{width:min(100% - 20px,1120px);padding-top:16px}.top{align-items:flex-start}.brand h1{font-size:21px}.grid{gap:8px}.metric{padding:12px}.form-grid{grid-template-columns:1fr}.wide{grid-column:auto}.panel{border-radius:16px}.coupon{align-items:flex-start;flex-direction:column}.actions{width:100%}.actions .btn{flex:1}}
+:root{color-scheme:dark;--bg:#071b18;--bg2:#0a2520;--panel:#0d2d27;--panel2:#123b32;--gold:#d8b45f;--gold-bright:#f0d58d;--text:#f7f1e4;--muted:#aebfb5;--line:rgba(211,181,111,.2);--green:#8cc7a0;--red:#e39a8b;--shadow:0 18px 50px #0003}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 75% -15%,#174b3e 0,transparent 38%),linear-gradient(145deg,#071b18,#09251f 58%,#071b18);color:var(--text);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;line-height:1.65}button,input,select{font:inherit}button{cursor:pointer}.hide{display:none!important}
+.shell{width:min(1500px,100%);margin:auto;padding:24px clamp(12px,2.5vw,36px) 48px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:4px 0 22px;border-bottom:1px solid var(--line);margin-bottom:24px}.brand{display:flex;align-items:center;gap:13px}.seal{width:48px;height:48px;display:grid;place-items:center;border:1px solid var(--gold);border-radius:16px;color:var(--gold);font-size:25px;background:linear-gradient(145deg,#183e34,#0a241f);box-shadow:0 8px 25px #0003}.brand h1{font:700 27px "Amiri",serif;margin:0;color:var(--gold-bright)}.brand p{font-size:12px;color:var(--muted);margin:0}.top-actions{display:flex;align-items:center;gap:10px}.eyebrow{font-size:11px;color:var(--gold);letter-spacing:.08em}.btn{border:1px solid var(--gold);background:linear-gradient(135deg,#e5c36e,#cba34d);color:#14251e;border-radius:12px;padding:10px 17px;font-weight:700;min-height:44px;transition:.2s}.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}.btn.secondary{background:#102e27;color:var(--gold-bright);border-color:var(--line)}.btn.danger{background:#482923;color:#ffd9d0;border-color:#88574e}.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}.status{min-height:25px;color:var(--muted);font-size:13px;margin:12px 0 0}.status.error{color:#ffb5a6}.status.ok{color:var(--green)}.muted{color:var(--muted)}
+.login{max-width:560px;margin:9vh auto;padding:clamp(22px,4vw,38px);text-align:right;background:linear-gradient(145deg,rgba(18,59,50,.96),rgba(8,34,29,.98));border:1px solid var(--line);border-radius:25px;box-shadow:var(--shadow)}.login-mark{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;background:#d8b45f18;border:1px solid var(--line);color:var(--gold);font-size:28px;margin-bottom:20px}.login h2{font:700 30px "Amiri",serif;margin:0 0 6px}.login .btn{margin-top:14px}
+.admin-layout{display:grid;grid-template-columns:238px minmax(0,1fr);gap:24px;align-items:start}.sidebar{position:sticky;top:18px;padding:17px 13px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,rgba(15,48,41,.96),rgba(8,31,27,.96));box-shadow:var(--shadow)}.side-label{font-size:10px;color:#8fa99a;padding:8px 12px 12px;letter-spacing:.1em}.nav{display:grid;gap:6px}.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:#c6d2ca;text-decoration:none;font-size:14px;border:1px solid transparent;transition:.18s}.nav a:hover,.nav a.active{background:#d8b45f14;border-color:#d8b45f38;color:var(--gold-bright)}.nav-ico{width:27px;height:27px;display:grid;place-items:center;border-radius:9px;background:#ffffff09;color:var(--gold);font-size:15px}.side-foot{border-top:1px solid var(--line);margin-top:18px;padding:16px 10px 4px;color:var(--muted);font-size:11px}.main{min-width:0}.welcome{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:3px 0 22px}.welcome h2{font:700 30px "Amiri",serif;margin:0;color:var(--text)}.welcome p{margin:3px 0 0;color:var(--muted);font-size:13px}.welcome-actions{display:flex;gap:8px;align-items:center}.section{scroll-margin-top:20px;margin-top:22px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}.section-head h3{font-size:17px;margin:0;font-weight:700}.section-head p{font-size:12px;color:var(--muted);margin:2px 0 0}.section-kicker{font-size:10px;color:var(--gold);letter-spacing:.08em}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.metric{position:relative;overflow:hidden;min-width:0;padding:18px 18px 16px;background:linear-gradient(145deg,rgba(18,59,50,.96),rgba(10,39,34,.96));border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 30px #0002}.metric:after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;background:#d8b45f0b;left:-35px;bottom:-48px}.metric-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.metric small{display:block;color:var(--muted);font-size:12px}.metric-icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;color:var(--gold);background:#d8b45f15;border:1px solid #d8b45f24}.metric strong{display:block;font-size:clamp(24px,2.5vw,34px);line-height:1.35;color:var(--gold-bright);margin-top:10px;overflow-wrap:anywhere;font-weight:700;font-variant-numeric:tabular-nums}.metric .hint{font-size:10px;color:#91a99b;margin-top:4px}
+.panel{min-width:0;background:linear-gradient(145deg,rgba(15,47,40,.96),rgba(9,34,29,.98));border:1px solid var(--line);border-radius:19px;padding:19px;box-shadow:0 12px 34px #0002}.two{display:grid;grid-template-columns:1fr 1fr;gap:15px}.table-wrap{overflow:auto;border:1px solid #ffffff0b;border-radius:12px}table{border-collapse:collapse;width:100%;min-width:530px;font-size:13px}th,td{text-align:right;padding:12px 13px;border-bottom:1px solid #ffffff0d;vertical-align:middle;white-space:nowrap}th{background:#ffffff06;color:var(--gold-bright);font-weight:600;font-size:12px}td{color:#e9e5d9}tbody tr:hover{background:#ffffff05}tbody tr:last-child td{border-bottom:0}.empty{color:var(--muted);padding:14px!important;text-align:center}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{display:grid;gap:6px}.field label{font-size:12px;color:#c3d0c7}.field input,.field select{width:100%;min-height:45px;background:#071f1a;border:1px solid #426458;border-radius:11px;padding:9px 12px;color:var(--text);outline:none}.field input:focus,.field select:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}.wide{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap}.coupon-list{margin-top:15px;border-top:1px solid var(--line)}.coupon{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 4px;border-bottom:1px solid #ffffff10}.coupon:last-child{border-bottom:0}.coupon b{color:var(--gold-bright);letter-spacing:.04em}.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--muted)}.pill.active{color:var(--green);border-color:#4d8066}.pill.paused{color:#f0c58b;border-color:#8a7147}.note{font-size:11px;color:#91a99b;margin-top:10px;line-height:1.8}.subtle-card{background:#ffffff04;border:1px solid #ffffff0b;border-radius:14px;padding:14px}.coupon .note{margin:4px 0 0}
+@media(max-width:1050px){.admin-layout{grid-template-columns:205px minmax(0,1fr);gap:15px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.shell{padding:14px 12px 35px}.topbar{padding-bottom:15px;margin-bottom:17px}.brand h1{font-size:23px}.seal{width:42px;height:42px}.admin-layout{display:block}.sidebar{position:static;margin-bottom:17px;padding:9px;border-radius:15px}.side-label,.side-foot{display:none}.nav{display:flex;overflow-x:auto;gap:5px;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav a{flex:0 0 auto;padding:9px 11px;font-size:12px}.nav-ico{width:23px;height:23px}.welcome{align-items:flex-start;flex-direction:column}.welcome h2{font-size:26px}.welcome-actions{width:100%}.welcome-actions .btn{flex:1}.two{grid-template-columns:1fr}.panel{padding:15px}.section{margin-top:17px}}
+@media(max-width:480px){.top-actions .eyebrow{display:none}.top-actions .btn{padding:8px 11px;min-height:40px;font-size:12px}.metrics{gap:8px}.metric{padding:13px 12px;border-radius:15px}.metric small{font-size:10px}.metric strong{font-size:24px;margin-top:7px}.metric-icon{width:29px;height:29px;font-size:13px}.metric .hint{font-size:9px}.form-grid{grid-template-columns:1fr}.wide{grid-column:auto}.coupon{align-items:flex-start;flex-direction:column}.actions{width:100%}.actions .btn{flex:1}.login{margin:7vh auto}.login h2{font-size:26px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
 <main class="shell">
-<header class="top"><div class="brand"><div class="seal">✦</div><div><h1>مكتبة الحيالي الرقمية</h1><p>لوحة الإدارة · إدارة خاصة بالمالك</p></div></div><button id="logout" class="btn secondary hide" type="button">تسجيل الخروج</button></header>
+<header class="topbar">
+ <div class="brand"><div class="seal">✦</div><div><h1>مكتبة الحيالي الرقمية</h1><p>مركز إدارة المكتبة · مساحة المالك</p></div></div>
+ <div class="top-actions"><span class="eyebrow">ADMINISTRATION</span><button id="logout" class="btn secondary hide" type="button">تسجيل الخروج</button></div>
+</header>
 <section id="login" class="panel login">
-<h2>دخول الإدارة</h2><p class="muted">سجّل الدخول عبر حساب تيليجرام المرتبط بمعرّف المالك المحفوظ على الخادم.</p>
-<button id="loginBtn" class="btn" type="button">الدخول عبر تيليجرام</button>
-<a id="openTg" class="btn secondary hide" target="_blank" rel="noopener">افتح تيليجرام وأرسل Start</a>
-<p id="loginStatus" class="status" role="status" aria-live="polite"></p>
-<p class="note">هذه الصفحة لا تمنح صلاحية الإدارة لمجرد فتحها؛ الخادم يتحقق من هوية المالك عند كل طلب إداري.</p>
+ <div class="login-mark">✦</div><span class="section-kicker">OWNER ACCESS</span>
+ <h2>مرحباً بعودتك</h2><p class="muted">سجّل الدخول بحساب تيليجرام المرتبط بمعرّف المالك المحفوظ على الخادم.</p>
+ <button id="loginBtn" class="btn" type="button">الدخول الآمن عبر تيليجرام</button>
+ <a id="openTg" class="btn secondary hide" target="_blank" rel="noopener">افتح تيليجرام وأرسل Start</a>
+ <p id="loginStatus" class="status" role="status" aria-live="polite"></p>
+ <p class="note">صلاحية الإدارة لا تُمنح بمجرد فتح الصفحة؛ يتحقق الخادم من هوية المالك عند كل طلب إداري.</p>
 </section>
-<section id="dashboard" class="hide">
-<div class="top"><div><h2 class="section-title">نظرة عامة</h2><p class="muted">أرقام الطلبات المسجلة في قاعدة بيانات المكتبة.</p></div><button id="refresh" class="btn secondary" type="button">تحديث البيانات</button></div>
-<div class="grid">
-<div class="metric"><small>إجمالي الطلبات</small><strong id="orders">—</strong></div>
-<div class="metric"><small>الإيرادات المسجلة (USD)</small><strong id="revenue">—</strong></div>
-<div class="metric"><small>متوسط قيمة الطلب المسجل</small><strong id="average">—</strong></div>
-<div class="metric"><small>طلبات بلا مبلغ مسجل</small><strong id="missing">—</strong></div>
-<div class="metric"><small>الكوبونات</small><strong id="couponCount">—</strong></div>
-</div>
-<div class="two">
-<section class="panel"><h3 class="section-title">أكثر المنتجات طلباً</h3><div class="table-wrap"><table><thead><tr><th>معرّف المنتج</th><th>عدد الطلبات</th></tr></thead><tbody id="topProducts"></tbody></table></div></section>
-<section class="panel"><h3 class="section-title">ملخص آخر 30 يوماً</h3><div class="table-wrap"><table><thead><tr><th>اليوم</th><th>الطلبات</th><th>الإيراد</th></tr></thead><tbody id="daily"></tbody></table></div></section>
-</div>
-<section class="panel section"><h3 class="section-title">أحدث الطلبات</h3><div class="table-wrap"><table><thead><tr><th>رمز الطلب</th><th>البريد / تيليجرام</th><th>المبلغ</th><th>تاريخ الدفع</th></tr></thead><tbody id="recent"></tbody></table></div><p class="note">الإيرادات محسوبة من المبالغ التي أرسلها بوت المتجر بعد تأكيد الدفع فقط. الطلبات التي لا تحتوي مبلغاً تظهر منفصلة ولا تُقدّر تلقائياً.</p></section>
-<section class="panel section"><h3 class="section-title">إنشاء كوبون أو عرض</h3>
-<form id="couponForm" class="form-grid">
-<div class="field"><label for="couponCode">رمز الكوبون</label><input id="couponCode" name="code" required maxlength="24" pattern="[A-Za-z0-9_-]{3,24}" placeholder="WELCOME10" dir="ltr"></div>
-<div class="field"><label for="couponKind">نوع الخصم</label><select id="couponKind" name="kind"><option value="percent">نسبة مئوية %</option><option value="fixed">مبلغ ثابت USD</option></select></div>
-<div class="field"><label for="couponValue">قيمة الخصم</label><input id="couponValue" name="value" type="number" min="0.01" step="0.01" required></div>
-<div class="field"><label for="couponMin">الحد الأدنى للسلة (USD)</label><input id="couponMin" name="min_total_usd" type="number" min="0" step="0.01" value="0"></div>
-<div class="field"><label for="couponMax">أقصى عدد استخدامات (اختياري)</label><input id="couponMax" name="max_uses" type="number" min="1" step="1" placeholder="غير محدود"></div>
-<div class="field"><label for="couponStart">يبدأ في (اختياري)</label><input id="couponStart" type="datetime-local"></div>
-<div class="field"><label for="couponEnd">ينتهي في (اختياري)</label><input id="couponEnd" type="datetime-local"></div>
-<div class="wide actions"><button class="btn" type="submit">إنشاء الكوبون</button></div>
-</form>
-<p id="couponStatus" class="status" role="status" aria-live="polite"></p>
-<p class="note">الكوبونات الجديدة تبدأ متوقفة. تفعيلها هنا يحفظها في قاعدة البيانات، لكنه لا يغيّر سعر الطلب أو مبلغ الدفع بعد. يلزم ربط التحقق نفسه ببوت المتجر أولاً.</p>
-<div id="coupons"></div>
-</section>
+<section id="dashboard" class="admin-layout hide">
+ <aside class="sidebar">
+  <div class="side-label">مساحة العمل</div>
+  <nav class="nav" aria-label="التنقل في لوحة الإدارة">
+   <a class="active" href="#overview"><span class="nav-ico">⌂</span>الرئيسية</a>
+   <a href="#analytics"><span class="nav-ico">▥</span>الإحصائيات</a>
+   <a href="#ordersSection"><span class="nav-ico">▤</span>الطلبات</a>
+   <a href="#couponsSection"><span class="nav-ico">％</span>الكوبونات</a>
+  </nav>
+  <div class="side-foot">AL-HAYALI DIGITAL LIBRARY<br>لوحة خاصة وآمنة بالمالك</div>
+ </aside>
+ <div class="main">
+  <section id="overview">
+   <div class="welcome">
+    <div><span class="section-kicker">LIBRARY OVERVIEW</span><h2>نظرة عامة</h2><p>ملخص أداء المكتبة من الطلبات المسجلة في قاعدة البيانات.</p></div>
+    <div class="welcome-actions"><button id="refresh" class="btn secondary" type="button">↻ تحديث البيانات</button></div>
+   </div>
+   <div class="metrics">
+    <div class="metric"><div class="metric-top"><small>إجمالي الطلبات</small><span class="metric-icon">▤</span></div><strong id="orders">—</strong><div class="hint">كل الطلبات المسجلة</div></div>
+    <div class="metric"><div class="metric-top"><small>الإيرادات المسجلة</small><span class="metric-icon">$</span></div><strong id="revenue">—</strong><div class="hint">بالدولار الأمريكي · USD</div></div>
+    <div class="metric"><div class="metric-top"><small>متوسط قيمة الطلب</small><span class="metric-icon">↗</span></div><strong id="average">—</strong><div class="hint">للطلبات ذات المبالغ المسجلة</div></div>
+    <div class="metric"><div class="metric-top"><small>طلبات بلا مبلغ</small><span class="metric-icon">!</span></div><strong id="missing">—</strong><div class="hint">تحتاج مراجعة بيانات الطلب</div></div>
+   </div>
+  </section>
+  <section id="analytics" class="section">
+   <div class="section-head"><div><span class="section-kicker">PERFORMANCE</span><h3>تحليلات المبيعات</h3><p>المنتجات الأكثر طلباً والحركة اليومية خلال آخر 30 يوماً.</p></div><span class="pill">بيانات مسجلة</span></div>
+   <div class="two">
+    <section class="panel"><div class="section-head"><h3>المنتجات الأكثر طلباً</h3></div><div class="table-wrap"><table><thead><tr><th>معرّف المنتج</th><th>عدد الطلبات</th></tr></thead><tbody id="topProducts"></tbody></table></div></section>
+    <section class="panel"><div class="section-head"><h3>ملخص آخر 30 يوماً</h3></div><div class="table-wrap"><table><thead><tr><th>اليوم</th><th>الطلبات</th><th>الإيراد</th></tr></thead><tbody id="daily"></tbody></table></div></section>
+   </div>
+  </section>
+  <section id="ordersSection" class="panel section">
+   <div class="section-head"><div><span class="section-kicker">RECENT ACTIVITY</span><h3>أحدث الطلبات</h3><p>آخر العمليات التي وصلت إلى قاعدة بيانات المكتبة.</p></div></div>
+   <div class="table-wrap"><table><thead><tr><th>رمز الطلب</th><th>البريد / تيليجرام</th><th>المبلغ</th><th>تاريخ الدفع</th></tr></thead><tbody id="recent"></tbody></table></div>
+   <p class="note">الإيرادات محسوبة من المبالغ التي أرسلها بوت المتجر بعد تأكيد الدفع. الطلبات التي لا تحتوي مبلغاً تظهر منفصلة ولا تُقدّر تلقائياً.</p>
+  </section>
+  <section id="couponsSection" class="panel section">
+   <div class="section-head"><div><span class="section-kicker">PROMOTIONS</span><h3>الكوبونات والعروض</h3><p>أنشئ رموز الخصم وتابع حالتها وحدود استخدامها.</p></div><span class="pill" id="couponCount">— كوبون</span></div>
+   <form id="couponForm" class="form-grid">
+    <div class="field"><label for="couponCode">رمز الكوبون</label><input id="couponCode" name="code" required maxlength="24" pattern="[A-Za-z0-9_-]{3,24}" placeholder="WELCOME10" dir="ltr"></div>
+    <div class="field"><label for="couponKind">نوع الخصم</label><select id="couponKind" name="kind"><option value="percent">نسبة مئوية %</option><option value="fixed">مبلغ ثابت USD</option></select></div>
+    <div class="field"><label for="couponValue">قيمة الخصم</label><input id="couponValue" name="value" type="number" min="0.01" step="0.01" required></div>
+    <div class="field"><label for="couponMin">الحد الأدنى للسلة (USD)</label><input id="couponMin" name="min_total_usd" type="number" min="0" step="0.01" value="0"></div>
+    <div class="field"><label for="couponMax">أقصى عدد استخدامات (اختياري)</label><input id="couponMax" name="max_uses" type="number" min="1" step="1" placeholder="غير محدود"></div>
+    <div class="field"><label for="couponStart">يبدأ في (اختياري)</label><input id="couponStart" type="datetime-local"></div>
+    <div class="field"><label for="couponEnd">ينتهي في (اختياري)</label><input id="couponEnd" type="datetime-local"></div>
+    <div class="wide actions"><button class="btn" type="submit">＋ إنشاء كوبون</button></div>
+   </form>
+   <p id="couponStatus" class="status" role="status" aria-live="polite"></p>
+   <p class="note">الكوبونات الجديدة تبدأ متوقفة. تفعيلها يحفظ حالتها في قاعدة البيانات، لكنه لا يغيّر سعر الطلب أو مبلغ الدفع قبل ربط التحقق ببوت المتجر.</p>
+   <div id="coupons" class="coupon-list"></div>
+  </section>
+ </div>
 </section>
 </main>
 <script src="assets/config.js?v=3"></script><script src="assets/admin.js?v=1"></script>
+<script>
+document.querySelectorAll('.nav a').forEach(function(a){a.addEventListener('click',function(){document.querySelectorAll('.nav a').forEach(function(n){n.classList.remove('active')});a.classList.add('active')})});
+</script>
 </body></html>
