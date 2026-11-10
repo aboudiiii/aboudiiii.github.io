@@ -321,10 +321,12 @@ document.getElementById("cartgo").addEventListener("click",function(e){e.prevent
 clist.addEventListener("click",function(e){var b=e.target.closest("[data-rm]");if(b)setOn(b.getAttribute("data-rm"),false)});
 
 /* ---------- theme, progress, active nav ---------- */
-var tb=document.getElementById("theme");
+var tb=document.getElementById("theme"),themeMeta=document.querySelector('meta[name="theme-color"]');
 function dark(){var t=root.getAttribute("data-theme");return t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches}
+function syncThemeUI(){var isDark=dark();tb.setAttribute("aria-label",isDark?"التبديل إلى الوضع النهاري / Switch to day mode":"التبديل إلى الوضع الليلي / Switch to night mode");tb.setAttribute("title",isDark?"الوضع النهاري / Day mode":"الوضع الليلي / Night mode");if(themeMeta)themeMeta.setAttribute("content",isDark?"#071f1d":"#f6efe0")}
 try{var th=localStorage.getItem("theme");if(th==="dark"||th==="light")root.setAttribute("data-theme",th)}catch(e){}
-tb.addEventListener("click",function(){var n=dark()?"light":"dark";root.setAttribute("data-theme",n);try{localStorage.setItem("theme",n)}catch(e){}});
+syncThemeUI();
+tb.addEventListener("click",function(){var n=dark()?"light":"dark";root.setAttribute("data-theme",n);try{localStorage.setItem("theme",n)}catch(e){}syncThemeUI()});
 var prog=document.getElementById("prog");
 function onScroll(){var h=document.documentElement.scrollHeight-innerHeight;prog.style.setProperty("--p",(h>0?Math.min(100,scrollY/h*100):0)+"%")}
 addEventListener("scroll",onScroll,{passive:true});onScroll();
