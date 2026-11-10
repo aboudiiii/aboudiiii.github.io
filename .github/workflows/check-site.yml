@@ -17,5 +17,7 @@ jobs:
         run: python3 scripts/check_site.py
       - name: Security regression checks
         run: python3 scripts/security_check.py
+      - name: Check JavaScript syntax
+        run: for file in assets/*.js; do node --check "$file"; done
       - name: Test reviews Worker
         run: cd worker && npm test
