@@ -2,7 +2,7 @@
 var root=document.documentElement;
 function L(){return root.getAttribute("data-lang")==="en"?"en":"ar"}
 function sp(a,e){return '<span data-l="ar">'+a+'</span><span data-l="en">'+e+'</span>}
-function esc(s){return String(s==null?"":s).replace(/[&<>"\']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "\'":"&#39;"}[c]})}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").split(String.fromCharCode(39)).join("&#39;")}
 function $(i){return document.getElementById(i)}
 
 /* ---------- online coloring ---------- */
