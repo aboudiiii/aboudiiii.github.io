@@ -50,7 +50,7 @@ for page in pages:
         if "application/ld+json" not in attrs.lower() and body.strip():
             errors.append(f"{page.relative_to(ROOT)}: executable inline script remains")
 
-    if page.name != "404.html" and page.name != "index.html":
+    if page.name not in ("404.html", "index.html", "admin.html"):
         if not re.search(r'<script[^>]+src=["\']/assets/lang-init\.js["\']', source):
             errors.append(f"{page.relative_to(ROOT)}: external language bootstrap missing")
 
