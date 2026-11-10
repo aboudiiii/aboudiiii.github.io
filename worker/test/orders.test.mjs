@@ -33,5 +33,5 @@ test('a newly recorded paid order sends an owner Telegram alert', async () => {
   assert.ok(notice);
   assert.equal(notice.body.chat_id, '111');
   assert.match(notice.body.text, /ALERT1/);
-  assert.match(notice.body.text, /$12.00/);
+  assert.match(notice.body.text, /\\$12\\.00/);
 });
