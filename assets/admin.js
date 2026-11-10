@@ -101,5 +101,6 @@ $("coupons").addEventListener("click",function(e){
   else{b.disabled=false;status("couponStatus","تعذّر تحديث الكوبون.","error")}
  })
 });
+document.querySelectorAll(".nav a").forEach(function(a){a.addEventListener("click",function(){document.querySelectorAll(".nav a").forEach(function(n){n.classList.remove("active")});a.classList.add("active")})});
 if(tok)load();else showAuthed(false);
 })();
