@@ -50,15 +50,24 @@ export function salt(env) {
 export async function visitor(req, env) {
   return sha((req.headers.get('CF-Connecting-IP') || 'unknown') + '|' + salt(env), 16);
 }
-// Fixed-window counter in D1. Returns true when the action is allowed.
+// Atomic fixed-window counter in D1. The conditional UPSERT makes checking the
+// limit and incrementing the counter one database operation, avoiding races
+// between concurrent requests. A missing RETURNING row means the limit is hit.
 export async function hit(env, key, limit, ttlSec) {
   const t = now();
-  const row = await env.DB.prepare('SELECT n FROM rate WHERE k = ? AND expires_at > ?').bind(key, t).first();
-  if (row && row.n >= limit) return false;
-  if (row) await env.DB.prepare('UPDATE rate SET n = n + 1 WHERE k = ?').bind(key).run();
-  else await env.DB.prepare('INSERT OR REPLACE INTO rate (k, n, expires_at) VALUES (?, 1, ?)').bind(key, t + ttlSec * 1000).run();
-  if (Math.random() < 0.02) await env.DB.prepare('DELETE FROM rate WHERE expires_at < ?').bind(t).run();
-  return true;
+  const row = await env.DB.prepare(`
+    INSERT INTO rate (k, n, expires_at)
+    VALUES (?, 1, ?)
+    ON CONFLICT(k) DO UPDATE SET
+      n = CASE WHEN rate.expires_at <= ? THEN 1 ELSE rate.n + 1 END,
+      expires_at = CASE WHEN rate.expires_at <= ? THEN excluded.expires_at ELSE rate.expires_at END
+    WHERE rate.expires_at <= ? OR rate.n < ?
+    RETURNING n
+  `).bind(key, t + ttlSec * 1000, t, t, t, limit).first();
+  if (Math.random() < 0.02) {
+    await env.DB.prepare('DELETE FROM rate WHERE expires_at < ?').bind(t).run();
+  }
+  return row !== null;
 }
 // Common anti-bot checks for public forms. Returns an error response tuple or null.
 export function botCheck(body) {
