@@ -251,3 +251,34 @@ footer{border-top:1px solid color-mix(in srgb,var(--gold) 48%,var(--line))}
 @media (min-width:1101px){
   .hero .shelf img{object-fit:cover}
 }
+
+
+/* Definitive featured-cover sizing: match each cover's declared --h, never squeeze it into the shelf. */
+.hero .shelf{
+  box-sizing:border-box;width:100%;max-width:860px;
+  display:flex;align-items:flex-end;justify-content:flex-start;
+  gap:clamp(8px,1.4vw,14px);
+  overflow-x:auto;overflow-y:hidden;
+  padding:4px 8px 10px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;scroll-snap-type:x proximity
+}
+.hero .shelf a{
+  display:block;flex:0 0 auto;min-width:0;
+  width:auto;height:auto;aspect-ratio:auto;
+  padding:0!important;border:0!important;background:transparent!important;
+  scroll-snap-align:center
+}
+.hero .shelf img{
+  display:block;flex:none;
+  height:var(--h)!important;max-height:none!important;
+  width:auto!important;max-width:none!important;
+  aspect-ratio:520 / 673;object-fit:contain;
+  border:1px solid rgba(231,192,111,.48);
+  border-radius:8px;box-shadow:0 12px 24px -13px rgba(0,0,0,.78)
+}
+.hero .plank{width:100%;max-width:860px;margin:8px auto 0}
+@media(max-width:640px){
+  .hero .shelf{width:100%;max-width:100%;gap:9px;margin-top:22px;padding-inline:5px}
+  .hero .shelf img{height:var(--h)!important;max-height:none!important}
+}
