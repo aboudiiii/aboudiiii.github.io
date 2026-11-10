@@ -67,13 +67,7 @@ The upgrade will extend these pieces, not replace them with a framework or a new
 - Distinguish verified totals from orders whose `total_usd` is null; never infer or fabricate revenue.
 - Do not import old bot database records until the owner supplies and verifies the source export and mapping.
 
-### Phase 5 — AI library assistant
-- Start with retrieval from the actual product catalogue, book descriptions, samples, policies and FAQ.
-- Add a model-backed answer layer only after selecting/configuring a provider (for example Cloudflare Workers AI), setting a server-side binding/secret, rate limits, abuse controls and an explicit usage budget.
-- Keep answers grounded in the library catalogue; do not claim a product is available or paid unless the API confirms it.
-- Do not expose customer records, order history or admin functions to the public assistant.
-
-### Phase 6 — Security, performance and release
+### Phase 5 — Security, performance and release
 - Replace localStorage session storage with a safer cookie-based session only after validating same-site API/domain constraints; otherwise document a mitigation plan.
 - Remove inline scripts/styles and tighten CSP in a dedicated migration with regression tests.
 - Consolidate HTML escaping and audit all dynamic HTML insertion points.
@@ -81,12 +75,17 @@ The upgrade will extend these pieces, not replace them with a framework or a new
 - Run `scripts/check_site.py`, `scripts/security_check.py`, `cd worker && npm test`, mobile/desktop browser checks and an end-to-end checkout regression.
 - Deploy static pages and Worker separately. Apply D1 migrations only after a verified backup and staging validation.
 
-## First implementation in this branch
+## Implemented in this branch
 
-- Persist the existing storefront cart under `hayali_cart_v1`.
-- Restore only known product IDs on page load.
-- Save the selection whenever the cart changes.
-- Leave the legacy `cart` key cleanup untouched and do not change checkout or pricing behavior.
+- Persist the storefront cart under `hayali_cart_v1`; restore only known product IDs and save on cart changes.
+- Add owner-only dashboard APIs, guarded by the existing Telegram login and server-side `TG_OWNER_ID`.
+- Add sales summary: total orders, recorded revenue, missing totals, product counts, daily totals and recent orders.
+- Add coupon creation, activation/deactivation, deletion and audit logging.
+- Add a responsive, `noindex` `admin.html` page with Telegram owner login, dashboard and coupon management.
+- Add D1 migration `0002_admin_coupons.sql` and tests for authorization, analytics and coupon lifecycle.
+- Add a Content Security Policy to the admin page and update site checks to keep private noindex pages out of the public sitemap.
+- Keep AI/model-based response features explicitly excluded.
+- Coupon redemption and checkout price changes are not enabled: the external store/payment bot must validate the same coupon and final amount before a real discount can be charged.
 
 ## Release gates
 
