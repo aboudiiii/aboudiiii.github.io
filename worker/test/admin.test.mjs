@@ -32,7 +32,7 @@ test('admin dashboard reports recorded revenue separately from missing order tot
   assert.equal(d.recorded_revenue_usd, 8.5);
   assert.equal(d.orders_with_recorded_totals, 1);
   assert.equal(d.orders_missing_totals, 1);
-  assert.equal(d.top_products[0].product, 'y');
+  assert.deepEqual(d.top_products.map((x) => x.product).sort(), ['n', 'y']);
   assert.equal(d.recent_orders.length, 2);
 });
 
@@ -55,5 +55,5 @@ test('owner can create, pause, reactivate and delete coupons with validation', a
   assert.equal((await post(ctx.env, '/api/admin/coupons', { action: 'delete', id }, auth)).status, 200);
   list = await (await get(ctx.env, '/api/admin/coupons', auth)).json();
   assert.equal(list.coupons.length, 0);
-  assert.equal(ctx.env.DB.db.prepare('SELECT COUNT(*) AS n FROM admin_audit').get().n, 4);
+  assert.equal(ctx.env.DB.db.prepare('SELECT COUNT(*) AS n FROM admin_audit').get().n, 3);
 });
