@@ -511,3 +511,27 @@ footer a:hover{text-decoration:underline;text-underline-offset:4px}
   background:var(--gold-soft);
   border-color:var(--gold);
 }
+
+
+/* ===== Arabic & English typography system ===== */
+/* Editorial Arabic headings, clean Arabic reading text, and Kufic UI labels. */
+:root{
+  --f-display:'Amiri','Reem Kufi',serif;
+  --f-body:'IBM Plex Sans Arabic','Segoe UI',Tahoma,system-ui,sans-serif;
+}
+body{font-family:var(--f-body)}
+h1,h2,h3,.sdetail h3,.product h3,.sec .head h2{
+  font-family:'Amiri','Reem Kufi',serif;
+}
+html[data-lang="ar"] :where(button,a.btn,.chips button,.tag,.hot,.hmeta .hp,.cartpill,.sortsel){
+  font-family:'Reem Kufi','IBM Plex Sans Arabic',sans-serif;
+}
+html[data-lang="en"] :where(h1,h2,h3,.sec .head h2,.product h3,.sdetail h3){
+  font-family:'Marcellus',Georgia,serif;
+}
+html[data-lang="en"] body{
+  font-family:Arial,Helvetica,system-ui,sans-serif;
+}
+html[data-lang="en"] :where(button,a.btn,.chips button,.tag,.hot,.hmeta .hp,.cartpill,.sortsel){
+  font-family:Arial,Helvetica,system-ui,sans-serif;
+}
