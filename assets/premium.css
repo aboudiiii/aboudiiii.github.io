@@ -177,3 +177,49 @@ html[dir="rtl"] .hero .kick{letter-spacing:0}
   .hero .pills>span{font-size:10.5px;padding:4px 8px}
 }
 @media(prefers-reduced-motion:reduce){.hero .shelf a{animation:none!important}}
+
+
+/* Final classic finish: mosque silhouette, refined collection cards and section rhythm. */
+.hero{isolation:isolate}
+.hero-mosque{
+  position:absolute;z-index:0;left:50%;bottom:82px;transform:translateX(-50%);
+  width:min(94%,820px);height:auto;max-height:235px;overflow:visible;
+  color:#e5bd69;opacity:.17;pointer-events:none;
+  filter:drop-shadow(0 3px 12px rgba(224,180,91,.16))
+}
+.hero>*:not(.hero-mosque){position:relative;z-index:1}
+:root[data-theme="light"] .hero-mosque{color:#9a7837;opacity:.15}
+@media(prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .hero-mosque{color:#9a7837;opacity:.15}
+}
+.sec .head h2{color:var(--text);text-wrap:balance}
+.sec .head:after{
+  content:"";display:block;width:min(150px,34vw);height:2px;margin:12px auto 0;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.8
+}
+.ncard,.pk,.step,.plaque,.jbox,.doc,.sdetail,.product{
+  border-color:color-mix(in srgb,var(--gold) 34%,var(--line));
+  box-shadow:0 12px 30px -25px rgba(35,29,16,.65)
+}
+.ncard:hover,.pk:hover,.step:hover,.plaque:hover,.product:hover{
+  border-color:color-mix(in srgb,var(--gold) 72%,var(--line));
+  transform:translateY(-2px)
+}
+.ncard img{box-shadow:0 8px 18px -13px rgba(0,0,0,.65)}
+.srow{border:1px solid color-mix(in srgb,var(--gold) 24%,var(--line));background:var(--surface)}
+.srow.has,.srow:hover{border-color:var(--gold);background:var(--surface2)}
+.sdetail{background:var(--surface);box-shadow:var(--shadow)}
+.chips button[aria-pressed="true"],.chips button.active{
+  background:var(--gold-soft);border-color:var(--gold);color:var(--text)
+}
+.pk,.step,.ncard{background:var(--surface)}
+details{border-color:color-mix(in srgb,var(--gold) 30%,var(--line));background:var(--surface)}
+details[open] summary{color:var(--gold)}
+footer{border-top:1px solid color-mix(in srgb,var(--gold) 48%,var(--line))}
+@media(max-width:640px){
+  .hero-mosque{bottom:74px;width:98%;max-height:175px;opacity:.13}
+  .hero .shelf{position:relative}
+}
+@media(prefers-reduced-motion:reduce){
+  .ncard:hover,.pk:hover,.step:hover,.plaque:hover,.product:hover{transform:none}
+}
