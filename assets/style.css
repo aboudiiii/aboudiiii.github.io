@@ -580,3 +580,46 @@ html[dir="rtl"] .hero h1{line-height:1.4}
 #pload{z-index:2;padding:18px}
 #pload button{pointer-events:auto}
 #vimg[style*="display: none"]{display:none!important}
+
+
+/* Mobile product detail: keep the cover and all content inside the gold frame. */
+@media (max-width:900px){
+  #sdetail{
+    box-sizing:border-box;
+    width:100%;
+    min-width:0;
+    grid-template-columns:minmax(0,1fr);
+    justify-items:stretch;
+    gap:18px;
+    padding:clamp(16px,4vw,28px);
+  }
+  #sdetail>div:first-child{
+    width:100%;
+    min-width:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:8px;
+    box-sizing:border-box;
+  }
+  #sdetail .book{
+    width:min(190px,100%);
+    max-width:190px;
+    margin-inline:auto;
+    flex:0 1 190px;
+  }
+  #sdetail>div:not(:first-child){
+    width:100%;
+    min-width:0;
+    box-sizing:border-box;
+    overflow-wrap:anywhere;
+  }
+  #sdetail .sact{width:100%;min-width:0}
+  #sdetail .sact>*{max-width:100%;min-width:0}
+}
+/* User preference: keep the library completely still, without motion effects. */
+*,*::before,*::after{
+  animation:none!important;
+  transition:none!important;
+  scroll-behavior:auto!important;
+}
