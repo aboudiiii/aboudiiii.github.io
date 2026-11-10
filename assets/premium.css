@@ -535,3 +535,10 @@ html[data-lang="en"] body{
 html[data-lang="en"] :where(button,a.btn,.chips button,.tag,.hot,.hmeta .hp,.cartpill,.sortsel){
   font-family:Arial,Helvetica,system-ui,sans-serif;
 }
+
+
+/* Give the main content more usable width on phones and compact tablets. */
+.wrap{padding-inline:clamp(6px,1vw,12px)}
+@media(max-width:640px){
+  .wrap{padding-inline:6px}
+}
