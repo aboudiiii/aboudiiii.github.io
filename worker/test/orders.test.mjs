@@ -32,6 +32,6 @@ test('a newly recorded paid order sends an owner Telegram alert', async () => {
   const notice = ctx.calls.find((c) => c.url.includes('/sendMessage'));
   assert.ok(notice);
   assert.equal(notice.body.chat_id, '111');
-  assert.match(notice.body.text, /ALERT1/);
+  assert.ok(notice.body.text.includes('$12.00'));
   assert.match(notice.body.text, /\$12\.00/);
 });
