@@ -23,17 +23,28 @@ function pick(c){color=c;[].forEach.call(pal.querySelectorAll("button.sw"),funct
 pal.addEventListener("click",function(e){var b=e.target.closest("button.sw");if(b)pick(b.getAttribute("data-c"))});
 $("pcol").addEventListener("input",function(e){pick(e.target.value)});
 function hex(c){return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)]}
+function failColorPage(i){
+ G=null; img=null; var box=$("pload"); box.classList.remove("off"); box.textContent="";
+ var wrap=document.createElement("div"); wrap.style.cssText="display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px;text-align:center;pointer-events:auto";
+ var msg=document.createElement("span"); msg.textContent=L()==="ar"?"تعذّر تحميل صفحة التلوين. تحقق من الاتصال ثم أعد المحاولة.":"Could not load this coloring page. Check your connection and try again.";
+ var btn=document.createElement("button"); btn.type="button"; btn.className="ghost"; btn.textContent=L()==="ar"?"إعادة المحاولة":"Try again"; btn.addEventListener("click",function(){load(i)});
+ wrap.appendChild(msg); wrap.appendChild(btn); box.appendChild(wrap);
+}
 function load(i){
- cur=i; hist=[]; $("pload").classList.remove("off");
+ cur=i; hist=[]; G=null; img=null; $("pload").classList.remove("off"); $("pload").textContent="";
+ var loading=document.createElement("span"); loading.textContent=L()==="ar"?"جارٍ تحميل صفحة التلوين…":"Loading coloring page…"; $("pload").appendChild(loading);
  [].forEach.call(tabs.children,function(b,j){b.setAttribute("aria-selected",j===i)});
  var im=new Image(); im.onload=function(){
   if(cur!==i)return;
   cv.width=im.naturalWidth; cv.height=im.naturalHeight; ctx.drawImage(im,0,0); img=im;
-  var d=ctx.getImageData(0,0,cv.width,cv.height); G=new Uint8Array(cv.width*cv.height);
-  for(var k=0;k<G.length;k++)G[k]=d.data[k*4];
-  $("pload").classList.add("off");
+  try {
+   var d=ctx.getImageData(0,0,cv.width,cv.height); G=new Uint8Array(cv.width*cv.height);
+   for(var k=0;k<G.length;k++)G[k]=d.data[k*4];
+   $("pload").classList.add("off");
+  } catch(err) { failColorPage(i); }
  };
- im.src="assets/pg/"+PAGES[i].f+".png";
+ im.onerror=function(){if(cur===i)failColorPage(i)};
+ im.src="/assets/pg/"+PAGES[i].f+".png?v=20261110a";
 }
 tabs.addEventListener("click",function(e){var b=e.target.closest("button");if(b)load(+b.getAttribute("data-i"))});
 function fill(x,y){
@@ -79,15 +90,19 @@ load(0);
 /* ---------- book preview ---------- */
 var BOOKS=[{k:"pi",n:8,ar:"الزخارف الإسلامية",en:"Islamic Patterns"},{k:"pk",n:8,ar:"ألوان الطبيعة للأطفال",en:"Nature for Kids"}];
 var bi=0, pi=1, vt=$("vtabs"), vi=$("vimg"), vth=$("vthumbs");
+var vstatus=document.createElement("div"); vstatus.setAttribute("role","status"); vstatus.style.cssText="padding:24px;text-align:center;color:var(--muted);max-width:260px"; vstatus.hidden=true; vi.parentNode.insertBefore(vstatus,vi.nextSibling);
 vt.innerHTML=BOOKS.map(function(b,i){return '<button type="button" role="tab" data-b="'+i+'" aria-selected="'+(i===0)+'">'+sp(b.ar,b.en)+'</button>'}).join("");
 function showP(){
- var b=BOOKS[bi]; vi.src="assets/pg/"+b.k+pi+".jpg";
+ var b=BOOKS[bi], expected=bi+":"+pi; vi.style.display="block"; vstatus.hidden=false; vstatus.textContent=L()==="ar"?"جارٍ تحميل صفحة الدفتر…":"Loading book page…";
+ vi.onload=function(){if(expected===bi+":"+pi){vstatus.hidden=true;vi.style.display="block"}};
+ vi.onerror=function(){if(expected!==bi+":"+pi)return;vi.style.display="none";vstatus.hidden=false;vstatus.textContent=L()==="ar"?"تعذّر تحميل هذه الصفحة. جرّب صفحة أخرى أو أعد المحاولة.":"This page could not be loaded. Try another page or retry."};
+ vi.src="/assets/pg/"+b.k+pi+".jpg?v=20261110a";
  var ct="<bdi dir=\"ltr\">"+pi+" / "+b.n+"</bdi>"; $("vcount").innerHTML=ct;
  [].forEach.call(vth.children,function(t,j){t.setAttribute("aria-current",j+1===pi)});
 }
 function showB(i){
  bi=i;pi=1;[].forEach.call(vt.children,function(t,j){t.setAttribute("aria-selected",j===i)});
- var b=BOOKS[i], h=""; for(var j=1;j<=b.n;j++)h+='<button type="button" data-p="'+j+'" aria-label="'+j+'"><img alt="" loading="lazy" src="assets/pg/'+b.k+j+'.jpg"></button>';
+ var b=BOOKS[i], h=""; for(var j=1;j<=b.n;j++)h+='<button type="button" data-p="'+j+'" aria-label="'+j+'"><img alt="" loading="lazy" src="/assets/pg/'+b.k+j+'.jpg?v=20261110a"></button>';
  vth.innerHTML=h; showP();
 }
 vt.addEventListener("click",function(e){var b=e.target.closest("button");if(b)showB(+b.getAttribute("data-b"))});
