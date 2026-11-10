@@ -27,6 +27,7 @@ export async function adminSummary(req, env) {
     generated_at: now(),
     orders: orders?.n || 0,
     recorded_revenue_usd: Number(revenue?.amount || 0),
+    average_recorded_order_usd: revenue?.n ? Number(revenue.amount || 0) / revenue.n : 0,
     orders_with_recorded_totals: revenue?.n || 0,
     orders_missing_totals: missing?.n || 0,
     top_products: products.results,
