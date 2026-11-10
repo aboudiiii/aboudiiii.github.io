@@ -12,7 +12,7 @@ async function audit(env, actor, action, entityId, details = {}) {
 export async function adminSummary(req, env) {
   const auth = await ownerSession(req, env);
   if (!auth.ok) return fail(auth.error, auth.status);
-  const [orders, revenue, missing, products, recent, daily, coupons] = await Promise.all([
+  const [orders, revenue, missing, products, recent, daily, coupons, customers, monthly, auditRows] = await Promise.all([
     env.DB.prepare('SELECT COUNT(*) AS n FROM orders').first(),
     env.DB.prepare('SELECT COALESCE(SUM(total_usd), 0) AS amount, COUNT(total_usd) AS n FROM orders').first(),
     env.DB.prepare('SELECT COUNT(*) AS n FROM orders WHERE total_usd IS NULL').first(),
@@ -21,6 +21,9 @@ export async function adminSummary(req, env) {
     env.DB.prepare("SELECT strftime('%Y-%m-%d', paid_at / 1000, 'unixepoch') AS day, COUNT(*) AS orders, COALESCE(SUM(total_usd), 0) AS revenue FROM orders WHERE paid_at >= ? GROUP BY day ORDER BY day")
       .bind(now() - 30 * 86400000).all(),
     env.DB.prepare('SELECT COUNT(*) AS n FROM coupons').first(),
+    env.DB.prepare("SELECT COUNT(DISTINCT COALESCE(NULLIF(email, ''), 'tg:' || telegram_id)) AS n FROM orders WHERE (email IS NOT NULL AND email != '') OR (telegram_id IS NOT NULL AND telegram_id != '')").first(),
+    env.DB.prepare("SELECT strftime('%Y-%m', paid_at / 1000, 'unixepoch') AS month, COUNT(*) AS orders, COALESCE(SUM(total_usd), 0) AS revenue FROM orders WHERE paid_at >= ? GROUP BY month ORDER BY month DESC LIMIT 12").bind(now() - 365 * 86400000).all(),
+    env.DB.prepare('SELECT action, entity_id, details, created_at FROM admin_audit ORDER BY created_at DESC LIMIT 12').all(),
   ]);
   return [{
     ok: true,
@@ -34,6 +37,9 @@ export async function adminSummary(req, env) {
     recent_orders: recent.results,
     daily: daily.results,
     coupon_count: coupons?.n || 0,
+    customers: customers?.n || 0,
+    monthly: monthly.results,
+    audit: auditRows.results,
   }, 200];
 }
 
