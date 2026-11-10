@@ -502,3 +502,12 @@ footer a:hover{text-decoration:underline;text-underline-offset:4px}
   html{scroll-behavior:auto}
   .ncard,.srow,.qz button,.dqb{transition:none}
 }
+
+
+/* Ensure selected collection filters remain readable in both themes. */
+.chips button[aria-pressed="true"],
+.chips button.active{
+  color:var(--fg)!important;
+  background:var(--gold-soft);
+  border-color:var(--gold);
+}
