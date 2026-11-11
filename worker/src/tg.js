@@ -46,7 +46,7 @@ async function onMessage(env, m) {
   if (/^\d{6}$/.test(text)) {
     // Step 2: the code typed by the same chat that opened the login link.
     const row = await env.DB.prepare("SELECT email, code_hash, attempts FROM login_codes WHERE email LIKE 'tgq:%' AND code_hash LIKE ? AND expires_at > ? ORDER BY sent_at DESC LIMIT 1").bind('p:' + chat + ':%', Date.now()).first();
-    if (!row) return;
+    if (!row) return void (await tg(env, 'sendMessage', { chat_id: chat, text: 'لا يوجد طلب دخول مفتوح. من الموقع اضغط «افتح تيليجرام وأكّد» ثم Start، وبعدها أرسل الرمز.' }));
     if (row.attempts >= 5) return void (await tg(env, 'sendMessage', { chat_id: chat, text: 'تجاوزت عدد المحاولات. ابدأ من جديد من الموقع.' }));
     const want = row.code_hash.split(':')[2];
     if (!safeEqual(want, await sha(`${text}|${row.email}`, 16))) {
