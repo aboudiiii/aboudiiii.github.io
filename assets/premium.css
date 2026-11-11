@@ -547,6 +547,8 @@ html[data-lang="en"] :where(button,a.btn,.chips button,.tag,.hot,.hmeta .hp,.car
 /* Restore the full available screen width on phones and tablets. */
 @media(max-width:1100px){
   body{padding-inline:0}
+  /* body gutter is removed here, so the header must not bleed out of it (caused 16px horizontal overflow) */
+  nav.top{margin-inline:0}
   .wrap{
     width:100%;
     max-width:none;
