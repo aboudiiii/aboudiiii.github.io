@@ -16,7 +16,7 @@ old = open('sitemap.xml', encoding='utf8').read() if os.path.exists('sitemap.xml
 prio = {m[0]: m[1] for m in re.findall(r'<loc>' + re.escape(BASE) + r'([^<]*)</loc>.*?<priority>([^<]*)</priority>', old)}
 order = [m for m in re.findall(r'<loc>' + re.escape(BASE) + r'([^<]*)</loc>', old)]
 
-pages = sorted(p for p in glob.glob('*.html') + glob.glob('books/*.html') + glob.glob('articles/*.html') if p != '404.html')
+pages = sorted(p for p in glob.glob('*.html') + glob.glob('books/*.html') + glob.glob('articles/*.html') if p != '404.html' and not re.match(r'google[0-9a-f]+\.html$', p))
 keys = {('' if p == 'index.html' else p): p for p in pages}
 ordered = [k for k in order if k in keys] + sorted(k for k in keys if k not in order)
 

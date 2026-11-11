@@ -15,6 +15,8 @@ pages = sorted(
     + list((ROOT / "books").glob("*.html"))
     + list((ROOT / "articles").glob("*.html"))
 )
+# Google Search Console ownership file is a bare text file, not a page.
+pages = [p for p in pages if not re.fullmatch(r"google[0-9a-f]+\.html", p.name)]
 if not pages:
     errors.append("No HTML pages found")
 
