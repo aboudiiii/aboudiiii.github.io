@@ -2,7 +2,7 @@
 import re,sys,os,glob,json
 from urllib.parse import urlparse
 root=sys.argv[1] if len(sys.argv)>1 else '.'; os.chdir(root); errors=0
-pages=sorted(glob.glob('*.html')+glob.glob('books/*.html')+glob.glob('articles/*.html'))
+pages=sorted(x for x in glob.glob('*.html')+glob.glob('books/*.html')+glob.glob('articles/*.html') if not re.match(r'google[0-9a-f]+\.html$',x))
 sm=open('sitemap.xml',encoding='utf8').read()
 smurls=set(re.findall(r'<loc>https://aboudiiii.github.io/?([^<]*)</loc>',sm))
 print('pages',len(pages),'sitemap',len(smurls))
