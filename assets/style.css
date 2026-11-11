@@ -666,8 +666,8 @@ html[dir="rtl"] .hero h1{line-height:1.4}
  .mo{opacity:0;translate:0 38px;scale:.97}
  .mo.motion-in{opacity:1;translate:0 0;scale:1;transition:opacity .8s cubic-bezier(.2,.8,.2,1) var(--mo-d,0ms),translate .8s cubic-bezier(.2,.8,.2,1) var(--mo-d,0ms),scale .8s cubic-bezier(.2,.8,.2,1) var(--mo-d,0ms)}
  /* hero parallax driven by --py (scroll position) */
- .hero .shelf,.hero .plank{translate:0 calc(var(--py,0)*-.2px)}
- .hero h1,.hero .lead{translate:0 calc(var(--py,0)*.07px)}
+ /* shelf only drifts DOWN (never over the buttons), capped */
+ .hero .shelf,.hero .plank{translate:0 min(28px,calc(var(--py,0)*.06px))}
  /* buttons */
  .btn{transition:translate .2s,scale .2s,box-shadow .25s,background-color .2s,border-color .2s}
  .btn:hover{translate:0 -3px;box-shadow:0 16px 28px -14px rgba(201,162,75,.6)}
