@@ -25,7 +25,7 @@ Project-local skills are stored under `.claude/skills/` and should be used when 
 - `new-book-page`: existing workflow for adding book/product pages.
 - `accessibility-seo-review`: audit semantics, keyboard use, contrast, metadata, structured data, Arabic/English content, and mobile behavior.
 
-**Project-specific override:** the owner explicitly disabled animations. Do not introduce animations or CSS transitions, even if a generic design skill suggests motion.
+**Motion (owner decision, 2026-11-11):** the owner now wants a lively, bold site. Motion is allowed and on by default: use `transform`/`opacity`/`translate`/`scale` only (no layout-shifting properties), no motion libraries, and every effect must be disabled under `prefers-reduced-motion: reduce` (see the kill-switch at the end of `assets/style.css`). Keep it purposeful and never let it cover content or cause horizontal overflow.
 
 ## Check before pushing
 `python3 scripts/check_site.py` — يفحص الـ sitemap والروابط المحلية وصور og وبيانات الصفحات. يجب أن ينتهي بدون `ERROR`.
