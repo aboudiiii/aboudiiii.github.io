@@ -617,11 +617,13 @@ html[dir="rtl"] .hero h1{line-height:1.4}
   #sdetail .sact{width:100%;min-width:0}
   #sdetail .sact>*{max-width:100%;min-width:0}
 }
-/* User preference: keep the library completely still, without motion effects. */
-*,*::before,*::after{
-  animation:none!important;
-  transition:none!important;
-  scroll-behavior:auto!important;
+/* Motion is on by default; visitors who ask their device for reduced motion get a completely still site. */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation:none!important;
+    transition:none!important;
+    scroll-behavior:auto!important;
+  }
 }
 
 
@@ -656,4 +658,32 @@ html[dir="rtl"] .hero h1{line-height:1.4}
     box-sizing:border-box;
     overflow-wrap:anywhere;
   }
+}
+
+/* ===== Bold motion layer (transform/opacity only; fully disabled by prefers-reduced-motion) ===== */
+@media (prefers-reduced-motion:no-preference){
+ /* scroll entrances: motion.js adds .mo then .motion-in */
+ .mo{opacity:0;translate:0 38px;scale:.97}
+ .mo.motion-in{opacity:1;translate:0 0;scale:1;transition:opacity .8s cubic-bezier(.2,.8,.2,1) var(--mo-d,0ms),translate .8s cubic-bezier(.2,.8,.2,1) var(--mo-d,0ms),scale .8s cubic-bezier(.2,.8,.2,1) var(--mo-d,0ms)}
+ /* hero parallax driven by --py (scroll position) */
+ .hero .shelf,.hero .plank{translate:0 calc(var(--py,0)*-.2px)}
+ .hero h1,.hero .lead{translate:0 calc(var(--py,0)*.07px)}
+ /* buttons */
+ .btn{transition:translate .2s,scale .2s,box-shadow .25s,background-color .2s,border-color .2s}
+ .btn:hover{translate:0 -3px;box-shadow:0 16px 28px -14px rgba(201,162,75,.6)}
+ .btn:active{translate:0 0;scale:.96}
+ /* cart bar slides in */
+ .cartbar.on{animation:barUp .5s cubic-bezier(.2,.9,.3,1.15)}
+ @keyframes barUp{from{translate:0 100%;opacity:0}to{translate:0 0;opacity:1}}
+ /* book-page flip in the preview */
+ .page-turn{animation:pageTurn .6s cubic-bezier(.2,.8,.2,1)}
+ @keyframes pageTurn{from{opacity:0;transform:perspective(900px) rotateY(-16deg) translateX(20px)}to{opacity:1;transform:none}}
+ /* book / article / info pages: staggered entrance of the document blocks */
+ .doc>*{animation:docIn .75s cubic-bezier(.2,.8,.2,1) backwards}
+ .doc>*:nth-child(2){animation-delay:.08s}.doc>*:nth-child(3){animation-delay:.16s}.doc>*:nth-child(4){animation-delay:.24s}.doc>*:nth-child(5){animation-delay:.32s}.doc>*:nth-child(n+6){animation-delay:.4s}
+ @keyframes docIn{from{opacity:0;translate:0 28px}to{opacity:1;translate:0 0}}
+}
+@media (prefers-reduced-motion:no-preference) and (hover:hover){
+ .ncard,.pv,.order,.dqwrap,.free{transition:translate .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
+ .ncard:hover,.pv:hover,.order:hover,.dqwrap:hover,.free:hover{translate:0 -5px;box-shadow:0 24px 42px -24px rgba(8,40,36,.5)}
 }

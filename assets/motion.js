@@ -79,8 +79,19 @@ if(!reduce&&"IntersectionObserver" in window){
   entries.forEach(function(entry){
    if(entry.isIntersecting){entry.target.classList.add("motion-in");revealObserver.unobserve(entry.target)}
   });
- },{threshold:.14,rootMargin:"0px 0px -36px 0px"});
- $(".sec>.head,.pv,.qz,.pgm,.order,.dqwrap,.free").forEach(function(el){revealObserver.observe(el)});
+ },{threshold:.12,rootMargin:"0px 0px -30px 0px"});
+ $$(".pv,.qz,.pgm,.order,.dqwrap,.free").forEach(function(el,i){
+  el.classList.add("mo");el.style.setProperty("--mo-d",(i%4)*90+"ms");revealObserver.observe(el)
+ });
+}
+/* Hero parallax: one rAF-throttled scroll listener that only writes a CSS variable. */
+var heroEl=$(".hero");
+if(heroEl&&!reduce){
+ var pTick=false;
+ addEventListener("scroll",function(){
+  if(pTick)return;pTick=true;
+  requestAnimationFrame(function(){var y=scrollY;if(y<innerHeight*1.5)heroEl.style.setProperty("--py",String(Math.round(y)));pTick=false});
+ },{passive:true});
 }
 /* Animate a book page only after its new image has actually loaded. */
 var pageImage=$("#vimg");
