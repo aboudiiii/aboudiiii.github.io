@@ -659,7 +659,7 @@ html[dir="rtl"] .hero h1{line-height:1.4}
     overflow-wrap:anywhere;
   }
 }
-.tgcode{font:700 28px/1.2 var(--f-display,inherit);letter-spacing:6px;color:var(--navy-deep,inherit);margin:0}
+.tgcode{font:700 28px/1.2 var(--f-display,inherit);letter-spacing:6px;color:var(--gold);margin:6px 0;text-align:center}
 
 /* ===== Bold motion layer (transform/opacity only; fully disabled by prefers-reduced-motion) ===== */
 @media (prefers-reduced-motion:no-preference){
