@@ -19,7 +19,7 @@ Review the static HTML/CSS/vanilla-JS site without introducing dependencies or c
 - Images: meaningful bilingual alt text, width/height, eager/high priority only for the main visible cover, lazy loading below the fold.
 - SEO: unique title and description, canonical URL, Open Graph metadata, valid JSON-LD, sitemap entry and working local links.
 - CSP: do not introduce external origins or inline execution without reviewing the existing strict policy.
-- Respect the owner's preference: no animations, transitions, scroll reveals or motion libraries.
+- Motion is allowed (owner decision 2026-11-11) but must respect `prefers-reduced-motion`, use only transform/opacity, and use no motion libraries.
 
 ## Review method
 1. Read `CLAUDE.md` and inspect the target page plus the CSS/JS it actually loads.

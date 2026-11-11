@@ -9,7 +9,7 @@ description: Maintain and improve Al-Hayali Digital Library safely. Use for any 
 - This is a production static GitHub Pages site: plain HTML, CSS and vanilla JavaScript. Do not migrate it to React, add a bundler, or introduce dependencies unless the owner explicitly requests it.
 - Arabic-first RTL with English switching via the existing `data-l="ar|en"` spans. Preserve both languages and test both directions.
 - Preserve the established deep emerald / dark green and gold visual identity. Improve hierarchy and spacing without replacing the brand.
-- The owner explicitly requested that animations be removed. Do not add CSS animations, transitions, scroll reveals, motion libraries, animated cursors, or animated decorative effects. Keep interactions immediate and static.
+- Motion is allowed (owner decision 2026-11-11): bold but purposeful, using only transform/opacity/translate/scale, no motion libraries, and always disabled under `prefers-reduced-motion: reduce`. Never let motion cover content, shift layout or cause horizontal overflow.
 - Design mobile-first. Verify at narrow phone widths as well as desktop. Prevent horizontal overflow and keep all product covers, text, buttons and cards inside their gold frames.
 
 ## Non-negotiable safety rules
