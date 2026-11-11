@@ -31,10 +31,13 @@ export async function tgStart(req, env) {
   if (early) return early;
   const who = await visitor(req, env), hour = new Date().toISOString().slice(0, 13);
   if (!(await hit(env, `a:tg:${who}:${hour}`, 10, 3700))) return [{ ok: false, error: 'rate_limited' }, 429];
-  const s = randomHex(16);
+  // `c` is shown only on the site. The Telegram user must type it into the bot, so a victim who is merely
+  // tricked into tapping a login link (and never sees `c`) cannot hand the attacker a session.
+  const s = randomHex(16), key = 'tgq:' + (await sha(s, 40));
+  const c = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000));
   await env.DB.prepare('INSERT INTO login_codes (email, code_hash, expires_at, attempts, sent_at) VALUES (?, ?, ?, 0, ?)')
-    .bind('tgq:' + (await sha(s, 40)), '', now() + CODE_TTL, now()).run();
-  return [{ ok: true, s }, 200];
+    .bind(key, 'c:' + (await sha(`${c}|${key}`, 16)), now() + CODE_TTL, now()).run();
+  return [{ ok: true, s, c }, 200];
 }
 
 export async function tgPoll(req, env) {

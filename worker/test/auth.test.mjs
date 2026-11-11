@@ -63,19 +63,36 @@ test('same answer whether or not the email has orders (no account enumeration)',
   assert.deepEqual(a, b);
 });
 
-test('Telegram login: start -> bot /start login_<s> -> poll gives a session with the Telegram purchases', async () => {
+test('Telegram login: start -> bot /start login_<s> -> type the on-site code -> poll gives a session', async () => {
   const ctx = setup();
   await post(ctx.env, '/api/orders', { code: 'T1', items: ['y'], telegram_id: 777, total_usd: 3.33 }, { headers: { 'X-Bot-Key': 'botkey' } });
-  const { s } = await (await post(ctx.env, '/api/auth/tg/start', { t: old() })).json();
+  const { s, c } = await (await post(ctx.env, '/api/auth/tg/start', { t: old() })).json();
   assert.match(s, /^[a-f0-9]{32}$/);
+  assert.match(c, /^\d{6}$/);
   assert.equal((await (await post(ctx.env, '/api/auth/tg/poll', { s })).json()).pending, true);
   await say(ctx.env, '/start login_' + s, 777);
+  assert.equal((await (await post(ctx.env, '/api/auth/tg/poll', { s })).json()).pending, true); // tapping the link alone is not enough
+  await say(ctx.env, c, 777);
   const r = await (await post(ctx.env, '/api/auth/tg/poll', { s })).json();
   assert.equal(r.email, 'tg:777');
   const me = await (await get(ctx.env, '/api/me', { headers: { Authorization: 'Bearer ' + r.token } })).json();
   assert.equal(me.orders.length, 1);
   assert.equal((await post(ctx.env, '/api/auth/tg/poll', { s })).status, 400); // single use
   assert.equal((await post(ctx.env, '/api/auth/tg/poll', { s: 'a'.repeat(32) })).status, 400);
+});
+
+test('Telegram login phishing: a victim who only taps the attacker link never gives the attacker a session', async () => {
+  const ctx = setup();
+  const { s, c } = await (await post(ctx.env, '/api/auth/tg/start', { t: old() })).json(); // attacker's page
+  await say(ctx.env, '/start login_' + s, 111); // victim (here: the owner) taps the link and presses Start
+  assert.equal((await (await post(ctx.env, '/api/auth/tg/poll', { s })).json()).pending, true);
+  await say(ctx.env, '123456', 111); // victim cannot know the code
+  assert.equal((await (await post(ctx.env, '/api/auth/tg/poll', { s })).json()).pending, true);
+  await say(ctx.env, c, 222); // a different chat knowing the code cannot complete the victim's login
+  assert.equal((await (await post(ctx.env, '/api/auth/tg/poll', { s })).json()).pending, true);
+  for (let i = 0; i < 5; i++) await say(ctx.env, String(111111 + i), 111);
+  await say(ctx.env, c, 111); // too many wrong attempts: even the right code is refused
+  assert.equal((await (await post(ctx.env, '/api/auth/tg/poll', { s })).json()).pending, true);
 });
 
 test('worker refuses to run without RATE_SALT (fail closed)', async () => {

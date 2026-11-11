@@ -51,7 +51,7 @@ function renderOrders(d){
 var tgTimer=null;
 function tgPoll(s,end){if(Date.now()>end){msg("tgSt","انتهت المهلة. اضغط الزر من جديد.","Timed out. Tap the button again.",true);$("tgLogin").disabled=false;return}
  api("/api/auth/tg/poll",{s:s}).then(function(d){
-  if(d.ok&&d.token){tok=d.token;store(tok);$("tgOpen").hidden=true;$("tgLogin").disabled=false;msg("tgSt","","");load();return}
+  if(d.ok&&d.token){tok=d.token;store(tok);$("tgOpen").hidden=true;if($("tgCode"))$("tgCode").hidden=true;$("tgLogin").disabled=false;msg("tgSt","","");load();return}
   if(d.ok||d.status===undefined){tgTimer=setTimeout(function(){tgPoll(s,end)},2500);return}
   msg("tgSt","انتهت الصلاحية. اضغط الزر من جديد.","Expired. Tap the button again.",true);$("tgLogin").disabled=false})}
 if(TG&&$("tgBox")){$("tgBox").hidden=false;
@@ -59,7 +59,8 @@ if(TG&&$("tgBox")){$("tgBox").hidden=false;
   api("/api/auth/tg/start",{website:""}).then(function(d){
    if(!d.ok){b.disabled=false;err("tgSt",d);return}
    var u="https://t.me/"+TG+"?start=login_"+d.s,o=$("tgOpen");o.href=u;o.hidden=false;
-   msg("tgSt","اضغط «افتح تيليجرام» ثم Start في البوت. ننتظر تأكيدك هنا…","Tap “Open Telegram”, then Start in the bot. Waiting for you here…");
+   var cb=$("tgCode");if(cb&&/^\d{6}$/.test(String(d.c))){cb.textContent=d.c;cb.hidden=false}
+   msg("tgSt","اضغط «افتح تيليجرام» ثم Start، ثم أرسل للبوت الرمز الظاهر أدناه (لا تشاركه مع أحد). ننتظر تأكيدك هنا…","Tap “Open Telegram”, press Start, then send the bot the code shown below (never share it). Waiting for you here…");
    tgPoll(d.s,Date.now()+5*60*1000)})})}
 function load(){if(!tok){show("in");return}
  api("/api/me",null,true).then(function(d){if(d.ok)renderOrders(d);else{if(d.status===401){tok=null;store("")}show("in")}})}

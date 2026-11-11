@@ -657,3 +657,4 @@ html[dir="rtl"] .hero h1{line-height:1.4}
     overflow-wrap:anywhere;
   }
 }
+.tgcode{font:700 28px/1.2 var(--f-display,inherit);letter-spacing:6px;color:var(--navy-deep,inherit);margin:0}
