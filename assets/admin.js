@@ -20,7 +20,7 @@ function signIn(){
  request("/api/auth/tg/start",{t:Date.now()-4000}).then(function(d){
   if(!d.ok||!d.s){b.disabled=false;status("loginStatus","تعذّر بدء تسجيل الدخول. حاول مرة أخرى.","error");return}
   var url="https://t.me/"+BOT+"?start=login_"+d.s,open=$("openTg");open.href=url;open.classList.remove("hide");open.textContent="افتح تيليجرام وأرسل Start";
-  status("loginStatus","افتح البوت واضغط Start. نتحقق من حسابك هنا…");
+  status("loginStatus","افتح البوت واضغط Start، ثم أرسل للبوت هذا الرمز: "+(/^\d{6}$/.test(String(d.c))?d.c:"")+" — نتحقق من حسابك هنا…");
   var end=Date.now()+5*60*1000;
   function poll(){
    if(Date.now()>end){b.disabled=false;status("loginStatus","انتهت المهلة. حاول تسجيل الدخول مجدداً.","error");return}
