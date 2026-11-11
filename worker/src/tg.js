@@ -37,9 +37,24 @@ async function onMessage(env, m) {
   const lg = /^\/start(?:@\w+)?\s+login_([a-f0-9]{32})\s*$/.exec(text);
   if (lg) {
     const key = 'tgq:' + (await sha(lg[1], 40));
-    const r = await env.DB.prepare("UPDATE login_codes SET code_hash = ? WHERE email = ? AND expires_at > ? AND code_hash = ''").bind('ok:' + chat, key, Date.now()).run();
+    // Step 1: bind this chat to the pending login. It is NOT logged in until it types the code shown on the site.
+    const r = await env.DB.prepare("UPDATE login_codes SET code_hash = 'p:' || ? || ':' || substr(code_hash, 3) WHERE email = ? AND expires_at > ? AND code_hash LIKE 'c:%'").bind(String(chat), key, Date.now()).run();
     const done = r && r.meta && r.meta.changes > 0;
+    if (done) return void (await tg(env, 'sendMessage', { chat_id: chat, text: 'لتأكيد الدخول إلى الموقع أرسل هنا الرمز المكوّن من 6 أرقام الظاهر على الموقع.\nإذا لم تطلب الدخول أنت للتو فتجاهل هذه الرسالة، ولا ترسل الرمز لأي شخص.' }));
     return void (await tg(env, 'sendMessage', { chat_id: chat, text: done ? 'تم تسجيل دخولك ✅ ارجع إلى الموقع، ستفتح حسابك تلقائيًا.' : 'انتهت صلاحية رابط الدخول. ارجع للموقع واضغط الزر من جديد.' }));
+  }
+  if (/^\d{6}$/.test(text)) {
+    // Step 2: the code typed by the same chat that opened the login link.
+    const row = await env.DB.prepare("SELECT email, code_hash, attempts FROM login_codes WHERE email LIKE 'tgq:%' AND code_hash LIKE ? AND expires_at > ? ORDER BY sent_at DESC LIMIT 1").bind('p:' + chat + ':%', Date.now()).first();
+    if (!row) return;
+    if (row.attempts >= 5) return void (await tg(env, 'sendMessage', { chat_id: chat, text: 'تجاوزت عدد المحاولات. ابدأ من جديد من الموقع.' }));
+    const want = row.code_hash.split(':')[2];
+    if (!safeEqual(want, await sha(`${text}|${row.email}`, 16))) {
+      await env.DB.prepare('UPDATE login_codes SET attempts = attempts + 1 WHERE email = ?').bind(row.email).run();
+      return void (await tg(env, 'sendMessage', { chat_id: chat, text: 'الرمز غير صحيح.' }));
+    }
+    await env.DB.prepare('UPDATE login_codes SET code_hash = ? WHERE email = ?').bind('ok:' + chat, row.email).run();
+    return void (await tg(env, 'sendMessage', { chat_id: chat, text: 'تم تسجيل دخولك ✅ ارجع إلى الموقع، ستفتح حسابك تلقائيًا.' }));
   }
   if (/^\/(start|id)\b/.test(text)) {
     if (String(env.TG_OWNER_ID) === '0') return void (await tg(env, 'sendMessage', { chat_id: chat, text: 'Chat ID: ' + chat }));

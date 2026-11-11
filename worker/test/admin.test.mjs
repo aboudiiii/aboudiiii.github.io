@@ -5,6 +5,7 @@ import { setup, post, get, old, say } from './helpers.mjs';
 async function telegramLogin(ctx, userId = 111) {
   const start = await (await post(ctx.env, '/api/auth/tg/start', { t: old() })).json();
   await say(ctx.env, '/start login_' + start.s, userId);
+  await say(ctx.env, start.c, userId);
   const result = await (await post(ctx.env, '/api/auth/tg/poll', { s: start.s })).json();
   return result.token;
 }

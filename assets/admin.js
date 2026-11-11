@@ -73,7 +73,7 @@ function exportCsv(){
  (lastSummary.monthly||[]).forEach(function(x){rows.push([x.month,x.orders,x.revenue])});
  rows.push([],["الكوبونات"],["الرمز","النوع","القيمة","مفعّل","عدد الاستخدامات","الحد الأعلى"]);
  lastCoupons.forEach(function(x){rows.push([x.code,x.kind,x.value,x.active,x.used_count,x.max_uses])});
- var csv="\ufeff"+rows.map(function(r){return r.map(function(v){return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'}).join(",")}).join("\r\n");
+ var csv="\ufeff"+rows.map(function(r){return r.map(function(v){var s=String(v==null?"":v);if(typeof v==="string"&&/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"'}).join(",")}).join("\r\n");
  var blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="hayali-admin-report-"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
