@@ -35,3 +35,7 @@ Project-local skills are stored under `.claude/skills/` and should be used when 
 - `assets/config.js` holds `window.HAYALI_API` (empty = all of it off; the subscribe/account section is hidden) and `HAYALI_TG_BOT`. `assets/account.js` is the UI for stats badges, subscribe and account. The CSP allows `https://*.workers.dev`.
 - Don't reuse the class `.hp` for honeypots (it is the hero pill); use `.hpf`.
 - Ratings (stars) and comments are separate on purpose; verified-buyer reviews still come from `assets/reviews.json`.
+
+## Telegram channel auto-posting
+- `scripts/post_to_telegram.py` (stdlib only) posts one product (cover + caption + buttons) from `books/*.html` JSON-LD; fixed rotation, no state file. `.github/workflows/telegram-post.yml` runs it twice a day (05:00 and 14:00 UTC); keep `POSTS_PER_DAY` in the script in sync with the cron lines.
+- Secrets (GitHub Actions): `TG_BOT_TOKEN`, `TG_CHANNEL`. Never print or commit them. Test with `--dry-run` / `--preview N`. Captions never mention printing (digital files only).

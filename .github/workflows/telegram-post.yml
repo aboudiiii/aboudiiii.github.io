@@ -1,0 +1,39 @@
+name: Post to Telegram channel
+
+# Two posts a day (08:00 and 17:00 Baghdad time = 05:00 and 14:00 UTC).
+# If you change the number of runs, update POSTS_PER_DAY in scripts/post_to_telegram.py.
+on:
+  schedule:
+    - cron: "0 5 * * *"
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only print the post, do not send"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: telegram-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Post the next product
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHANNEL: ${{ secrets.TG_CHANNEL }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            python3 scripts/post_to_telegram.py --dry-run
+          else
+            python3 scripts/post_to_telegram.py
+          fi
