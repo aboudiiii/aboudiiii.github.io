@@ -37,5 +37,5 @@ Project-local skills are stored under `.claude/skills/` and should be used when 
 - Ratings (stars) and comments are separate on purpose; verified-buyer reviews still come from `assets/reviews.json`.
 
 ## Telegram channel auto-posting
-- `scripts/post_to_telegram.py` (stdlib only) posts one product (cover + caption + buttons) from `books/*.html` JSON-LD; fixed rotation, no state file. `.github/workflows/telegram-post.yml` runs it three times a day (05:00, 11:00 and 17:00 UTC); keep `POSTS_PER_DAY` in the script in sync with the cron lines.
+- `scripts/post_to_telegram.py` (stdlib only) posts one product (cover + caption + buttons) from `books/*.html` JSON-LD; fixed rotation, no state file. `.github/workflows/telegram-post.yml` runs it three times a day (05:07, 11:13 and 17:11 UTC, kept off :00 because GitHub drops top-of-hour runs); keep `POSTS_PER_DAY` in the script in sync with the cron lines.
 - Secrets (GitHub Actions): `TG_TOKEN` (the existing announcements-bot token, also used by the Worker) and `TG_CHANNEL` (@username or -100… id). Never print or commit them. Test with `--dry-run` / `--preview N`. Captions never mention printing (digital files only).

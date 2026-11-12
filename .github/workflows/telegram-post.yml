@@ -1,12 +1,12 @@
 name: Post to Telegram channel
 
-# Three posts a day (08:00, 14:00 and 20:00 Baghdad time = 05:00, 11:00 and 17:00 UTC).
+# Three posts a day, about 08:00, 14:00 and 20:00 Baghdad time (05:07, 11:13 and 17:11 UTC; off the top of the hour because GitHub delays/drops :00 runs).
 # If you change the number of runs, update POSTS_PER_DAY in scripts/post_to_telegram.py.
 on:
   schedule:
-    - cron: "0 5 * * *"
-    - cron: "0 11 * * *"
-    - cron: "0 17 * * *"
+    - cron: "7 5 * * *"
+    - cron: "13 11 * * *"
+    - cron: "11 17 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
