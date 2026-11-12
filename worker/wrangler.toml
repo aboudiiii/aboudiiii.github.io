@@ -12,6 +12,7 @@ migrations_dir = "migrations"
 [vars]
 ALLOWED_ORIGINS = "https://aboudiiii.github.io"
 SITE_URL = "https://aboudiiii.github.io"
+CHANNEL_URL = ""   # public link of the news channel, e.g. https://t.me/yourchannel (shows a join button after registration/login)
 MAIL_FROM_NAME = "مكتبة الحيالي الرقمية"
 # MAIL_FROM = "your-verified-sender@example.com"   <- set to the sender you verified in Brevo
 

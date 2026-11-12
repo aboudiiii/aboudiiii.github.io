@@ -28,6 +28,18 @@ test('telegram subscribers: /start and /stop (public), setup mode shows chat id'
   assert.match(s2.tgCalls('sendMessage')[0].body.text, /Chat ID: 777/);
 });
 
+test('welcome shows a join-channel button only when CHANNEL_URL is a t.me link', async () => {
+  const a = setup(); a.env.CHANNEL_URL = 'https://t.me/hayali_news';
+  await say(a.env, '/start', 555);
+  assert.equal(a.tgCalls('sendMessage')[0].body.reply_markup.inline_keyboard[0][0].url, 'https://t.me/hayali_news');
+  const b = setup(); b.env.CHANNEL_URL = '';
+  await say(b.env, '/start', 556);
+  assert.equal(b.tgCalls('sendMessage')[0].body.reply_markup, undefined);
+  const c = setup(); c.env.CHANNEL_URL = 'javascript:alert(1)';
+  await say(c.env, '/start', 557);
+  assert.equal(c.tgCalls('sendMessage')[0].body.reply_markup, undefined);
+});
+
 test('announce: owner only, preview, then sends to email + telegram in batches', async () => {
   const { env, mails, tgCalls } = setup({ tgFail: (u, b) => u.includes('/sendMessage') && b.chat_id === '1004' });
   for (let i = 0; i < 40; i++) env.DB.db.prepare("INSERT INTO subscribers (channel, address, confirmed, token, created_at) VALUES ('telegram', ?, 1, ?, 1)").run(String(1000 + i), 'tok' + i);

@@ -4,6 +4,9 @@ import { tg } from './tgapi.js';
 import { addTelegram, removeTelegram, createAnnouncement, cancelAnnouncement, sendAnnouncement } from './subs.js';
 
 const SITE = (env) => env.SITE_URL || 'https://aboudiiii.github.io';
+// "Join the channel" button shown after a new registration / login. Off when CHANNEL_URL is not an https://t.me/ link.
+const joinKb = (env) => /^https:\/\/t\.me\/\S+$/.test(env.CHANNEL_URL || '')
+  ? { inline_keyboard: [[{ text: '📢 انضم لقناة أخبار المكتبة', url: env.CHANNEL_URL }]] } : undefined;
 
 function summary(f) {
   const lines = [f.kind === 'rating' ? '⭐ <b>تقييم جديد</b>' : '💬 <b>تعليق جديد</b>'];
@@ -54,12 +57,12 @@ async function onMessage(env, m) {
       return void (await tg(env, 'sendMessage', { chat_id: chat, text: 'الرمز غير صحيح.' }));
     }
     await env.DB.prepare('UPDATE login_codes SET code_hash = ? WHERE email = ?').bind('ok:' + chat, row.email).run();
-    return void (await tg(env, 'sendMessage', { chat_id: chat, text: 'تم تسجيل دخولك ✅ ارجع إلى الموقع، ستفتح حسابك تلقائيًا.' }));
+    return void (await tg(env, 'sendMessage', { chat_id: chat, text: 'تم تسجيل دخولك ✅ ارجع إلى الموقع، ستفتح حسابك تلقائيًا.\n\nتابع قناة أخبار المكتبة لتصلك الكتب الجديدة أولًا بأول 👇', reply_markup: joinKb(env) }));
   }
   if (/^\/(start|id)\b/.test(text)) {
     if (String(env.TG_OWNER_ID) === '0') return void (await tg(env, 'sendMessage', { chat_id: chat, text: 'Chat ID: ' + chat }));
     const fresh = await addTelegram(env, chat);
-    return void (await tg(env, 'sendMessage', { chat_id: chat, text: (fresh ? 'تم اشتراكك ✅ ' : 'أنت مشترك بالفعل ✅ ') + 'ستصلك رسالة عند صدور كتاب جديد في مكتبة الحيالي الرقمية.\nلإلغاء الاشتراك أرسل /stop\n\n' + SITE(env) }));
+    return void (await tg(env, 'sendMessage', { chat_id: chat, text: (fresh ? 'تم اشتراكك ✅ ' : 'أنت مشترك بالفعل ✅ ') + 'ستصلك رسالة عند صدور كتاب جديد في مكتبة الحيالي الرقمية.\nلإلغاء الاشتراك أرسل /stop\n\n' + SITE(env), reply_markup: joinKb(env) }));
   }
   if (/^\/stop\b/.test(text)) {
     await removeTelegram(env, chat);
