@@ -30,6 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SITE = "https://aboudiiii.github.io"
 BOT_URL = "https://t.me/SmartZaki_Bot"
 POSTS_PER_DAY = 2          # keep in sync with the cron lines in telegram-post.yml
+DEFAULT_SIZE = "A4"        # same default as the site (assets/app.js sizeVal)
 SPLIT_UTC_HOUR = 10        # runs before 10:00 UTC are slot 0, later runs slot 1
 
 CATEGORIES = (  # (slug regex, emoji, label, hashtags)
@@ -60,6 +61,8 @@ def load_products():
         if not data:
             continue
         slug = page.stem
+        # Same product key the site's "add to order" button uses (index.html?add=<key>).
+        km = re.search(r"index\.html\?add=([a-z0-9]+)", src)
         desc = data.get("description", "")
         # The library sells digital files only: drop any sentence that talks about printing.
         sentences = [s.strip() for s in re.split(r"(?<=[.!؟])\s+", desc) if s.strip()]
@@ -70,6 +73,7 @@ def load_products():
             "desc": " ".join(sentences),
             "image": data.get("image", ""),
             "url": data.get("url") or f"{SITE}/books/{slug}.html",
+            "key": km.group(1) if km else "",
         })
     return products
 
@@ -103,9 +107,14 @@ def build_caption(p):
     return caption
 
 
+def order_url(p):
+    # Same deep link the site's order button builds (assets/app.js): the bot opens with this product chosen.
+    return f"{BOT_URL}?start=o_{p['key']}_{DEFAULT_SIZE}" if p.get("key") else BOT_URL
+
+
 def keyboard(p):
     return {"inline_keyboard": [
-        [{"text": "🛒 اطلب من البوت", "url": BOT_URL}],
+        [{"text": "🛒 اطلب الآن", "url": order_url(p)}],
         [{"text": "🌐 صفحة المنتج", "url": p["url"]}],
     ]}
 
@@ -175,7 +184,7 @@ def main():
     slot = args.slot if args.slot is not None else current_slot(now)
     p = pick(products, now.date(), slot)
     if args.dry_run:
-        print(f"[dry run] {p['slug']} (slot {slot})\nphoto: {p['image']}\nbuttons: {BOT_URL} | {p['url']}\n")
+        print(f"[dry run] {p['slug']} (slot {slot})\nphoto: {p['image']}\nbuttons: {order_url(p)} | {p['url']}\n")
         print(re.sub(r"<[^>]+>", "", html.unescape(build_caption(p))))
         return
 
