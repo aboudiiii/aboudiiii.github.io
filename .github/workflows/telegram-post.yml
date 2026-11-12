@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Post the next product
         env:
-          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_BOT_TOKEN: ${{ secrets.TG_TOKEN }}  # same announcements-bot token the Worker already uses
           TG_CHANNEL: ${{ secrets.TG_CHANNEL }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
