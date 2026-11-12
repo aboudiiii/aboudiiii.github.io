@@ -1,17 +1,22 @@
 name: Post to Telegram channel
 
-# Two posts a day (08:00 and 17:00 Baghdad time = 05:00 and 14:00 UTC).
+# Three posts a day (08:00, 14:00 and 20:00 Baghdad time = 05:00, 11:00 and 17:00 UTC).
 # If you change the number of runs, update POSTS_PER_DAY in scripts/post_to_telegram.py.
 on:
   schedule:
     - cron: "0 5 * * *"
-    - cron: "0 14 * * *"
+    - cron: "0 11 * * *"
+    - cron: "0 17 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
         description: "Only print the post, do not send"
         type: boolean
         default: true
+      slug:
+        description: "Optional: post this product slug instead of the rotation's pick"
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -30,10 +35,11 @@ jobs:
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_TOKEN }}  # same announcements-bot token the Worker already uses
           TG_CHANNEL: ${{ secrets.TG_CHANNEL }}
+          SLUG: ${{ github.event_name == 'workflow_dispatch' && inputs.slug || '' }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
           if [ "$DRY_RUN" = "true" ]; then
-            python3 scripts/post_to_telegram.py --dry-run
+            python3 scripts/post_to_telegram.py --dry-run ${SLUG:+--slug "$SLUG"}
           else
-            python3 scripts/post_to_telegram.py
+            python3 scripts/post_to_telegram.py ${SLUG:+--slug "$SLUG"}
           fi

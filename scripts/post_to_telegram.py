@@ -29,9 +29,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SITE = "https://aboudiiii.github.io"
 BOT_URL = "https://t.me/SmartZaki_Bot"
-POSTS_PER_DAY = 2          # keep in sync with the cron lines in telegram-post.yml
+POSTS_PER_DAY = 3          # keep in sync with the cron lines in telegram-post.yml
 DEFAULT_SIZE = "A4"        # same default as the site (assets/app.js sizeVal)
-SPLIT_UTC_HOUR = 10        # runs before 10:00 UTC are slot 0, later runs slot 1
+SLOT_UTC_HOURS = (8, 14)   # runs before 08:00 UTC are slot 0, before 14:00 slot 1, later slot 2
 
 CATEGORIES = (  # (slug regex, emoji, label, hashtags)
     (r"coloring", "🎨", "كتاب تلوين", "#كتب_تلوين #تلوين_للكبار"),
@@ -86,7 +86,7 @@ def category_for(slug):
 
 
 def current_slot(now):
-    return 0 if now.hour < SPLIT_UTC_HOUR else 1
+    return sum(now.hour >= h for h in SLOT_UTC_HOURS)
 
 
 def pick(products, day, slot):
@@ -144,7 +144,7 @@ def send(token, chat, p):
             "parse_mode": "HTML", "reply_markup": markup,
         })
         if res.get("ok"):
-            return True
+            return res["result"].get("message_id") or True
         retry = (res.get("parameters") or {}).get("retry_after")
         if retry and attempt == 0:
             time.sleep(min(int(retry), 30))
@@ -157,7 +157,7 @@ def send(token, chat, p):
     })
     if not res.get("ok"):
         print(f"sendMessage failed: {res.get('description')}", file=sys.stderr)
-    return bool(res.get("ok"))
+    return (res.get("result") or {}).get("message_id") or bool(res.get("ok"))
 
 
 def main():
@@ -165,6 +165,7 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="print the post, do not send")
     ap.add_argument("--preview", type=int, metavar="N", help="list the next N slots")
     ap.add_argument("--slot", type=int, choices=range(POSTS_PER_DAY), help="override the slot")
+    ap.add_argument("--slug", help="post this product (slug) instead of the rotation's pick")
     args = ap.parse_args()
 
     products = load_products()
@@ -183,6 +184,8 @@ def main():
 
     slot = args.slot if args.slot is not None else current_slot(now)
     p = pick(products, now.date(), slot)
+    if args.slug:
+        p = next((x for x in products if x["slug"] == args.slug), None) or sys.exit(f"unknown slug: {args.slug}")
     if args.dry_run:
         print(f"[dry run] {p['slug']} (slot {slot})\nphoto: {p['image']}\nbuttons: {order_url(p)} | {p['url']}\n")
         print(re.sub(r"<[^>]+>", "", html.unescape(build_caption(p))))
@@ -191,9 +194,10 @@ def main():
     token, chat = os.environ.get("TG_BOT_TOKEN"), os.environ.get("TG_CHANNEL")
     if not token or not chat:
         sys.exit("TG_BOT_TOKEN and TG_CHANNEL must be set (GitHub Actions secrets)")
-    if not send(token, chat, p):
+    mid = send(token, chat, p)
+    if not mid:
         sys.exit(1)
-    print(f"Posted: {p['slug']} (slot {slot})")
+    print(f"Posted: {p['slug']} (slot {slot}, message_id {mid})")
 
 
 if __name__ == "__main__":
