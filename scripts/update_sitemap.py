@@ -3,7 +3,7 @@
 
 Usage: python3 scripts/update_sitemap.py [root]
 Keeps the priority and order of existing entries; new pages get a default priority
-(books 0.8, articles 0.7, other pages 0.5). 404.html is excluded.
+(books 0.8, articles 0.7, other pages 0.5). 404.html and pages with a robots noindex meta (e.g. admin.html) are excluded.
 Needs full git history for accurate dates (not a --depth=1 clone).
 """
 import glob, os, re, subprocess, sys, datetime
@@ -16,7 +16,7 @@ old = open('sitemap.xml', encoding='utf8').read() if os.path.exists('sitemap.xml
 prio = {m[0]: m[1] for m in re.findall(r'<loc>' + re.escape(BASE) + r'([^<]*)</loc>.*?<priority>([^<]*)</priority>', old)}
 order = [m for m in re.findall(r'<loc>' + re.escape(BASE) + r'([^<]*)</loc>', old)]
 
-pages = sorted(p for p in glob.glob('*.html') + glob.glob('books/*.html') + glob.glob('articles/*.html') if p != '404.html' and not re.match(r'google[0-9a-f]+\.html$', p))
+pages = sorted(p for p in glob.glob('*.html') + glob.glob('books/*.html') + glob.glob('articles/*.html') if p != '404.html' and not re.match(r'google[0-9a-f]+\.html$', p) and not re.search(r'<meta[^>]+name=["\']robots["\'][^>]*noindex', open(p, encoding='utf-8').read(), re.I))
 keys = {('' if p == 'index.html' else p): p for p in pages}
 ordered = [k for k in order if k in keys] + sorted(k for k in keys if k not in order)
 
