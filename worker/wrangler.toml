@@ -17,8 +17,8 @@ MAIL_FROM_NAME = "مكتبة الحيالي الرقمية"
 # MAIL_FROM = "your-verified-sender@example.com"   <- set to the sender you verified in Brevo
 
 # Secrets (npx wrangler secret put NAME):
-#   TG_TOKEN, TG_OWNER_ID, TG_WEBHOOK_SECRET, RATE_SALT, BOT_API_KEY, BREVO_API_KEY
+#   TG_TOKEN, TG_CHANNEL (@username or -100... id of the news channel), TG_OWNER_ID, TG_WEBHOOK_SECRET, RATE_SALT, BOT_API_KEY, BREVO_API_KEY
 
-# Daily owner report at 08:00 Baghdad time (05:00 UTC).
+# 05:00 UTC (08:00 Baghdad): owner report + channel post. 11:00 and 17:00 UTC (14:00, 20:00 Baghdad): channel post.
 [triggers]
-crons = ["0 5 * * *"]
+crons = ["0 5 * * *", "0 11 * * *", "0 17 * * *"]

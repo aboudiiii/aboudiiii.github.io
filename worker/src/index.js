@@ -8,9 +8,15 @@ import { subscribeEmail, confirmEmail, unsubscribe } from './subs.js';
 import { webhook, setup } from './tg.js';
 import { adminSummary, adminCoupons } from './admin.js';
 import { sendScheduledReports } from './reports.js';
+import { autopost } from './autopost.js';
 
 export default {
-  async scheduled(controller, env, ctx) { ctx.waitUntil(sendScheduledReports(env, controller.scheduledTime)); },
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil((async () => {
+      if (controller.cron === '0 5 * * *') await sendScheduledReports(env, controller.scheduledTime); // daily owner report
+      await autopost(env, controller.scheduledTime);                                                     // channel post (3x/day)
+    })());
+  },
   async fetch(req, env) {
     const url = new URL(req.url), p = url.pathname, m = req.method;
     const cors = corsHeaders(req, env);

@@ -33,6 +33,7 @@ jobs:
       - name: Secrets
         env:
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHANNEL: ${{ secrets.TG_CHANNEL }}
           TG_OWNER_ID: ${{ secrets.TG_OWNER_ID }}
           TG_WEBHOOK_SECRET: ${{ secrets.TG_WEBHOOK_SECRET }}
           RATE_SALT: ${{ secrets.RATE_SALT }}
@@ -40,7 +41,7 @@ jobs:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
         run: |
-          for n in TG_TOKEN TG_OWNER_ID TG_WEBHOOK_SECRET RATE_SALT BOT_API_KEY BREVO_API_KEY MAIL_FROM; do
+          for n in TG_TOKEN TG_CHANNEL TG_OWNER_ID TG_WEBHOOK_SECRET RATE_SALT BOT_API_KEY BREVO_API_KEY MAIL_FROM; do
             v="${!n}"
             if [ -n "$v" ]; then printf '%s' "$v" | npx wrangler@4 secret put "$n"; else echo "skip $n (empty)"; fi
           done

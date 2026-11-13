@@ -1,12 +1,8 @@
 name: Post to Telegram channel
 
-# Three posts a day, about 08:00, 14:00 and 20:00 Baghdad time (05:07, 11:13 and 17:11 UTC; off the top of the hour because GitHub delays/drops :00 runs).
-# If you change the number of runs, update POSTS_PER_DAY in scripts/post_to_telegram.py.
+# Scheduled posting now runs on Cloudflare cron (worker/src/autopost.js, 3 posts a day). This workflow is manual only
+# (Actions -> Run workflow): untick dry_run to post one now; optional slug picks a product.
 on:
-  schedule:
-    - cron: "7 5 * * *"
-    - cron: "13 11 * * *"
-    - cron: "11 17 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
