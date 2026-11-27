@@ -107,6 +107,13 @@ async function deliver(env, orderId, adminId) {
   const o=await env.DB.prepare("SELECT * FROM shop_orders WHERE id=? AND status IN ('review','delivery_failed')").bind(orderId).first();
   if(!o) return 'الطلب غير موجود أو تمت معالجته.';
   const ids=JSON.parse(o.items_json||'[]');
+  const lockToken=crypto.randomUUID(), now=Date.now();
+  const lease=await env.DB.prepare(`INSERT INTO shop_delivery_locks(order_id,lock_token,expires_at,created_at)
+    VALUES(?,?,?,?) ON CONFLICT(order_id) DO UPDATE SET lock_token=excluded.lock_token,
+    expires_at=excluded.expires_at,created_at=excluded.created_at
+    WHERE shop_delivery_locks.expires_at < ?`)
+    .bind(orderId,lockToken,now+5*60*1000,now,now).run();
+  if(!lease.meta.changes) return 'هناك عملية تسليم أخرى قيد التنفيذ لهذا الطلب.';
   try {
     for(const id of ids) {
       const p=await env.DB.prepare('SELECT * FROM shop_products WHERE product_key=? AND active=1').bind(id).first();
@@ -145,6 +152,8 @@ async function deliver(env, orderId, adminId) {
     await env.DB.prepare("UPDATE shop_orders SET status='delivery_failed',delivery_error=?,updated_at=? WHERE id=?").bind(String(e.message).slice(0,300),Date.now(),orderId).run();
     if(env.SHOP_OWNER_ID) await say(env,env.SHOP_OWNER_ID,`تعذّر إكمال تسليم الطلب #${orderId}: ${esc(e.message)}`);
     return 'فشل التسليم. سُجلت المحاولة ويمكن للإدارة إعادة المحاولة بعد التحقق.';
+  } finally {
+    await env.DB.prepare('DELETE FROM shop_delivery_locks WHERE order_id=? AND lock_token=?').bind(orderId,lockToken).run();
   }
 }
 async function callback(env, cb) {
