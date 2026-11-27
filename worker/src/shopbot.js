@@ -3,6 +3,7 @@ import { safeEqual } from './util.js';
 const API = (env, method) => `https://api.telegram.org/bot${env.SHOP_TG_TOKEN}/${method}`;
 const esc = (s) => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const money = (n, multiplier = 1) => String.fromCharCode(36) + (Number(n || 0) * multiplier / 100).toFixed(2);
+const referralPct = env => Math.max(0,Math.min(50,Number(env.SHOP_REFERRAL_PCT||10)||0));
 async function tg(env, method, payload) {
   const r = await fetch(API(env, method), { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(payload) });
   const j = await r.json().catch(()=>({}));
@@ -38,6 +39,7 @@ async function home(env, chat, lang='ar') {
   rows.push([{text:en?'🎟 Coupon':'🎟 إدخال كوبون',callback_data:'s:coupon'}]);
   rows.push([{text:en?'🎁 Free samples':'🎁 عينات مجانية',callback_data:'s:samples'}]);
   rows.push([{text:en?'💬 Support':'💬 الدعم',callback_data:'s:support'}]);
+  rows.push([{text:en?'👥 Invite a friend':'👥 دعوة صديق',callback_data:'s:referral'}]);
   rows.push([{text:en?'🌐 العربية':'🌐 English',callback_data:'s:lang'}]);
   return say(env,chat,en?'Welcome to Al-Hayali Digital Library 📚\\nChoose a category:':'مرحباً بك في مكتبة الحيالي الرقمية 📚\\nاختر القسم الذي تريد تصفحه:',kb(rows));
 }
@@ -102,6 +104,7 @@ async function createOrder(env, chat, uid, size) {
     const cp=await env.DB.prepare("SELECT percent FROM shop_coupons WHERE code=? AND active=1 AND (expires_at=0 OR expires_at>?) AND (max_uses<0 OR used_count<max_uses)").bind(u.coupon_code,Date.now()).first();
     if(cp) { discount=Math.round(subtotal*Number(cp.percent||0)/100); couponCode=u.coupon_code; }
   }
+  if(u.referral_code && String(u.referral_code)!==uid) discount=Math.max(discount,Math.round(subtotal*referralPct(env)/100));
   const discountedSubtotal=Math.max(0,subtotal-discount);
   const total=Math.round(discountedSubtotal*priceMultiplier);
   const now=Date.now();
@@ -202,6 +205,7 @@ async function deliver(env, orderId, adminId) {
     const done=await env.DB.prepare("UPDATE shop_orders SET status='approved',approved_at=COALESCE(approved_at,?),approved_by=?,delivery_error=NULL,updated_at=? WHERE id=? AND status IN ('review','delivery_failed')").bind(Date.now(),adminId,Date.now(),orderId).run();
     if(!done.meta.changes) return 'تعذر تثبيت حالة الطلب؛ تحقق من سجل التسليم.';
     await say(env,o.telegram_id,`تم تأكيد طلبك #${orderId} وتسليم ملفاتك بنجاح. شكراً لثقتك بمكتبة الحيالي ❤️`);
+    await say(env,o.telegram_id,'قيّم تجربتك معنا:',kb([[{text:'⭐ 1',callback_data:'s:rate:'+orderId+':1'},{text:'⭐ 2',callback_data:'s:rate:'+orderId+':2'},{text:'⭐ 3',callback_data:'s:rate:'+orderId+':3'},{text:'⭐ 4',callback_data:'s:rate:'+orderId+':4'},{text:'⭐ 5',callback_data:'s:rate:'+orderId+':5'}]]));
     return 'تمت الموافقة والتسليم.';
   } catch(e) {
     await env.DB.prepare("UPDATE shop_delivery_attempts SET status='failed',error=? WHERE order_id=? AND status='started'").bind(String(e.message).slice(0,200),orderId).run();
@@ -271,9 +275,11 @@ async function callback(env, cb) {
     await env.DB.prepare('UPDATE shop_users SET language=?,updated_at=? WHERE telegram_id=?').bind(next,Date.now(),uid).run();
     await home(env,chat,next);
   }
+  else if(action==='rate') { const id=Number(data[2]), rating=Number(data[3]); if(!Number.isInteger(rating)||rating<1||rating>5) return; const saved=await env.DB.prepare("UPDATE shop_orders SET rating=?,review_requested_at=COALESCE(review_requested_at,?),updated_at=? WHERE id=? AND telegram_id=? AND status='approved' AND rating IS NULL").bind(rating,Date.now(),Date.now(),id,uid).run(); await say(env,chat,saved.meta.changes?'شكراً لتقييمك! نقدر رأيك ❤️':'تم تسجيل تقييمك مسبقاً أو الطلب غير مؤهل.'); }
   else if(action==='samples') await showSamples(env,chat,uid);
   else if(action==='sample') await sendSample(env,chat,uid,data.slice(2).join(':'));
   else if(action==='support') { await env.DB.prepare("UPDATE shop_users SET active_mode='support' WHERE telegram_id=?").bind(uid).run(); await say(env,chat,'أرسل رسالتك الآن. للإلغاء أرسل /cancel.'); }
+  else if(action==='referral') { const bot=String(env.SHOP_BOT_USERNAME||'').replace(/^@/,''); if(!bot) return say(env,chat,'رابط الدعوة غير مهيأ حالياً.'); await say(env,chat,'شارك رابطك مع صديقك واحصلوا على خصم: https://t.me/'+bot+'?start=ref_'+uid); }
   await tg(env,'answerCallbackQuery',{callback_query_id:cb.id}).catch(()=>{});
 }
 export async function setupShopWebhook(env,url) {
@@ -295,7 +301,12 @@ export async function shopWebhook(req,env,url) {
       const m=update.message;
       if(m.from?.id) await user(env,m.from);
       if(m.photo) await receiveReceipt(env,m);
-      else if(/^\/start/.test(m.text||'')) await home(env,m.chat.id);
+      else if(/^\/start/.test(m.text||'')) {
+        const payload=(m.text||'').trim().split(/\s+/,2)[1]||'';
+        const match=payload.match(/^ref_(\d{5,20})$/);
+        if(match && match[1]!==String(m.from.id)) await env.DB.prepare('UPDATE shop_users SET referral_code=COALESCE(referral_code,?),updated_at=? WHERE telegram_id=? AND referral_code IS NULL').bind(match[1],Date.now(),String(m.from.id)).run();
+        await home(env,m.chat.id);
+      }
       else if(m.reply_to_message && String(m.chat.id)===String(env.SHOP_OWNER_ID||'')) {
         const link=await env.DB.prepare('SELECT telegram_id FROM shop_support_links WHERE owner_message_id=?').bind(String(m.reply_to_message.message_id)).first();
         if(link) await say(env,link.telegram_id,'💬 رد الدعم:\\n'+esc(m.text||m.caption||''));
