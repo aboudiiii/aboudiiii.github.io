@@ -58,3 +58,27 @@ or stop the legacy Termux bot until:
 
 This branch currently adds the isolated D1 schema and migration notes only. It is not
 a live replacement and must not be presented as production-ready.
+
+## Current implementation branch (PR #57)
+
+The branch `feature/shopbot-cloudflare-runtime` adds an initial runtime foundation:
+- `src/shopbot.js`: isolated webhook handler, bilingual catalog structure placeholder, cart/order creation, receipt-photo intake, owner approval and R2 delivery.
+- `/shop-tg/<SHOP_TG_WEBHOOK_SECRET>`: separate webhook endpoint; checks both URL secret and Telegram's `X-Telegram-Bot-Api-Secret-Token`.
+- `/setup-shop/<SHOP_TG_WEBHOOK_SECRET>`: registers that webhook using the dedicated ShopBot token.
+- `migrations/0005_shopbot_catalog.sql`: adds catalog section and seeds 16 inspected paid products.
+- `wrangler.toml`: private R2 binding `SHOP_FILES` to bucket `hayali-shop-files`.
+- `scripts/upload_shop_assets.py`: validates both ZIP archives and uploads paid files, free samples, and covers directly to R2 without committing binaries to GitHub.
+
+Required GitHub Actions secrets for a future deployment:
+`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, existing website secrets, plus
+`SHOP_TG_TOKEN`, `SHOP_TG_WEBHOOK_SECRET`, `SHOP_OWNER_ID`, and
+`SHOP_PAYMENT_INSTRUCTIONS`. Never put these values in source control or chat.
+
+After the runtime is completed and reviewed, the safe setup order will be:
+1. Merge reviewed code and run the deployment workflow only after confirming D1 database ID handling and migrations.
+2. Run the asset uploader from a trusted computer with Wrangler authenticated to the intended Cloudflare account.
+3. Verify R2 object presence and private access.
+4. Set the four ShopBot secrets in GitHub Actions.
+5. Deploy, register the webhook once via `/setup-shop/<secret>`, then test with a separate test order.
+
+**Not production-ready:** the current branch is only the first implementation slice. It does not yet provide full legacy feature parity (country-specific pricing, coupons/referrals, full language switching, free sample flows, support relay, complete admin commands, review/reminder automation, and robust resumable delivery). Delivery retry semantics and transactional coupon/order handling still require hardening. Do not merge/deploy or stop the old Termux bot until those are implemented and end-to-end tested.

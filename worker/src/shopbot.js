@@ -1,0 +1,197 @@
+import { safeEqual } from './util.js';
+
+const API = (env, method) => `https://api.telegram.org/bot${env.SHOP_TG_TOKEN}/${method}`;
+const esc = (s) => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const money = n => '$' + (Number(n || 0) / 100).toFixed(2);
+async function tg(env, method, payload) {
+  const r = await fetch(API(env, method), { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(payload) });
+  const j = await r.json().catch(()=>({}));
+  if (!r.ok || !j.ok) throw new Error('telegram_' + method + '_failed');
+  return j.result;
+}
+const kb = rows => ({ inline_keyboard: rows });
+async function say(env, chat, text, reply_markup) {
+  return tg(env, 'sendMessage', {chat_id:chat, text, parse_mode:'HTML', disable_web_page_preview:true, ...(reply_markup?{reply_markup}:{})});
+}
+async function user(env, from) {
+  const id=String(from.id), now=Date.now();
+  await env.DB.prepare(`INSERT INTO shop_users(telegram_id,username,first_name,created_at,updated_at)
+    VALUES(?,?,?,?,?) ON CONFLICT(telegram_id) DO UPDATE SET username=excluded.username,first_name=excluded.first_name,updated_at=excluded.updated_at`)
+    .bind(id,from.username||null,from.first_name||'',now,now).run();
+  return env.DB.prepare('SELECT * FROM shop_users WHERE telegram_id=?').bind(id).first();
+}
+async function products(env, section) {
+  const q= section ? env.DB.prepare('SELECT * FROM shop_products WHERE active=1 AND section=? ORDER BY sort_order') : env.DB.prepare('SELECT * FROM shop_products WHERE active=1 ORDER BY sort_order');
+  return (section ? await q.bind(section).all() : await q.all()).results || [];
+}
+const sections = [
+  ['novels','📖 الروايات'],['coloring','🎨 كتب التلوين'],['planners','📋 التعليم والمخططات'],['programming','💻 كتب البرمجة']
+];
+async function home(env, chat, lang='ar') {
+  const rows=sections.map(([id,name])=>[{text:name,callback_data:'s:cat:'+id}]);
+  rows.push([{text:'🛒 السلة',callback_data:'s:cart'},{text:'📦 طلباتي',callback_data:'s:orders'}]);
+  rows.push([{text:'🌐 English / العربية',callback_data:'s:lang'}]);
+  return say(env,chat,'مرحباً بك في مكتبة الحيالي الرقمية 📚\nاختر القسم الذي تريد تصفحه:',kb(rows));
+}
+async function showCategory(env, chat, section) {
+  const list=await products(env,section);
+  if(!list.length) return say(env,chat,'لا توجد منتجات متاحة حالياً.');
+  const rows=list.map(p=>[{text:`${p.title_ar} — ${money(p.price_usd_cents)}`,callback_data:'s:p:'+p.product_key}]);
+  rows.push([{text:'⬅️ الأقسام',callback_data:'s:home'}]);
+  return say(env,chat,'اختر المنتج لعرض التفاصيل:',kb(rows));
+}
+async function showProduct(env, chat, id, uid) {
+  const p=await env.DB.prepare('SELECT * FROM shop_products WHERE product_key=? AND active=1').bind(id).first();
+  if(!p) return say(env,chat,'المنتج غير متاح.');
+  const cart=await env.DB.prepare('SELECT selected_items FROM shop_users WHERE telegram_id=?').bind(uid).first();
+  const selected=JSON.parse(cart?.selected_items||'[]');
+  const rows=[[{text:selected.includes(id)?'➖ إزالة من السلة':'➕ أضف إلى السلة',callback_data:'s:toggle:'+id}]];
+  rows.push([{text:'🛒 عرض السلة',callback_data:'s:cart'},{text:'⬅️ رجوع',callback_data:'s:cat:'+p.section}]);
+  const desc=p.description_ar||'ملف رقمي قابل للتنزيل بعد تأكيد الدفع.';
+  return say(env,chat,`<b>${esc(p.title_ar)}</b>\n\n${esc(desc)}\n\nالسعر: <b>${money(p.price_usd_cents)}</b>`,kb(rows));
+}
+async function cart(env, chat, uid) {
+  const u=await env.DB.prepare('SELECT selected_items FROM shop_users WHERE telegram_id=?').bind(uid).first();
+  const ids=JSON.parse(u?.selected_items||'[]');
+  if(!ids.length) return say(env,chat,'سلتك فارغة حالياً.',kb([[{text:'🛍 تصفح المنتجات',callback_data:'s:home'}]]));
+  const marks=ids.map(()=>'?').join(',');
+  const r=await env.DB.prepare(`SELECT product_key,title_ar,price_usd_cents FROM shop_products WHERE product_key IN (${marks}) AND active=1`).bind(...ids).all();
+  const items=r.results||[], total=items.reduce((a,p)=>a+p.price_usd_cents,0);
+  const rows=items.map(p=>[{text:'❌ '+p.title_ar,callback_data:'s:toggle:'+p.product_key}]);
+  rows.push([{text:'إتمام الطلب',callback_data:'s:checkout'}],[{text:'إفراغ السلة',callback_data:'s:clear'},{text:'متابعة التسوق',callback_data:'s:home'}]);
+  return say(env,chat,items.map(p=>esc(p.title_ar)+' — '+money(p.price_usd_cents)).join('\n')+`\n\nالإجمالي: <b>${money(total)}</b>`,kb(rows));
+}
+async function orders(env, chat, uid) {
+  const r=await env.DB.prepare('SELECT id,total_usd_cents,status,created_at FROM shop_orders WHERE telegram_id=? ORDER BY id DESC LIMIT 10').bind(uid).all();
+  if(!r.results?.length) return say(env,chat,'لا توجد طلبات سابقة.');
+  const lines=r.results.map(o=>`#${o.id} · ${money(o.total_usd_cents)} · ${o.status}`);
+  return say(env,chat,'<b>طلباتك الأخيرة</b>\n'+lines.join('\n'));
+}
+async function checkout(env, chat, uid) {
+  const u=await env.DB.prepare('SELECT selected_items FROM shop_users WHERE telegram_id=?').bind(uid).first();
+  const ids=JSON.parse(u?.selected_items||'[]');
+  if(!ids.length) return say(env,chat,'السلة فارغة.');
+  return say(env,chat,'اختر حجم الملفات:',kb([[{text:'A4',callback_data:'s:size:A4'},{text:'Letter',callback_data:'s:size:Letter'}],[{text:'النسختان',callback_data:'s:size:both'}],[{text:'إلغاء',callback_data:'s:cart'}]]));
+}
+async function createOrder(env, chat, uid, size) {
+  const u=await env.DB.prepare('SELECT selected_items,country,coupon_code FROM shop_users WHERE telegram_id=?').bind(uid).first();
+  const ids=JSON.parse(u?.selected_items||'[]');
+  if(!ids.length) return say(env,chat,'السلة فارغة.');
+  const rows=await env.DB.prepare(`SELECT product_key,price_usd_cents,is_single FROM shop_products WHERE active=1 AND product_key IN (${ids.map(()=>'?').join(',')})`).bind(...ids).all();
+  const items=rows.results||[];
+  if(items.length!==ids.length) return say(env,chat,'بعض المنتجات لم تعد متاحة. حدّث سلتك.');
+  const actualSize=items.some(x=>x.is_single)?'A4':size;
+  const total=items.reduce((n,p)=>n+p.price_usd_cents,0);
+  const now=Date.now();
+  const res=await env.DB.prepare(`INSERT INTO shop_orders(telegram_id,items_json,paper_size,subtotal_usd_cents,total_usd_cents,currency_country,status,created_at,updated_at)
+    VALUES(?,?,?,?,?,?, 'pending',?,?)`).bind(uid,JSON.stringify(ids),actualSize,total,total,u.country||'IQ',now,now).run();
+  const oid=res.meta.last_row_id;
+  await env.DB.batch(items.map(p=>env.DB.prepare('INSERT INTO shop_order_items(order_id,product_key,unit_price_usd_cents) VALUES(?,?,?)').bind(oid,p.product_key,p.price_usd_cents)));
+  await env.DB.prepare("UPDATE shop_users SET selected_items='[]',updated_at=? WHERE telegram_id=?").bind(now,uid).run();
+  const payment=env.SHOP_PAYMENT_INSTRUCTIONS||'يرجى التواصل مع الدعم لمعرفة طريقة الدفع المتاحة.';
+  await say(env,chat,`تم إنشاء طلبك رقم <b>#${oid}</b>\nالإجمالي: <b>${money(total)}</b>\n\n${esc(payment)}\n\nبعد التحويل أرسل صورة وصل الدفع هنا. سيبقى الطلب قيد المراجعة حتى موافقة الإدارة.`);
+  if(env.SHOP_OWNER_ID) await say(env,env.SHOP_OWNER_ID,`طلب جديد #${oid} من العميل ${uid} — ${money(total)}`);
+}
+async function receiveReceipt(env, m) {
+  const uid=String(m.from.id), photo=m.photo?.at(-1);
+  if(!photo) return false;
+  const o=await env.DB.prepare("SELECT id,total_usd_cents FROM shop_orders WHERE telegram_id=? AND status='pending' ORDER BY id DESC LIMIT 1").bind(uid).first();
+  if(!o) { await say(env,m.chat.id,'لا يوجد طلب بانتظار إيصال الدفع.'); return true; }
+  await env.DB.prepare("UPDATE shop_orders SET status='review',receipt_file_id=?,receipt_file_unique_id=?,receipt_caption=?,updated_at=? WHERE id=? AND status='pending'")
+    .bind(photo.file_id,photo.file_unique_id||null,String(m.caption||'').slice(0,500),Date.now(),o.id).run();
+  await say(env,m.chat.id,'وصل الإيصال ✅ طلبك الآن قيد مراجعة الإدارة.');
+  if(env.SHOP_OWNER_ID) await tg(env,'sendPhoto',{chat_id:env.SHOP_OWNER_ID,photo:photo.file_id,caption:`إيصال الطلب #${o.id} — ${money(o.total_usd_cents)} — العميل ${uid}`,reply_markup:kb([[{text:'✅ موافقة وتسليم',callback_data:'s:approve:'+o.id},{text:'❌ رفض',callback_data:'s:reject:'+o.id}]])});
+  return true;
+}
+async function deliver(env, orderId, adminId) {
+  const o=await env.DB.prepare("SELECT * FROM shop_orders WHERE id=? AND status='review'").bind(orderId).first();
+  if(!o) return 'الطلب غير موجود أو تمت معالجته.';
+  const claim=await env.DB.prepare("UPDATE shop_orders SET status='approved',approved_at=?,approved_by=?,updated_at=? WHERE id=? AND status='review'").bind(Date.now(),adminId,Date.now(),orderId).run();
+  if(!claim.meta.changes) return 'تمت معالجة الطلب مسبقاً.';
+  const ids=JSON.parse(o.items_json||'[]');
+  try {
+    for(const id of ids) {
+      const p=await env.DB.prepare('SELECT * FROM shop_products WHERE product_key=?').bind(id).first();
+      if(!p) throw new Error('missing_product:'+id);
+      const keys=p.is_single?[p.file_single_key]:o.paper_size==='both'?[p.file_a4_key,p.file_letter_key]:[o.paper_size==='Letter'?p.file_letter_key:p.file_a4_key];
+      for(const key of keys.filter(Boolean)) {
+        const attempt=await env.DB.prepare("SELECT COUNT(*) n FROM shop_delivery_attempts WHERE order_id=? AND product_key=?").bind(orderId,id).first();
+        if(attempt.n>=5) throw new Error('delivery_limit:'+id);
+        await env.DB.prepare("INSERT INTO shop_delivery_attempts(order_id,product_key,attempt_no,status,created_at) VALUES(?,?,?,'started',?)").bind(orderId,id,attempt.n+1,Date.now()).run();
+        const obj=await env.SHOP_FILES.get(key);
+        if(!obj) throw new Error('r2_missing:'+key);
+        const form=new FormData(); form.set('chat_id',o.telegram_id); form.set('caption',p.title_ar||id);
+        form.set('document',new File([await obj.arrayBuffer()],key.split('/').pop(),{type:obj.httpMetadata?.contentType||'application/octet-stream'}));
+        const rr=await fetch(API(env,'sendDocument'),{method:'POST',body:form}); const jj=await rr.json();
+        if(!jj.ok) throw new Error('telegram_delivery_failed');
+        await env.DB.prepare("UPDATE shop_delivery_attempts SET status='sent',telegram_message_id=? WHERE order_id=? AND product_key=? AND attempt_no=?").bind(String(jj.result.message_id),orderId,id,attempt.n+1).run();
+      }
+    }
+    await say(env,o.telegram_id,`تم تأكيد طلبك #${orderId} وتسليم ملفاتك بنجاح. شكراً لثقتك بمكتبة الحيالي ❤️`);
+    return 'تمت الموافقة والتسليم.';
+  } catch(e) {
+    await env.DB.prepare("UPDATE shop_orders SET status='delivery_failed',delivery_error=?,updated_at=? WHERE id=?").bind(String(e.message).slice(0,300),Date.now(),orderId).run();
+    await say(env,env.SHOP_OWNER_ID,`تعذّر إكمال تسليم الطلب #${orderId}: ${esc(e.message)}`);
+    return 'تمت الموافقة لكن فشل التسليم؛ يلزم فحص المحاولة قبل إعادة الإرسال.';
+  }
+}
+async function callback(env, cb) {
+  const data=String(cb.data||'').split(':'), action=data[1], uid=String(cb.from.id), chat=cb.message?.chat?.id;
+  const admin=uid===String(env.SHOP_OWNER_ID||'');
+  if(action==='approve'||action==='reject') {
+    if(!admin) return tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:'غير مصرّح'});
+    const id=Number(data[2]);
+    if(action==='approve') { const result=await deliver(env,id,uid); await tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:result.slice(0,180)}); }
+    else { await env.DB.prepare("UPDATE shop_orders SET status='rejected',rejection_reason='owner_rejected',updated_at=? WHERE id=? AND status='review'").bind(Date.now(),id).run(); await tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:'تم رفض الطلب'}); }
+    return;
+  }
+  await user(env,cb.from);
+  if(action==='home') await home(env,chat);
+  else if(action==='cat') await showCategory(env,chat,data[2]);
+  else if(action==='p') await showProduct(env,chat,data[2],uid);
+  else if(action==='cart') await cart(env,chat,uid);
+  else if(action==='orders') await orders(env,chat,uid);
+  else if(action==='checkout') await checkout(env,chat,uid);
+  else if(action==='clear') { await env.DB.prepare("UPDATE shop_users SET selected_items='[]' WHERE telegram_id=?").bind(uid).run(); await cart(env,chat,uid); }
+  else if(action==='toggle') {
+    const p=data[2], row=await env.DB.prepare('SELECT selected_items FROM shop_users WHERE telegram_id=?').bind(uid).first(), a=JSON.parse(row?.selected_items||'[]');
+    const next=a.includes(p)?a.filter(x=>x!==p):[...a,p].slice(0,20);
+    await env.DB.prepare('UPDATE shop_users SET selected_items=?,updated_at=? WHERE telegram_id=?').bind(JSON.stringify(next),Date.now(),uid).run();
+    await showProduct(env,chat,p,uid);
+  } else if(action==='size') await createOrder(env,chat,uid,data[2]);
+  else if(action==='lang') await say(env,chat,'تغيير اللغة سيضاف في المرحلة التالية.');
+  await tg(env,'answerCallbackQuery',{callback_query_id:cb.id}).catch(()=>{});
+}
+export async function setupShopWebhook(env,url) {
+  if(!safeEqual(url.pathname,'/setup-shop/'+env.SHOP_TG_WEBHOOK_SECRET)) return new Response('forbidden',{status:403});
+  if(!env.SHOP_TG_TOKEN || !env.SHOP_TG_WEBHOOK_SECRET) return new Response('ShopBot secrets are not configured',{status:503});
+  const hook=`${url.origin}/shop-tg/${env.SHOP_TG_WEBHOOK_SECRET}`;
+  const result=await tg(env,'setWebhook',{url:hook,secret_token:env.SHOP_TG_WEBHOOK_SECRET,allowed_updates:['message','callback_query']});
+  return new Response(result ? 'ShopBot webhook registered. You can close this page.' : 'Webhook setup failed',{status:200});
+}
+export async function shopWebhook(req,env,url) {
+  if(!safeEqual(url.pathname,'/shop-tg/'+env.SHOP_TG_WEBHOOK_SECRET)) return new Response('forbidden',{status:403});
+  if(req.headers.get('X-Telegram-Bot-Api-Secret-Token')!==env.SHOP_TG_WEBHOOK_SECRET) return new Response('forbidden',{status:403});
+  const update=await req.json().catch(()=>null);
+  if(!update?.update_id) return new Response('bad update',{status:400});
+  const seen=await env.DB.prepare('SELECT update_id FROM shop_webhook_updates WHERE update_id=?').bind(update.update_id).first();
+  if(seen) return new Response('ok');
+  await env.DB.prepare('INSERT INTO shop_webhook_updates(update_id,processed_at) VALUES(?,?)').bind(update.update_id,Date.now()).run();
+  try {
+    if(update.message) {
+      const m=update.message;
+      if(m.from?.id) await user(env,m.from);
+      if(m.photo) await receiveReceipt(env,m);
+      else if(/^\/start/.test(m.text||'')) await home(env,m.chat.id);
+      else if(m.text?.startsWith('/')) {
+        if(String(m.from?.id)!==String(env.SHOP_OWNER_ID||'')) await say(env,m.chat.id,'الأمر غير متاح.');
+        else await say(env,m.chat.id,'أوامر الإدارة التفصيلية قيد الإكمال.');
+      }
+    }
+    if(update.callback_query) await callback(env,update.callback_query);
+  } catch(e) {
+    // Log only a safe event; never leak tokens, receipt data or file contents.
+    console.error('shopbot_update_failed',String(e?.message||'unknown').slice(0,120));
+  }
+  return new Response('ok');
+}

@@ -26,6 +26,8 @@ jobs:
           ID=$(npx wrangler@4 d1 list --json | jq -r '.[] | select(.name=="hayali") | .uuid')
           test -n "$ID"
           sed -i "s/PUT_D1_ID_HERE/$ID/" wrangler.toml
+      - name: Ensure private ShopBot R2 bucket exists
+        run: npx wrangler@4 r2 bucket create hayali-shop-files || echo "bucket may already exist"
       - name: Apply migrations
         run: npx wrangler@4 d1 migrations apply hayali --remote
       - name: Deploy
@@ -40,8 +42,12 @@ jobs:
           BOT_API_KEY: ${{ secrets.BOT_API_KEY }}
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          SHOP_TG_TOKEN: ${{ secrets.SHOP_TG_TOKEN }}
+          SHOP_TG_WEBHOOK_SECRET: ${{ secrets.SHOP_TG_WEBHOOK_SECRET }}
+          SHOP_OWNER_ID: ${{ secrets.SHOP_OWNER_ID }}
+          SHOP_PAYMENT_INSTRUCTIONS: ${{ secrets.SHOP_PAYMENT_INSTRUCTIONS }}
         run: |
-          for n in TG_TOKEN TG_CHANNEL TG_OWNER_ID TG_WEBHOOK_SECRET RATE_SALT BOT_API_KEY BREVO_API_KEY MAIL_FROM; do
+          for n in TG_TOKEN TG_CHANNEL TG_OWNER_ID TG_WEBHOOK_SECRET RATE_SALT BOT_API_KEY BREVO_API_KEY MAIL_FROM SHOP_TG_TOKEN SHOP_TG_WEBHOOK_SECRET SHOP_OWNER_ID SHOP_PAYMENT_INSTRUCTIONS; do
             v="${!n}"
             if [ -n "$v" ]; then printf '%s' "$v" | npx wrangler@4 secret put "$n"; else echo "skip $n (empty)"; fi
           done

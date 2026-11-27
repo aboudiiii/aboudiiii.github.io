@@ -22,3 +22,8 @@ MAIL_FROM_NAME = "مكتبة الحيالي الرقمية"
 # 05:00 UTC (08:00 Baghdad): owner report + channel post. 11:00 and 17:00 UTC (14:00, 20:00 Baghdad): channel post.
 [triggers]
 crons = ["0 5 * * *", "0 11 * * *", "0 17 * * *"]
+
+# Private product storage for ShopBot; do not enable public access.
+[[r2_buckets]]
+binding = "SHOP_FILES"
+bucket_name = "hayali-shop-files"
