@@ -89,9 +89,11 @@ async function checkout(env, chat, uid) {
   return say(env,chat,'اختر حجم الملفات:',kb([[{text:'A4',callback_data:'s:size:A4'},{text:'Letter',callback_data:'s:size:Letter'}],[{text:'النسختان',callback_data:'s:size:both'}],[{text:'إلغاء',callback_data:'s:cart'}]]));
 }
 async function createOrder(env, chat, uid, size) {
+  if (!['A4','Letter','both'].includes(size)) return say(env,chat,'حجم الملف غير صالح. اختر A4 أو Letter أو النسختين.');
   const u=await env.DB.prepare('SELECT selected_items,country,coupon_code FROM shop_users WHERE telegram_id=?').bind(uid).first();
   const ids=JSON.parse(u?.selected_items||'[]');
-  if(!ids.length) return say(env,chat,'السلة فارغة.');
+  if(!Array.isArray(ids) || !ids.length) return say(env,chat,'السلة فارغة.');
+  if(ids.length>20 || ids.some(x=>typeof x!=='string') || new Set(ids).size!==ids.length) return say(env,chat,'السلة غير صالحة. أعد اختيار المنتجات من جديد.');
   const rows=await env.DB.prepare(`SELECT product_key,price_usd_cents,is_single FROM shop_products WHERE active=1 AND product_key IN (${ids.map(()=>'?').join(',')})`).bind(...ids).all();
   const items=rows.results||[];
   if(items.length!==ids.length) return say(env,chat,'بعض المنتجات لم تعد متاحة. حدّث سلتك.');
@@ -136,17 +138,25 @@ async function showSamples(env,chat,uid) {
 async function sendSample(env,chat,uid,name) {
   const allowed=new Set(['Free_Sample_A4.pdf','Free_Sample_Letter.pdf','Echo_City_Free_Sample.pdf','Three_Mirrors_Free_Sample.pdf']);
   if(!allowed.has(name)) return say(env,chat,'العينة غير متاحة.');
-  const used=await env.DB.prepare('SELECT COUNT(*) n FROM shop_samples WHERE telegram_id=?').bind(uid).first();
-  if((used?.n||0)>=3) return say(env,chat,'وصلت إلى الحد المسموح: 3 عينات مجانية.');
-  const key='samples/'+name, obj=await env.SHOP_FILES.get(key);
-  if(!obj) return say(env,chat,'العينة غير متاحة حالياً. يرجى المحاولة لاحقاً.');
-  const form=new FormData(); form.set('chat_id',chat); form.set('caption','عينة مجانية من مكتبة الحيالي');
-  form.set('document',new File([await obj.arrayBuffer()],name,{type:'application/pdf'}));
-  const res=await fetch(API(env,'sendDocument'),{method:'POST',body:form});
-  const data=await res.json().catch(()=>({}));
-  if(!res.ok||!data.ok) throw new Error('sample_delivery_failed');
-  await env.DB.prepare('INSERT INTO shop_samples(telegram_id,sample_key,created_at) VALUES(?,?,?)').bind(uid,name,Date.now()).run();
-  await say(env,chat,'استمتع بالعينة! ❤️');
+  // Reserve a slot before contacting Telegram so concurrent clicks cannot exceed the 3-sample cap.
+  const reserved=await env.DB.prepare(`INSERT INTO shop_samples(telegram_id,sample_key,created_at)
+    SELECT ?,?,? WHERE (SELECT COUNT(*) FROM shop_samples WHERE telegram_id=?) < 3`)
+    .bind(uid,name,Date.now(),uid).run();
+  if(!reserved.meta.changes) return say(env,chat,'وصلت إلى الحد المسموح: 3 عينات مجانية.');
+  const reservationId=reserved.meta.last_row_id;
+  try {
+    const key='samples/'+name, obj=await env.SHOP_FILES.get(key);
+    if(!obj) throw new Error('sample_missing');
+    const form=new FormData(); form.set('chat_id',chat); form.set('caption','عينة مجانية من مكتبة الحيالي');
+    form.set('document',new File([await obj.arrayBuffer()],name,{type:'application/pdf'}));
+    const res=await fetch(API(env,'sendDocument'),{method:'POST',body:form});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok||!data.ok) throw new Error('sample_delivery_failed');
+    await say(env,chat,'استمتع بالعينة! ❤️');
+  } catch(e) {
+    await env.DB.prepare('DELETE FROM shop_samples WHERE id=? AND telegram_id=?').bind(reservationId,uid).run();
+    throw e;
+  }
 }
 async function receiveReceipt(env, m) {
   const uid=String(m.from.id), photo=m.photo?.at(-1);
