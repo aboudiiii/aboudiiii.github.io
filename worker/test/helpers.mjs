@@ -7,6 +7,7 @@ export function fakeD1() {
   db.exec('PRAGMA foreign_keys = ON');
   db.exec(readFileSync(new URL('../migrations/0001_init.sql', import.meta.url), 'utf8'));
   db.exec(readFileSync(new URL('../migrations/0002_admin_coupons.sql', import.meta.url), 'utf8'));
+  db.exec(readFileSync(new URL('../migrations/0003_analytics.sql', import.meta.url), 'utf8'));
   const prepare = (sql) => {
     let args = [];
     const st = {
