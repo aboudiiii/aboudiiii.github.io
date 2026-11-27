@@ -174,7 +174,7 @@ async function transitionOrderAndReleaseCoupon(env, orderId, telegramId, fromSta
   const result=await env.DB.batch(statements);
   return Number(result?.[0]?.meta?.changes||0)>0;
 }
-async function stampPdf(bytes, label, watermark) {
+export async function stampPdf(bytes, label, watermark) {
   if (!(bytes instanceof ArrayBuffer) && !ArrayBuffer.isView(bytes)) throw new Error('invalid_pdf_bytes');
   const input = bytes instanceof ArrayBuffer ? new Uint8Array(bytes) : new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (input.byteLength > 25 * 1024 * 1024) throw new Error('pdf_too_large_to_stamp');
