@@ -4,9 +4,6 @@ ALTER TABLE shop_products ADD COLUMN content_type TEXT NOT NULL DEFAULT 'downloa
 ALTER TABLE shop_products ADD COLUMN reader_page_count INTEGER NOT NULL DEFAULT 0
   CHECK (reader_page_count >= 0);
 
--- Long-form books are read in the protected Telegram Mini App; printable products stay downloads.
-UPDATE shop_products SET content_type='reader' WHERE section IN ('novels','programming');
-
 CREATE TABLE shop_reader_sessions (
   session_hash TEXT PRIMARY KEY,
   telegram_id TEXT NOT NULL REFERENCES shop_users(telegram_id),
