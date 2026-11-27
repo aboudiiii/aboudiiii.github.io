@@ -182,8 +182,8 @@ export async function stampPdf(bytes, label, watermark) {
   const pages = pdf.getPages();
   if (!pages.length || pages.length > 500) throw new Error('pdf_page_limit');
   const font = await pdf.embedFont(StandardFonts.Helvetica);
-  const footer = String(label).replace(/[^\\x20-\\x7E]/g, '').slice(0, 140);
-  const mark = String(watermark).replace(/[^\\x20-\\x7E]/g, '').slice(0, 100);
+  const footer = String(label).replace(/[^\x20-\x7E]/g, '').slice(0, 140);
+  const mark = String(watermark).replace(/[^\x20-\x7E]/g, '').slice(0, 100);
   pages.forEach((page, index) => {
     const { width, height } = page.getSize();
     if (index >= 1 && footer) {
