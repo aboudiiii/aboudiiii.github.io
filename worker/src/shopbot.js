@@ -161,8 +161,9 @@ async function sendSample(env,chat,uid,name) {
 async function transitionOrderAndReleaseCoupon(env, orderId, telegramId, fromStatus, toStatus, reason = null) {
   const now=Date.now();
   const statements=[
-    env.DB.prepare(`UPDATE shop_orders SET status=?,rejection_reason=?,coupon_release_state=CASE WHEN coupon_code IS NOT NULL AND coupon_release_state=0 THEN 1 ELSE coupon_release_state END,updated_at=? WHERE id=? AND telegram_id=? AND status=?`)
-      .bind(toStatus,reason,now,orderId,telegramId,fromStatus),
+    env.DB.prepare(`UPDATE shop_orders SET status=?,rejection_reason=?,coupon_release_state=CASE WHEN coupon_code IS NOT NULL AND coupon_release_state=0 THEN 1 ELSE coupon_release_state END,updated_at=? WHERE id=? AND telegram_id=? AND status=?
+        AND NOT EXISTS (SELECT 1 FROM shop_delivery_locks WHERE order_id=shop_orders.id AND expires_at>?)`)
+      .bind(toStatus,reason,now,orderId,telegramId,fromStatus,now),
     env.DB.prepare(`UPDATE shop_coupons SET used_count=MAX(0,used_count-1) WHERE code=(SELECT coupon_code FROM shop_orders WHERE id=? AND status=? AND coupon_release_state=1)`)
       .bind(orderId,toStatus),
     env.DB.prepare(`UPDATE shop_orders SET coupon_release_state=2 WHERE id=? AND status=? AND coupon_release_state=1`)
