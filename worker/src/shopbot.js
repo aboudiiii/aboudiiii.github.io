@@ -72,10 +72,11 @@ async function orders(env, chat, uid) {
   const r=await env.DB.prepare('SELECT id,total_usd_cents,status,created_at FROM shop_orders WHERE telegram_id=? ORDER BY id DESC LIMIT 10').bind(uid).all();
   if(!r.results?.length) return say(env,chat,'لا توجد طلبات سابقة.');
   const lines=r.results.map(o=>`#${o.id} · ${money(o.total_usd_cents)} · ${o.status}`);
-  return say(env,chat,'<b>طلباتك الأخيرة</b>\n'+lines.join('\n'));
+  const rows=r.results.filter(o=>['pending','review'].includes(o.status)).map(o=>[{text:`إلغاء الطلب #${o.id}`,callback_data:'s:cancelorder:'+o.id}]);
+  return say(env,chat,'<b>طلباتك الأخيرة</b>\n'+lines.join('\n'),rows.length?kb(rows):undefined);
 }
 async function checkout(env, chat, uid) {
-  const u=await env.DB.prepare('SELECT selected_items,country FROM shop_users WHERE telegram_id=?').bind(uid).first();
+  const u=await env.DB.prepare('SELECT selected_items,country,coupon_code FROM shop_users WHERE telegram_id=?').bind(uid).first();
   const ids=JSON.parse(u?.selected_items||'[]');
   if(!ids.length) return say(env,chat,'السلة فارغة.');
   return say(env,chat,'اختر حجم الملفات:',kb([[{text:'A4',callback_data:'s:size:A4'},{text:'Letter',callback_data:'s:size:Letter'}],[{text:'النسختان',callback_data:'s:size:both'}],[{text:'إلغاء',callback_data:'s:cart'}]]));
@@ -195,6 +196,12 @@ async function callback(env, cb) {
   else if(action==='p') await showProduct(env,chat,data[2],uid);
   else if(action==='cart') await cart(env,chat,uid);
   else if(action==='orders') await orders(env,chat,uid);
+  else if(action==='cancelorder') {
+    const id=Number(data[2]);
+    const result=await env.DB.prepare("UPDATE shop_orders SET status='cancelled',updated_at=? WHERE id=? AND telegram_id=? AND status='pending'").bind(Date.now(),id,uid).run();
+    await say(env,chat,result.meta.changes?'تم إلغاء الطلب قبل إرسال الإيصال.':'لا يمكن إلغاء هذا الطلب؛ قد يكون قيد المراجعة أو تمت معالجته.');
+    await orders(env,chat,uid);
+  }
   else if(action==='checkout') await checkout(env,chat,uid);
   else if(action==='coupon') { await env.DB.prepare("UPDATE shop_users SET active_mode='coupon' WHERE telegram_id=?").bind(uid).run(); await say(env,chat,'أرسل رمز الكوبون الآن، أو /cancel للإلغاء.'); }
   else if(action==='country') {
@@ -254,7 +261,24 @@ export async function shopWebhook(req,env,url) {
       }
       else if(m.text?.startsWith('/')) {
         if(String(m.from?.id)!==String(env.SHOP_OWNER_ID||'')) await say(env,m.chat.id,'الأمر غير متاح.');
-        else await say(env,m.chat.id,'أوامر الإدارة التفصيلية قيد الإكمال.');
+        else {
+          const [command,...args]=(m.text||'').trim().split(/\\s+/);
+          if(command==='/help') await say(env,m.chat.id,'<b>أوامر الإدارة</b>\\n/pending — الطلبات قيد المراجعة\\n/stats — إحصائيات المتجر\\n/coupon CODE PERCENT MAX — إنشاء كوبون');
+          else if(command==='/pending') {
+            const q=await env.DB.prepare("SELECT id,telegram_id,total_usd_cents,status FROM shop_orders WHERE status IN ('pending','review','delivery_failed') ORDER BY created_at LIMIT 20").all();
+            await say(env,m.chat.id,q.results?.length?q.results.map(o=>`#${o.id} · ${o.status} · ${money(o.total_usd_cents)} · ${o.telegram_id}`).join('\\n'):'لا توجد طلبات معلقة.');
+          } else if(command==='/stats') {
+            const q=await env.DB.prepare("SELECT COUNT(*) total, SUM(CASE WHEN status='approved' THEN 1 ELSE 0 END) approved, SUM(CASE WHEN status IN ('pending','review','delivery_failed') THEN 1 ELSE 0 END) open, SUM(CASE WHEN status='approved' THEN total_usd_cents ELSE 0 END) revenue FROM shop_orders").first();
+            await say(env,m.chat.id,`<b>إحصائيات المتجر</b>\\nكل الطلبات: ${q.total||0}\\nالمكتملة: ${q.approved||0}\\nالمعلقة: ${q.open||0}\\nالإيراد المسجل: ${money(q.revenue||0)}`);
+          } else if(command==='/coupon') {
+            const [code,percentRaw,maxRaw]=args, percent=Number(percentRaw), max=Number(maxRaw??-1);
+            if(!/^[A-Z0-9_-]{3,20}$/.test(code||'')||!Number.isInteger(percent)||percent<1||percent>90||!Number.isInteger(max)||max===0||max< -1) await say(env,m.chat.id,'الصيغة: /coupon CODE PERCENT MAX\\nمثال: /coupon SAVE10 10 100\\nاستخدم -1 لعدد غير محدود.');
+            else {
+              await env.DB.prepare("INSERT INTO shop_coupons(code,percent,max_uses,used_count,expires_at,active,created_at,created_by) VALUES(?,?,?,0,0,1,?,?) ON CONFLICT(code) DO UPDATE SET percent=excluded.percent,max_uses=excluded.max_uses,active=1").bind(code.toUpperCase(),percent,max,Date.now(),String(m.from.id)).run();
+              await say(env,m.chat.id,`تم إنشاء/تحديث الكوبون ${esc(code.toUpperCase())} بخصم ${percent}%.`);
+            }
+          } else await say(env,m.chat.id,'أمر غير معروف. أرسل /help.');
+        }
       }
     }
     if(update.callback_query) await callback(env,update.callback_query);
