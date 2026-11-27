@@ -187,10 +187,11 @@ async function receiveReceipt(env, m) {
 async function deliver(env, orderId, adminId) {
   const lockToken=crypto.randomUUID(), now=Date.now();
   const lease=await env.DB.prepare(`INSERT INTO shop_delivery_locks(order_id,lock_token,expires_at,created_at)
-    VALUES(?,?,?,?) ON CONFLICT(order_id) DO UPDATE SET lock_token=excluded.lock_token,
+    SELECT ?,?,?,? WHERE EXISTS (SELECT 1 FROM shop_orders WHERE id=? AND status IN ('review','delivery_failed'))
+    ON CONFLICT(order_id) DO UPDATE SET lock_token=excluded.lock_token,
     expires_at=excluded.expires_at,created_at=excluded.created_at
     WHERE shop_delivery_locks.expires_at < ?`)
-    .bind(orderId,lockToken,now+15*60*1000,now,now).run();
+    .bind(orderId,lockToken,now+60*60*1000,now,orderId,now).run();
   if(!lease.meta.changes) return 'هناك عملية تسليم أخرى قيد التنفيذ لهذا الطلب.';
   const o=await env.DB.prepare("SELECT * FROM shop_orders WHERE id=? AND status IN ('review','delivery_failed')").bind(orderId).first();
   if(!o) {
@@ -234,7 +235,7 @@ async function deliver(env, orderId, adminId) {
     return 'تمت الموافقة والتسليم.';
   } catch(e) {
     await env.DB.prepare("UPDATE shop_delivery_attempts SET status='failed',error=? WHERE order_id=? AND status='started'").bind(String(e.message).slice(0,200),orderId).run();
-    await env.DB.prepare("UPDATE shop_orders SET status='delivery_failed',delivery_error=?,updated_at=? WHERE id=?").bind(String(e.message).slice(0,300),Date.now(),orderId).run();
+    await env.DB.prepare("UPDATE shop_orders SET status='delivery_failed',delivery_error=?,updated_at=? WHERE id=? AND status IN ('review','delivery_failed')").bind(String(e.message).slice(0,300),Date.now(),orderId).run();
     if(env.SHOP_OWNER_ID) await say(env,env.SHOP_OWNER_ID,`تعذّر إكمال تسليم الطلب #${orderId}: ${esc(e.message)}`);
     return 'فشل التسليم. سُجلت المحاولة ويمكن للإدارة إعادة المحاولة بعد التحقق.';
   } finally {
