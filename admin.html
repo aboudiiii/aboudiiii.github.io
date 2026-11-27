@@ -45,6 +45,7 @@
   <nav class="nav" aria-label="التنقل في لوحة الإدارة">
    <a class="active" href="#overview"><span class="nav-ico">⌂</span>الرئيسية</a>
    <a href="#analytics"><span class="nav-ico">▥</span>الإحصائيات</a>
+   <a href="#visitorAnalytics"><span class="nav-ico">◎</span>رحلة العميل</a>
    <a href="#ordersSection"><span class="nav-ico">▤</span>الطلبات</a>
    <a href="#couponsSection"><span class="nav-ico">％</span>الكوبونات</a>
   </nav>
@@ -73,6 +74,20 @@
     <section class="panel"><div class="section-head"><h3>سجل النشاط الإداري</h3></div><div class="table-wrap"><table><thead><tr><th>العملية</th><th>المعرّف</th><th>التاريخ</th></tr></thead><tbody id="audit"></tbody></table></div></section>
    </div>
   </section>
+  <section id="visitorAnalytics" class="section">
+   <div class="section-head"><div><span class="section-kicker">CUSTOMER JOURNEY · LAST 30 DAYS</span><h3>رحلة العميل وزيارات المتجر</h3><p>إحصاءات موافق عليها من الزوار، بمعرّفات مؤقتة مجهولة.</p></div><span class="pill">احتفاظ 90 يوماً</span></div>
+   <div class="metrics">
+    <div class="metric"><div class="metric-top"><small>الزوار الفريدون</small><span class="metric-icon">♙</span></div><strong id="analyticsVisitors">—</strong><div class="hint">جلسات وافقت على التحليلات</div></div>
+    <div class="metric"><div class="metric-top"><small>مشاهدات الصفحات</small><span class="metric-icon">▤</span></div><strong id="analyticsViews">—</strong><div class="hint">آخر 30 يوماً</div></div>
+   </div>
+   <div class="two" style="margin-top:15px">
+    <section class="panel"><div class="section-head"><h3>مراحل رحلة العميل</h3></div><div class="table-wrap"><table><thead><tr><th>المرحلة</th><th>الجلسات</th><th>الأحداث</th></tr></thead><tbody id="analyticsFunnel"></tbody></table></div></section>
+    <section class="panel"><div class="section-head"><h3>مصادر الزيارات</h3></div><div class="table-wrap"><table><thead><tr><th>المصدر</th><th>الجلسات</th></tr></thead><tbody id="analyticsSources"></tbody></table></div></section>
+    <section class="panel"><div class="section-head"><h3>تفاعل المنتجات</h3></div><div class="table-wrap"><table><thead><tr><th>المنتج</th><th>المشاهدات</th><th>الإضافات</th></tr></thead><tbody id="analyticsProducts"></tbody></table></div></section>
+    <section class="panel"><div class="section-head"><h3>النشاط اليومي</h3></div><div class="table-wrap"><table><thead><tr><th>اليوم</th><th>الزوار</th><th>المشاهدات</th></tr></thead><tbody id="analyticsDaily"></tbody></table></div></section>
+   </div>
+   <p class="note">النقر على تيليجرام لا يعني أن الطلب اكتمل أو أن الدفع تم. الطلبات المدفوعة تظهر حصراً في قسم الطلبات بعد تأكيد البوت.</p>
+  </section>
   <section id="ordersSection" class="panel section">
    <div class="section-head"><div><span class="section-kicker">RECENT ACTIVITY</span><h3>أحدث الطلبات</h3><p>آخر العمليات التي وصلت إلى قاعدة بيانات المكتبة.</p></div></div>
    <div class="table-wrap"><table><thead><tr><th>رمز الطلب</th><th>البريد / تيليجرام</th><th>المبلغ</th><th>تاريخ الدفع</th></tr></thead><tbody id="recent"></tbody></table></div>
@@ -98,6 +113,6 @@
 </section>
 </main>
 <style>@media (prefers-reduced-motion:no-preference){.metric,.panel{animation:adminIn .65s cubic-bezier(.2,.8,.2,1) backwards}.metric:nth-child(2){animation-delay:.07s}.metric:nth-child(3){animation-delay:.14s}.metric:nth-child(4){animation-delay:.21s}.metric:nth-child(5){animation-delay:.28s}.panel:nth-of-type(2){animation-delay:.1s}.panel:nth-of-type(3){animation-delay:.2s}.metric,.panel{transition:translate .25s,box-shadow .25s}.metric:hover{translate:0 -4px}tbody tr{animation:adminRow .5s ease backwards}@keyframes adminIn{from{opacity:0;translate:0 24px}to{opacity:1;translate:0 0}}@keyframes adminRow{from{opacity:0}to{opacity:1}}}</style><style>@media print{body{background:#fff!important;color:#111!important}.shell{width:100%;padding:0}.topbar,.sidebar,.welcome-actions,#login,#logout,#couponForm,.coupon-list,.note{display:none!important}.admin-layout{display:block!important}.panel,.metric{background:#fff!important;color:#111!important;box-shadow:none!important;border:1px solid #bbb!important;break-inside:avoid}.metric strong,.brand h1,th,td,.section-head h3{color:#111!important}.metrics{grid-template-columns:repeat(3,1fr)}table{min-width:0}th,td{white-space:normal;font-size:9px;padding:5px}.section{margin-top:12px}}</style>
-<script src="assets/config.js?v=3"></script><script src="assets/admin.js?v=4"></script>
+<script src="assets/config.js?v=3"></script><script src="assets/admin.js?v=5"></script>
 
 </body></html>

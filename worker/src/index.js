@@ -9,12 +9,14 @@ import { webhook, setup } from './tg.js';
 import { adminSummary, adminCoupons } from './admin.js';
 import { sendScheduledReports } from './reports.js';
 import { autopost } from './autopost.js';
+import { trackAnalytics, adminAnalytics } from './analytics.js';
 
 export default {
   async scheduled(controller, env, ctx) {
     ctx.waitUntil((async () => {
       if (controller.cron === '0 5 * * *') await sendScheduledReports(env, controller.scheduledTime); // daily owner report
       await autopost(env, controller.scheduledTime);                                                     // channel post (3x/day)
+      await env.DB.prepare('DELETE FROM analytics_events WHERE created_at < ?').bind(Date.now() - 90 * 86400000).run();
     })());
   },
   async fetch(req, env) {
@@ -26,6 +28,8 @@ export default {
       if (p === '/api/feed' && m === 'GET') return json(await feed(env), 200, { ...cors, 'Cache-Control': 'no-store' });
       if (p === '/api/stats' && m === 'GET') return json(await stats(env), 200, { ...cors, 'Cache-Control': 'public, max-age=300' });
       if (p === '/api/admin/summary' && m === 'GET') return reply(() => adminSummary(req, env));
+      if (p === '/api/admin/analytics' && m === 'GET') return reply(() => adminAnalytics(req, env));
+      if (p === '/api/analytics' && m === 'POST') return reply(() => trackAnalytics(req, env));
       if (p === '/api/admin/coupons' && (m === 'GET' || m === 'POST')) return reply(() => adminCoupons(req, env));
       if (p === '/api/rating' && m === 'POST') return reply(() => submit(req, env, 'rating'));
       if (p === '/api/comment' && m === 'POST') return reply(() => submit(req, env, 'comment'));
