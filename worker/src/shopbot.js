@@ -114,13 +114,16 @@ async function deliver(env, orderId, adminId) {
       const keys=p.is_single?[p.file_single_key]:o.paper_size==='both'?[p.file_a4_key,p.file_letter_key]:[o.paper_size==='Letter'?p.file_letter_key:p.file_a4_key];
       const required=keys.filter(Boolean);
       if(!required.length) throw new Error('missing_file_key:'+id);
-      const prior=await env.DB.prepare("SELECT status FROM shop_delivery_attempts WHERE order_id=? AND product_key=? ORDER BY attempt_no DESC LIMIT 1").bind(orderId,id).first();
-      if(prior?.status==='sent') continue;
-      const count=await env.DB.prepare("SELECT COUNT(*) n FROM shop_delivery_attempts WHERE order_id=? AND product_key=?").bind(orderId,id).first();
-      if(count.n>=5) throw new Error('delivery_limit:'+id);
-      const attemptNo=count.n+1;
-      await env.DB.prepare("INSERT INTO shop_delivery_attempts(order_id,product_key,attempt_no,status,created_at) VALUES(?,?,?,'started',?)").bind(orderId,id,attemptNo,Date.now()).run();
       for(const key of required) {
+        // Track every physical file independently so a retry never resends a file
+        // that Telegram already accepted when a later file in the same product failed.
+        const deliveryKey=id+':'+key.split('/').pop();
+        const prior=await env.DB.prepare("SELECT status FROM shop_delivery_attempts WHERE order_id=? AND product_key=? ORDER BY attempt_no DESC LIMIT 1").bind(orderId,deliveryKey).first();
+        if(prior?.status==='sent') continue;
+        const count=await env.DB.prepare("SELECT COUNT(*) n FROM shop_delivery_attempts WHERE order_id=? AND product_key=?").bind(orderId,deliveryKey).first();
+        if(count.n>=5) throw new Error('delivery_limit:'+deliveryKey);
+        const attemptNo=count.n+1;
+        await env.DB.prepare("INSERT INTO shop_delivery_attempts(order_id,product_key,attempt_no,status,created_at) VALUES(?,?,?,'started',?)").bind(orderId,deliveryKey,attemptNo,Date.now()).run();
         const obj=await env.SHOP_FILES.get(key);
         if(!obj) throw new Error('r2_missing:'+key);
         const form=new FormData();
@@ -129,10 +132,9 @@ async function deliver(env, orderId, adminId) {
         form.set('document',new File([await obj.arrayBuffer()],key.split('/').pop(),{type:obj.httpMetadata?.contentType||'application/octet-stream'}));
         const rr=await fetch(API(env,'sendDocument'),{method:'POST',body:form});
         const jj=await rr.json().catch(()=>({}));
-        if(!rr.ok||!jj.ok) throw new Error('telegram_delivery_failed');
-        await env.DB.prepare("UPDATE shop_delivery_attempts SET telegram_message_id=? WHERE order_id=? AND product_key=? AND attempt_no=?").bind(String(jj.result.message_id),orderId,id,attemptNo).run();
+        if(!rr.ok||!jj.ok) throw new Error('telegram_delivery_failed:'+deliveryKey);
+        await env.DB.prepare("UPDATE shop_delivery_attempts SET status='sent',telegram_message_id=? WHERE order_id=? AND product_key=? AND attempt_no=?").bind(String(jj.result.message_id),orderId,deliveryKey,attemptNo).run();
       }
-      await env.DB.prepare("UPDATE shop_delivery_attempts SET status='sent' WHERE order_id=? AND product_key=? AND attempt_no=?").bind(orderId,id,attemptNo).run();
     }
     const done=await env.DB.prepare("UPDATE shop_orders SET status='approved',approved_at=COALESCE(approved_at,?),approved_by=?,delivery_error=NULL,updated_at=? WHERE id=? AND status IN ('review','delivery_failed')").bind(Date.now(),adminId,Date.now(),orderId).run();
     if(!done.meta.changes) return 'تعذر تثبيت حالة الطلب؛ تحقق من سجل التسليم.';
