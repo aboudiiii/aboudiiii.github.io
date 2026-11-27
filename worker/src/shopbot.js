@@ -104,35 +104,45 @@ async function receiveReceipt(env, m) {
   return true;
 }
 async function deliver(env, orderId, adminId) {
-  const o=await env.DB.prepare("SELECT * FROM shop_orders WHERE id=? AND status='review'").bind(orderId).first();
+  const o=await env.DB.prepare("SELECT * FROM shop_orders WHERE id=? AND status IN ('review','delivery_failed')").bind(orderId).first();
   if(!o) return 'الطلب غير موجود أو تمت معالجته.';
-  const claim=await env.DB.prepare("UPDATE shop_orders SET status='approved',approved_at=?,approved_by=?,updated_at=? WHERE id=? AND status='review'").bind(Date.now(),adminId,Date.now(),orderId).run();
-  if(!claim.meta.changes) return 'تمت معالجة الطلب مسبقاً.';
   const ids=JSON.parse(o.items_json||'[]');
   try {
     for(const id of ids) {
-      const p=await env.DB.prepare('SELECT * FROM shop_products WHERE product_key=?').bind(id).first();
+      const p=await env.DB.prepare('SELECT * FROM shop_products WHERE product_key=? AND active=1').bind(id).first();
       if(!p) throw new Error('missing_product:'+id);
       const keys=p.is_single?[p.file_single_key]:o.paper_size==='both'?[p.file_a4_key,p.file_letter_key]:[o.paper_size==='Letter'?p.file_letter_key:p.file_a4_key];
-      for(const key of keys.filter(Boolean)) {
-        const attempt=await env.DB.prepare("SELECT COUNT(*) n FROM shop_delivery_attempts WHERE order_id=? AND product_key=?").bind(orderId,id).first();
-        if(attempt.n>=5) throw new Error('delivery_limit:'+id);
-        await env.DB.prepare("INSERT INTO shop_delivery_attempts(order_id,product_key,attempt_no,status,created_at) VALUES(?,?,?,'started',?)").bind(orderId,id,attempt.n+1,Date.now()).run();
+      const required=keys.filter(Boolean);
+      if(!required.length) throw new Error('missing_file_key:'+id);
+      const prior=await env.DB.prepare("SELECT status FROM shop_delivery_attempts WHERE order_id=? AND product_key=? ORDER BY attempt_no DESC LIMIT 1").bind(orderId,id).first();
+      if(prior?.status==='sent') continue;
+      const count=await env.DB.prepare("SELECT COUNT(*) n FROM shop_delivery_attempts WHERE order_id=? AND product_key=?").bind(orderId,id).first();
+      if(count.n>=5) throw new Error('delivery_limit:'+id);
+      const attemptNo=count.n+1;
+      await env.DB.prepare("INSERT INTO shop_delivery_attempts(order_id,product_key,attempt_no,status,created_at) VALUES(?,?,?,'started',?)").bind(orderId,id,attemptNo,Date.now()).run();
+      for(const key of required) {
         const obj=await env.SHOP_FILES.get(key);
         if(!obj) throw new Error('r2_missing:'+key);
-        const form=new FormData(); form.set('chat_id',o.telegram_id); form.set('caption',p.title_ar||id);
+        const form=new FormData();
+        form.set('chat_id',o.telegram_id);
+        form.set('caption',p.title_ar||id);
         form.set('document',new File([await obj.arrayBuffer()],key.split('/').pop(),{type:obj.httpMetadata?.contentType||'application/octet-stream'}));
-        const rr=await fetch(API(env,'sendDocument'),{method:'POST',body:form}); const jj=await rr.json();
-        if(!jj.ok) throw new Error('telegram_delivery_failed');
-        await env.DB.prepare("UPDATE shop_delivery_attempts SET status='sent',telegram_message_id=? WHERE order_id=? AND product_key=? AND attempt_no=?").bind(String(jj.result.message_id),orderId,id,attempt.n+1).run();
+        const rr=await fetch(API(env,'sendDocument'),{method:'POST',body:form});
+        const jj=await rr.json().catch(()=>({}));
+        if(!rr.ok||!jj.ok) throw new Error('telegram_delivery_failed');
+        await env.DB.prepare("UPDATE shop_delivery_attempts SET telegram_message_id=? WHERE order_id=? AND product_key=? AND attempt_no=?").bind(String(jj.result.message_id),orderId,id,attemptNo).run();
       }
+      await env.DB.prepare("UPDATE shop_delivery_attempts SET status='sent' WHERE order_id=? AND product_key=? AND attempt_no=?").bind(orderId,id,attemptNo).run();
     }
+    const done=await env.DB.prepare("UPDATE shop_orders SET status='approved',approved_at=COALESCE(approved_at,?),approved_by=?,delivery_error=NULL,updated_at=? WHERE id=? AND status IN ('review','delivery_failed')").bind(Date.now(),adminId,Date.now(),orderId).run();
+    if(!done.meta.changes) return 'تعذر تثبيت حالة الطلب؛ تحقق من سجل التسليم.';
     await say(env,o.telegram_id,`تم تأكيد طلبك #${orderId} وتسليم ملفاتك بنجاح. شكراً لثقتك بمكتبة الحيالي ❤️`);
     return 'تمت الموافقة والتسليم.';
   } catch(e) {
+    await env.DB.prepare("UPDATE shop_delivery_attempts SET status='failed',error=? WHERE order_id=? AND status='started'").bind(String(e.message).slice(0,200),orderId).run();
     await env.DB.prepare("UPDATE shop_orders SET status='delivery_failed',delivery_error=?,updated_at=? WHERE id=?").bind(String(e.message).slice(0,300),Date.now(),orderId).run();
-    await say(env,env.SHOP_OWNER_ID,`تعذّر إكمال تسليم الطلب #${orderId}: ${esc(e.message)}`);
-    return 'تمت الموافقة لكن فشل التسليم؛ يلزم فحص المحاولة قبل إعادة الإرسال.';
+    if(env.SHOP_OWNER_ID) await say(env,env.SHOP_OWNER_ID,`تعذّر إكمال تسليم الطلب #${orderId}: ${esc(e.message)}`);
+    return 'فشل التسليم. سُجلت المحاولة ويمكن للإدارة إعادة المحاولة بعد التحقق.';
   }
 }
 async function callback(env, cb) {
@@ -174,9 +184,8 @@ export async function shopWebhook(req,env,url) {
   if(req.headers.get('X-Telegram-Bot-Api-Secret-Token')!==env.SHOP_TG_WEBHOOK_SECRET) return new Response('forbidden',{status:403});
   const update=await req.json().catch(()=>null);
   if(!update?.update_id) return new Response('bad update',{status:400});
-  const seen=await env.DB.prepare('SELECT update_id FROM shop_webhook_updates WHERE update_id=?').bind(update.update_id).first();
-  if(seen) return new Response('ok');
-  await env.DB.prepare('INSERT INTO shop_webhook_updates(update_id,processed_at) VALUES(?,?)').bind(update.update_id,Date.now()).run();
+  const claim=await env.DB.prepare('INSERT OR IGNORE INTO shop_webhook_updates(update_id,processed_at) VALUES(?,?)').bind(update.update_id,Date.now()).run();
+  if(!claim.meta.changes) return new Response('ok');
   try {
     if(update.message) {
       const m=update.message;
@@ -190,8 +199,10 @@ export async function shopWebhook(req,env,url) {
     }
     if(update.callback_query) await callback(env,update.callback_query);
   } catch(e) {
-    // Log only a safe event; never leak tokens, receipt data or file contents.
+    // Remove the dedupe marker so Telegram can retry transient failures.
+    await env.DB.prepare('DELETE FROM shop_webhook_updates WHERE update_id=?').bind(update.update_id).run();
     console.error('shopbot_update_failed',String(e?.message||'unknown').slice(0,120));
+    return new Response('retry',{status:500});
   }
   return new Response('ok');
 }
