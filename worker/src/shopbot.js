@@ -300,6 +300,16 @@ export async function shopWebhook(req,env,url) {
         const link=await env.DB.prepare('SELECT telegram_id FROM shop_support_links WHERE owner_message_id=?').bind(String(m.reply_to_message.message_id)).first();
         if(link) await say(env,link.telegram_id,'💬 رد الدعم:\\n'+esc(m.text||m.caption||''));
       }
+      else if(m.text==='/cancel' && String(m.chat.id)!==String(env.SHOP_OWNER_ID||'')) {
+        await env.DB.prepare("UPDATE shop_users SET active_mode='' WHERE telegram_id=?").bind(String(m.from.id)).run();
+        await say(env,m.chat.id,'تم الإلغاء.');
+      }
+      else if(m.text && String(m.chat.id)!==String(env.SHOP_OWNER_ID||'') && (await env.DB.prepare('SELECT active_mode FROM shop_users WHERE telegram_id=?').bind(String(m.from.id)).first())?.active_mode==='coupon') {
+        const code=m.text.trim().toUpperCase().slice(0,20);
+        const cp=await env.DB.prepare("SELECT code FROM shop_coupons WHERE code=? AND active=1 AND (expires_at=0 OR expires_at>?) AND (max_uses<0 OR used_count<max_uses)").bind(code,Date.now()).first();
+        await env.DB.prepare("UPDATE shop_users SET active_mode='',coupon_code=? WHERE telegram_id=?").bind(cp?code:null,String(m.from.id)).run();
+        await say(env,m.chat.id,cp?'تم تفعيل الكوبون. سيظهر الخصم عند إنشاء الطلب.':'الكوبون غير صالح أو منتهي.');
+      }
       else if(String(m.chat.id)!==String(env.SHOP_OWNER_ID||'')) {
         const support=await env.DB.prepare("SELECT active_mode FROM shop_users WHERE telegram_id=?").bind(String(m.from.id)).first();
         if(support?.active_mode==='support') {
@@ -312,16 +322,6 @@ export async function shopWebhook(req,env,url) {
           await env.DB.prepare('INSERT OR REPLACE INTO shop_support_links(owner_message_id,telegram_id,customer_message_id,created_at) VALUES(?,?,?,?)').bind(String(sent.message_id),String(m.from.id),String(m.message_id),Date.now()).run();
           await say(env,m.chat.id,'وصلت رسالتك للإدارة.');
         }
-      }
-      else if(m.text==='/cancel') {
-        await env.DB.prepare("UPDATE shop_users SET active_mode='' WHERE telegram_id=?").bind(String(m.from.id)).run();
-        await say(env,m.chat.id,'تم الإلغاء.');
-      }
-      else if(m.text && (await env.DB.prepare('SELECT active_mode FROM shop_users WHERE telegram_id=?').bind(String(m.from.id)).first())?.active_mode==='coupon') {
-        const code=m.text.trim().toUpperCase().slice(0,20);
-        const cp=await env.DB.prepare("SELECT code FROM shop_coupons WHERE code=? AND active=1 AND (expires_at=0 OR expires_at>?) AND (max_uses<0 OR used_count<max_uses)").bind(code,Date.now()).first();
-        await env.DB.prepare("UPDATE shop_users SET active_mode='',coupon_code=? WHERE telegram_id=?").bind(cp?code:null,String(m.from.id)).run();
-        await say(env,m.chat.id,cp?'تم تفعيل الكوبون على طلبك القادم.':'الكوبون غير صالح أو منتهي.');
       }
       else if(m.text?.startsWith('/')) {
         if(String(m.from?.id)!==String(env.SHOP_OWNER_ID||'')) await say(env,m.chat.id,'الأمر غير متاح.');
