@@ -1,3 +1,4 @@
+import { PDFDocument, StandardFonts, rgb, degrees } from 'pdf-lib';
 import { safeEqual } from './util.js';
 
 const API = (env, method) => `https://api.telegram.org/bot${env.SHOP_TG_TOKEN}/${method}`;
@@ -148,7 +149,8 @@ async function sendSample(env,chat,uid,name) {
     const key='samples/'+name, obj=await env.SHOP_FILES.get(key);
     if(!obj) throw new Error('sample_missing');
     const form=new FormData(); form.set('chat_id',chat); form.set('caption','عينة مجانية من مكتبة الحيالي');
-    form.set('document',new File([await obj.arrayBuffer()],name,{type:'application/pdf'}));
+    const stamped=await stampedSampleFile(env,uid,name,obj);
+    form.set('document',new File([stamped],name,{type:'application/pdf'}));
     const res=await fetch(API(env,'sendDocument'),{method:'POST',body:form});
     const data=await res.json().catch(()=>({}));
     if(!res.ok||!data.ok) throw new Error('sample_delivery_failed');
@@ -171,6 +173,51 @@ async function transitionOrderAndReleaseCoupon(env, orderId, telegramId, fromSta
   ];
   const result=await env.DB.batch(statements);
   return Number(result?.[0]?.meta?.changes||0)>0;
+}
+export async function stampPdf(bytes, label, watermark) {
+  if (!(bytes instanceof ArrayBuffer) && !ArrayBuffer.isView(bytes)) throw new Error('invalid_pdf_bytes');
+  const input = bytes instanceof ArrayBuffer ? new Uint8Array(bytes) : new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (input.byteLength > 25 * 1024 * 1024) throw new Error('pdf_too_large_to_stamp');
+  const pdf = await PDFDocument.load(input, { updateMetadata: true, throwOnInvalidObject: false });
+  const pages = pdf.getPages();
+  if (!pages.length || pages.length > 500) throw new Error('pdf_page_limit');
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  const footer = String(label).replace(/[^\x20-\x7E]/g, '').slice(0, 140);
+  const mark = String(watermark).replace(/[^\x20-\x7E]/g, '').slice(0, 100);
+  pages.forEach((page, index) => {
+    const { width, height } = page.getSize();
+    if (index >= 1 && footer) {
+      const size = 7;
+      const textWidth = font.widthOfTextAtSize(footer, size);
+      page.drawText(footer, { x: Math.max(12, (width - textWidth) / 2), y: 10, size, font, color: rgb(0.42,0.42,0.42), opacity: 0.72 });
+    }
+    if (index >= 2 && ((index + 1) * 7) % 9 === 0 && mark) {
+      const size = Math.min(22, Math.max(12, width / 24));
+      const textWidth = font.widthOfTextAtSize(mark, size);
+      page.drawText(mark, { x: Math.max(12, (width - textWidth) / 2), y: height * 0.48, size, font, color: rgb(0.55,0.55,0.55), opacity: 0.16, rotate: degrees(-28) });
+    }
+  });
+  pdf.setProducer('Al-Hayali Digital Library');
+  pdf.setSubject(footer || 'Personal-use digital license');
+  pdf.setModificationDate(new Date());
+  return await pdf.save({ useObjectStreams: true });
+}
+async function stampedOrderFile(env, order, product, key) {
+  const obj = await env.SHOP_FILES.get(key);
+  if (!obj) throw new Error('r2_missing:' + key);
+  const filename = key.split('/').pop();
+  const source = await obj.arrayBuffer();
+  if (!filename.toLowerCase().endsWith('.pdf')) return { bytes: source, filename, contentType: obj.httpMetadata?.contentType || 'application/octet-stream' };
+  const userRow = await env.DB.prepare('SELECT username FROM shop_users WHERE telegram_id=?').bind(order.telegram_id).first();
+  const username = String(userRow?.username || order.telegram_id).replace(/[^A-Za-z0-9_]/g, '').slice(0,40) || String(order.telegram_id);
+  const label = 'Licensed to order #' + order.id + ' - @' + username + ' - personal use only';
+  const watermark = 'Order #' + order.id + ' @' + username;
+  const bytes = await stampPdf(source, label, watermark);
+  return { bytes, filename, contentType: 'application/pdf' };
+}
+async function stampedSampleFile(env, uid, name, obj) {
+  const bytes = await stampPdf(await obj.arrayBuffer(), 'Free sample - user ' + uid + ' - not for resale', 'Sample user ' + uid);
+  return bytes;
 }
 async function receiveReceipt(env, m) {
   const uid=String(m.from.id), photo=m.photo?.at(-1);
@@ -216,12 +263,11 @@ async function deliver(env, orderId, adminId) {
         if(count.n>=5) throw new Error('delivery_limit:'+deliveryKey);
         const attemptNo=count.n+1;
         await env.DB.prepare("INSERT INTO shop_delivery_attempts(order_id,product_key,attempt_no,status,created_at) VALUES(?,?,?,'started',?)").bind(orderId,deliveryKey,attemptNo,Date.now()).run();
-        const obj=await env.SHOP_FILES.get(key);
-        if(!obj) throw new Error('r2_missing:'+key);
+        const stamped=await stampedOrderFile(env,o,p,key);
         const form=new FormData();
         form.set('chat_id',o.telegram_id);
         form.set('caption',p.title_ar||id);
-        form.set('document',new File([await obj.arrayBuffer()],key.split('/').pop(),{type:obj.httpMetadata?.contentType||'application/octet-stream'}));
+        form.set('document',new File([stamped.bytes],stamped.filename,{type:stamped.contentType}));
         const rr=await fetch(API(env,'sendDocument'),{method:'POST',body:form});
         const jj=await rr.json().catch(()=>({}));
         if(!rr.ok||!jj.ok) throw new Error('telegram_delivery_failed:'+deliveryKey);
