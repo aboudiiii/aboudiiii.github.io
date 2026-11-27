@@ -16,6 +16,7 @@ export default {
     ctx.waitUntil((async () => {
       if (controller.cron === '0 5 * * *') await sendScheduledReports(env, controller.scheduledTime); // daily owner report
       await autopost(env, controller.scheduledTime);                                                     // channel post (3x/day)
+      await env.DB.prepare('DELETE FROM analytics_events WHERE created_at < ?').bind(Date.now() - 90 * 86400000).run();
     })());
   },
   async fetch(req, env) {
