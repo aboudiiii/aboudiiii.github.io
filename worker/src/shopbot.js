@@ -152,8 +152,9 @@ async function receiveReceipt(env, m) {
   if(!photo) return false;
   const o=await env.DB.prepare("SELECT id,total_usd_cents FROM shop_orders WHERE telegram_id=? AND status='pending' ORDER BY id DESC LIMIT 1").bind(uid).first();
   if(!o) { await say(env,m.chat.id,'لا يوجد طلب بانتظار إيصال الدفع.'); return true; }
-  await env.DB.prepare("UPDATE shop_orders SET status='review',receipt_file_id=?,receipt_file_unique_id=?,receipt_caption=?,updated_at=? WHERE id=? AND status='pending'")
-    .bind(photo.file_id,photo.file_unique_id||null,String(m.caption||'').slice(0,500),Date.now(),o.id).run();
+  const saved=await env.DB.prepare("UPDATE shop_orders SET status='review',receipt_file_id=?,receipt_file_unique_id=?,receipt_caption=?,updated_at=? WHERE id=? AND telegram_id=? AND status='pending'")
+    .bind(photo.file_id,photo.file_unique_id||null,String(m.caption||'').slice(0,500),Date.now(),o.id,uid).run();
+  if(!saved.meta.changes) { await say(env,m.chat.id,'وصل إيصال آخر لهذا الطلب أو تغيّرت حالته. إذا تحتاج مساعدة تواصل مع الدعم.'); return true; }
   await say(env,m.chat.id,'وصل الإيصال ✅ طلبك الآن قيد مراجعة الإدارة.');
   if(env.SHOP_OWNER_ID) await tg(env,'sendPhoto',{chat_id:env.SHOP_OWNER_ID,photo:photo.file_id,caption:`إيصال الطلب #${o.id} — ${money(o.total_usd_cents)} — العميل ${uid}`,reply_markup:kb([[{text:'✅ موافقة وتسليم',callback_data:'s:approve:'+o.id},{text:'❌ رفض',callback_data:'s:reject:'+o.id}]])});
   return true;
@@ -218,7 +219,14 @@ async function callback(env, cb) {
     if(!admin) return tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:'غير مصرّح'});
     const id=Number(data[2]);
     if(action==='approve') { const result=await deliver(env,id,uid); await tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:result.slice(0,180)}); }
-    else { await env.DB.prepare("UPDATE shop_orders SET status='rejected',rejection_reason='owner_rejected',updated_at=? WHERE id=? AND status='review'").bind(Date.now(),id).run(); await tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:'تم رفض الطلب'}); }
+    else {
+      const rejected=await env.DB.prepare("UPDATE shop_orders SET status='rejected',rejection_reason='owner_rejected',updated_at=? WHERE id=? AND status='review'").bind(Date.now(),id).run();
+      if(rejected.meta.changes) {
+        const order=await env.DB.prepare('SELECT telegram_id FROM shop_orders WHERE id=?').bind(id).first();
+        if(order) await say(env,order.telegram_id,`تم رفض طلبك #${id} بعد مراجعة الإيصال. إذا تعتقد أن هناك خطأ، تواصل مع الدعم.`);
+      }
+      await tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:rejected.meta.changes?'تم رفض الطلب':'الطلب تمت معالجته مسبقاً'});
+    }
     return;
   }
   await user(env,cb.from);
