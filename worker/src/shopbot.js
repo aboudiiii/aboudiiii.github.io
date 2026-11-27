@@ -69,9 +69,13 @@ async function cart(env, chat, uid) {
   return say(env,chat,items.map(p=>esc(p.title_ar)+' — '+money(p.price_usd_cents,priceMultiplier)).join('\n')+`\n\nالإجمالي: <b>${money(total,priceMultiplier)}</b>`,kb(rows));
 }
 async function orders(env, chat, uid) {
-  const r=await env.DB.prepare('SELECT id,total_usd_cents,status,created_at FROM shop_orders WHERE telegram_id=? ORDER BY id DESC LIMIT 10').bind(uid).all();
+  const r=await env.DB.prepare('SELECT id,total_usd_cents,status,currency_country,created_at FROM shop_orders WHERE telegram_id=? ORDER BY id DESC LIMIT 10').bind(uid).all();
   if(!r.results?.length) return say(env,chat,'لا توجد طلبات سابقة.');
-  const lines=r.results.map(o=>`#${o.id} · ${money(o.total_usd_cents)} · ${o.status}`);
+  const lines=[];
+  for(const o of r.results) {
+    const mult=await countryMultiplier(env,o.currency_country);
+    lines.push(`#${o.id} · ${money(o.total_usd_cents,mult)} · ${o.status}`);
+  }
   return say(env,chat,'<b>طلباتك الأخيرة</b>\n'+lines.join('\n'));
 }
 async function checkout(env, chat, uid) {
