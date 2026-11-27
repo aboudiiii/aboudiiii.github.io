@@ -28,12 +28,18 @@ const sections = [
   ['novels','📖 الروايات'],['coloring','🎨 كتب التلوين'],['planners','📋 التعليم والمخططات'],['programming','💻 كتب البرمجة']
 ];
 async function home(env, chat, lang='ar') {
-  const rows=sections.map(([id,name])=>[{text:name,callback_data:'s:cat:'+id}]);
-  rows.push([{text:'🛒 السلة',callback_data:'s:cart'},{text:'📦 طلباتي',callback_data:'s:orders'}]);
-  rows.push([{text:'🌍 اختيار الدولة',callback_data:'s:country'}]);
-  rows.push([{text:'🎟 إدخال كوبون',callback_data:'s:coupon'}]);
-  rows.push([{text:'🌐 English / العربية',callback_data:'s:lang'}]);
-  return say(env,chat,'مرحباً بك في مكتبة الحيالي الرقمية 📚\nاختر القسم الذي تريد تصفحه:',kb(rows));
+  const row=await env.DB.prepare('SELECT language FROM shop_users WHERE telegram_id=?').bind(String(chat)).first();
+  lang=row?.language||lang;
+  const en=lang==='en';
+  const names=en?['📖 Novels','🎨 Coloring Books','📋 Planners & Learning','💻 Programming']:sections.map(x=>x[1]);
+  const rows=sections.map(([id],i)=>[{text:names[i],callback_data:'s:cat:'+id}]);
+  rows.push([{text:en?'🛒 Cart':'🛒 السلة',callback_data:'s:cart'},{text:en?'📦 My orders':'📦 طلباتي',callback_data:'s:orders'}]);
+  rows.push([{text:en?'🌍 Country':'🌍 اختيار الدولة',callback_data:'s:country'}]);
+  rows.push([{text:en?'🎟 Coupon':'🎟 إدخال كوبون',callback_data:'s:coupon'}]);
+  rows.push([{text:en?'🎁 Free samples':'🎁 عينات مجانية',callback_data:'s:samples'}]);
+  rows.push([{text:en?'💬 Support':'💬 الدعم',callback_data:'s:support'}]);
+  rows.push([{text:en?'🌐 العربية':'🌐 English',callback_data:'s:lang'}]);
+  return say(env,chat,en?'Welcome to Al-Hayali Digital Library 📚\\nChoose a category:':'مرحباً بك في مكتبة الحيالي الرقمية 📚\\nاختر القسم الذي تريد تصفحه:',kb(rows));
 }
 async function showCategory(env, chat, section) {
   const list=await products(env,section);
@@ -115,6 +121,31 @@ async function createOrder(env, chat, uid, size) {
   const payment=env.SHOP_PAYMENT_INSTRUCTIONS||'يرجى التواصل مع الدعم لمعرفة طريقة الدفع المتاحة.';
   await say(env,chat,`تم إنشاء طلبك رقم <b>#${oid}</b>\nالإجمالي: <b>${money(total)}</b>\n\n${esc(payment)}\n\nبعد التحويل أرسل صورة وصل الدفع هنا. سيبقى الطلب قيد المراجعة حتى موافقة الإدارة.`);
   if(env.SHOP_OWNER_ID) await say(env,env.SHOP_OWNER_ID,`طلب جديد #${oid} من العميل ${uid} — ${money(total)}`);
+}
+async function showSamples(env,chat,uid) {
+  const used=await env.DB.prepare('SELECT COUNT(*) n FROM shop_samples WHERE telegram_id=?').bind(uid).first();
+  if((used?.n||0)>=3) return say(env,chat,'وصلت إلى الحد المسموح: 3 عينات مجانية.');
+  return say(env,chat,'اختر عينة مجانية (متاح حتى 3 عينات):',kb([
+    [{text:'عينة تلوين A4',callback_data:'s:sample:Free_Sample_A4.pdf'}],
+    [{text:'عينة تلوين Letter',callback_data:'s:sample:Free_Sample_Letter.pdf'}],
+    [{text:'عينة مدينة الأصداء',callback_data:'s:sample:Echo_City_Free_Sample.pdf'}],
+    [{text:'عينة المرايا الثلاث',callback_data:'s:sample:Three_Mirrors_Free_Sample.pdf'}]
+  ]));
+}
+async function sendSample(env,chat,uid,name) {
+  const allowed=new Set(['Free_Sample_A4.pdf','Free_Sample_Letter.pdf','Echo_City_Free_Sample.pdf','Three_Mirrors_Free_Sample.pdf']);
+  if(!allowed.has(name)) return say(env,chat,'العينة غير متاحة.');
+  const used=await env.DB.prepare('SELECT COUNT(*) n FROM shop_samples WHERE telegram_id=?').bind(uid).first();
+  if((used?.n||0)>=3) return say(env,chat,'وصلت إلى الحد المسموح: 3 عينات مجانية.');
+  const key='samples/'+name, obj=await env.SHOP_FILES.get(key);
+  if(!obj) return say(env,chat,'العينة غير متاحة حالياً. يرجى المحاولة لاحقاً.');
+  const form=new FormData(); form.set('chat_id',chat); form.set('caption','عينة مجانية من مكتبة الحيالي');
+  form.set('document',new File([await obj.arrayBuffer()],name,{type:'application/pdf'}));
+  const res=await fetch(API(env,'sendDocument'),{method:'POST',body:form});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok||!data.ok) throw new Error('sample_delivery_failed');
+  await env.DB.prepare('INSERT INTO shop_samples(telegram_id,sample_key,created_at) VALUES(?,?,?)').bind(uid,name,Date.now()).run();
+  await say(env,chat,'استمتع بالعينة! ❤️');
 }
 async function receiveReceipt(env, m) {
   const uid=String(m.from.id), photo=m.photo?.at(-1);
@@ -226,7 +257,15 @@ async function callback(env, cb) {
     await env.DB.prepare('UPDATE shop_users SET selected_items=?,updated_at=? WHERE telegram_id=?').bind(JSON.stringify(next),Date.now(),uid).run();
     await showProduct(env,chat,p,uid);
   } else if(action==='size') await createOrder(env,chat,uid,data[2]);
-  else if(action==='lang') await say(env,chat,'تغيير اللغة سيضاف في المرحلة التالية.');
+  else if(action==='lang') {
+    const current=await env.DB.prepare('SELECT language FROM shop_users WHERE telegram_id=?').bind(uid).first();
+    const next=current?.language==='en'?'ar':'en';
+    await env.DB.prepare('UPDATE shop_users SET language=?,updated_at=? WHERE telegram_id=?').bind(next,Date.now(),uid).run();
+    await home(env,chat,next);
+  }
+  else if(action==='samples') await showSamples(env,chat,uid);
+  else if(action==='sample') await sendSample(env,chat,uid,data.slice(2).join(':'));
+  else if(action==='support') { await env.DB.prepare("UPDATE shop_users SET active_mode='support' WHERE telegram_id=?").bind(uid).run(); await say(env,chat,'أرسل رسالتك الآن. للإلغاء أرسل /cancel.'); }
   await tg(env,'answerCallbackQuery',{callback_query_id:cb.id}).catch(()=>{});
 }
 export async function setupShopWebhook(env,url) {
@@ -249,6 +288,23 @@ export async function shopWebhook(req,env,url) {
       if(m.from?.id) await user(env,m.from);
       if(m.photo) await receiveReceipt(env,m);
       else if(/^\/start/.test(m.text||'')) await home(env,m.chat.id);
+      else if(m.reply_to_message && String(m.chat.id)===String(env.SHOP_OWNER_ID||'')) {
+        const link=await env.DB.prepare('SELECT telegram_id FROM shop_support_links WHERE owner_message_id=?').bind(String(m.reply_to_message.message_id)).first();
+        if(link) await say(env,link.telegram_id,'💬 رد الدعم:\\n'+esc(m.text||m.caption||''));
+      }
+      else if(String(m.chat.id)!==String(env.SHOP_OWNER_ID||'')) {
+        const support=await env.DB.prepare("SELECT active_mode FROM shop_users WHERE telegram_id=?").bind(String(m.from.id)).first();
+        if(support?.active_mode==='support') {
+          const sent=await say(env,env.SHOP_OWNER_ID,'رسالة دعم من '+esc(m.from.first_name||'عميل')+' (@'+esc(m.from.username||'بدون')+'):\\n'+esc(m.text||m.caption||'[مرفق]'));
+          await env.DB.prepare('INSERT OR REPLACE INTO shop_support_links(owner_message_id,telegram_id,customer_message_id,created_at) VALUES(?,?,?,?)').bind(String(sent.message_id),String(m.from.id),String(m.message_id),Date.now()).run();
+          await env.DB.prepare("UPDATE shop_users SET active_mode='' WHERE telegram_id=?").bind(String(m.from.id)).run();
+          await say(env,m.chat.id,'وصلت رسالتك للدعم. سنرد عليك هنا.');
+        } else if(m.text && !m.text.startsWith('/')) {
+          const sent=await say(env,env.SHOP_OWNER_ID,'رسالة من '+esc(m.from.first_name||'عميل')+':\\n'+esc(m.text));
+          await env.DB.prepare('INSERT OR REPLACE INTO shop_support_links(owner_message_id,telegram_id,customer_message_id,created_at) VALUES(?,?,?,?)').bind(String(sent.message_id),String(m.from.id),String(m.message_id),Date.now()).run();
+          await say(env,m.chat.id,'وصلت رسالتك للإدارة.');
+        }
+      }
       else if(m.text==='/cancel') {
         await env.DB.prepare("UPDATE shop_users SET active_mode='' WHERE telegram_id=?").bind(String(m.from.id)).run();
         await say(env,m.chat.id,'تم الإلغاء.');
