@@ -11,6 +11,7 @@ import { sendScheduledReports } from './reports.js';
 import { autopost } from './autopost.js';
 import { trackAnalytics, adminAnalytics } from './analytics.js';
 import { shopWebhook, setupShopWebhook } from './shopbot.js';
+import { createReaderSession, readerPage, readerShell } from './reader.js';
 
 export default {
   async scheduled(controller, env, ctx) {
@@ -26,6 +27,10 @@ export default {
     if (m === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     const reply = async (fn) => { const [b, s] = await fn(); return json(b, s, cors); };
     try {
+      if (p === '/reader' && m === 'GET') return readerShell();
+      if (p === '/api/shop/reader/session' && m === 'POST') return createReaderSession(req, env);
+      const readerPageMatch = p.match(/^\/api\/shop\/reader\/page\/(\d+)$/);
+      if (readerPageMatch && m === 'GET') return readerPage(req, env, Number(readerPageMatch[1]));
       if (p === '/api/feed' && m === 'GET') return json(await feed(env), 200, { ...cors, 'Cache-Control': 'no-store' });
       if (p === '/api/stats' && m === 'GET') return json(await stats(env), 200, { ...cors, 'Cache-Control': 'public, max-age=300' });
       if (p === '/api/admin/summary' && m === 'GET') return reply(() => adminSummary(req, env));

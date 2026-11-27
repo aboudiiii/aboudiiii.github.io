@@ -250,12 +250,32 @@ async function deliver(env, orderId, adminId) {
     for(const id of ids) {
       const p=await env.DB.prepare('SELECT * FROM shop_products WHERE product_key=? AND active=1').bind(id).first();
       if(!p) throw new Error('missing_product:'+id);
+      if(p.content_type==='reader') {
+        if(!env.SHOP_READER_URL || !Number.isInteger(p.reader_page_count) || p.reader_page_count<1) throw new Error('reader_not_ready:'+id);
+        const deliveryKey=id+':reader-link';
+        const prior=await env.DB.prepare("SELECT status FROM shop_delivery_attempts WHERE order_id=? AND product_key=? ORDER BY attempt_no DESC LIMIT 1").bind(orderId,deliveryKey).first();
+        if(prior?.status!=='sent') {
+          const count=await env.DB.prepare("SELECT COUNT(*) n FROM shop_delivery_attempts WHERE order_id=? AND product_key=?").bind(orderId,deliveryKey).first();
+          if(count.n>=5) throw new Error('delivery_limit:'+deliveryKey);
+          const attemptNo=count.n+1;
+          await env.DB.prepare("INSERT INTO shop_delivery_attempts(order_id,product_key,attempt_no,status,created_at) VALUES(?,?,?,'started',?)").bind(orderId,deliveryKey,attemptNo,Date.now()).run();
+          const base=String(env.SHOP_READER_URL).replace(/\\/$/,'');
+          const readerUrl=base+'/reader?order='+encodeURIComponent(orderId)+'&product='+encodeURIComponent(id);
+          const rr=await fetch(API(env,'sendMessage'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
+            chat_id:o.telegram_id,
+            text:'تم تأكيد شراء «'+(p.title_ar||id)+'». افتح الكتاب من القارئ الآمن داخل مكتبة الحيالي. رابط القراءة مرتبط بحساب Telegram وطلبك المؤكد.',
+            reply_markup:{inline_keyboard:[[{text:'📖 اقرأ الكتاب الآن',web_app:{url:readerUrl}}]]}
+          })});
+          const jj=await rr.json().catch(()=>({}));
+          if(!rr.ok||!jj.ok) throw new Error('telegram_reader_link_failed:'+id);
+          await env.DB.prepare("UPDATE shop_delivery_attempts SET status='sent',telegram_message_id=? WHERE order_id=? AND product_key=? AND attempt_no=?").bind(String(jj.result.message_id),orderId,deliveryKey,attemptNo).run();
+        }
+        continue;
+      }
       const keys=p.is_single?[p.file_single_key]:o.paper_size==='both'?[p.file_a4_key,p.file_letter_key]:[o.paper_size==='Letter'?p.file_letter_key:p.file_a4_key];
       const required=keys.filter(Boolean);
       if(!required.length) throw new Error('missing_file_key:'+id);
       for(const key of required) {
-        // Track every physical file independently so a retry never resends a file
-        // that Telegram already accepted when a later file in the same product failed.
         const deliveryKey=id+':'+key.split('/').pop();
         const prior=await env.DB.prepare("SELECT status FROM shop_delivery_attempts WHERE order_id=? AND product_key=? ORDER BY attempt_no DESC LIMIT 1").bind(orderId,deliveryKey).first();
         if(prior?.status==='sent') continue;
