@@ -2,7 +2,7 @@ import { safeEqual } from './util.js';
 
 const API = (env, method) => `https://api.telegram.org/bot${env.SHOP_TG_TOKEN}/${method}`;
 const esc = (s) => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-const money = (n, multiplier=1) => '
+const money = (n, multiplier = 1) => String.fromCharCode(36) + (Number(n || 0) * multiplier / 100).toFixed(2);
 async function tg(env, method, payload) {
   const r = await fetch(API(env, method), { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(payload) });
   const j = await r.json().catch(()=>({}));
