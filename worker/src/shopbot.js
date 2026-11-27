@@ -158,6 +158,20 @@ async function sendSample(env,chat,uid,name) {
     throw e;
   }
 }
+async function transitionOrderAndReleaseCoupon(env, orderId, telegramId, fromStatus, toStatus, reason = null) {
+  const now=Date.now();
+  const statements=[
+    env.DB.prepare(`UPDATE shop_orders SET status=?,rejection_reason=?,coupon_release_state=CASE WHEN coupon_code IS NOT NULL AND coupon_release_state=0 THEN 1 ELSE coupon_release_state END,updated_at=? WHERE id=? AND telegram_id=? AND status=?
+        AND NOT EXISTS (SELECT 1 FROM shop_delivery_locks WHERE order_id=shop_orders.id AND expires_at>?)`)
+      .bind(toStatus,reason,now,orderId,telegramId,fromStatus,now),
+    env.DB.prepare(`UPDATE shop_coupons SET used_count=MAX(0,used_count-1) WHERE code=(SELECT coupon_code FROM shop_orders WHERE id=? AND status=? AND coupon_release_state=1)`)
+      .bind(orderId,toStatus),
+    env.DB.prepare(`UPDATE shop_orders SET coupon_release_state=2 WHERE id=? AND status=? AND coupon_release_state=1`)
+      .bind(orderId,toStatus)
+  ];
+  const result=await env.DB.batch(statements);
+  return Number(result?.[0]?.meta?.changes||0)>0;
+}
 async function receiveReceipt(env, m) {
   const uid=String(m.from.id), photo=m.photo?.at(-1);
   if(!photo) return false;
@@ -171,16 +185,20 @@ async function receiveReceipt(env, m) {
   return true;
 }
 async function deliver(env, orderId, adminId) {
-  const o=await env.DB.prepare("SELECT * FROM shop_orders WHERE id=? AND status IN ('review','delivery_failed')").bind(orderId).first();
-  if(!o) return 'الطلب غير موجود أو تمت معالجته.';
-  const ids=JSON.parse(o.items_json||'[]');
   const lockToken=crypto.randomUUID(), now=Date.now();
   const lease=await env.DB.prepare(`INSERT INTO shop_delivery_locks(order_id,lock_token,expires_at,created_at)
-    VALUES(?,?,?,?) ON CONFLICT(order_id) DO UPDATE SET lock_token=excluded.lock_token,
+    SELECT ?,?,?,? WHERE EXISTS (SELECT 1 FROM shop_orders WHERE id=? AND status IN ('review','delivery_failed'))
+    ON CONFLICT(order_id) DO UPDATE SET lock_token=excluded.lock_token,
     expires_at=excluded.expires_at,created_at=excluded.created_at
     WHERE shop_delivery_locks.expires_at < ?`)
-    .bind(orderId,lockToken,now+5*60*1000,now,now).run();
+    .bind(orderId,lockToken,now+60*60*1000,now,orderId,now).run();
   if(!lease.meta.changes) return 'هناك عملية تسليم أخرى قيد التنفيذ لهذا الطلب.';
+  const o=await env.DB.prepare("SELECT * FROM shop_orders WHERE id=? AND status IN ('review','delivery_failed')").bind(orderId).first();
+  if(!o) {
+    await env.DB.prepare('DELETE FROM shop_delivery_locks WHERE order_id=? AND lock_token=?').bind(orderId,lockToken).run();
+    return 'الطلب غير موجود أو تمت معالجته.';
+  }
+  const ids=JSON.parse(o.items_json||'[]');
   try {
     for(const id of ids) {
       const p=await env.DB.prepare('SELECT * FROM shop_products WHERE product_key=? AND active=1').bind(id).first();
@@ -217,7 +235,7 @@ async function deliver(env, orderId, adminId) {
     return 'تمت الموافقة والتسليم.';
   } catch(e) {
     await env.DB.prepare("UPDATE shop_delivery_attempts SET status='failed',error=? WHERE order_id=? AND status='started'").bind(String(e.message).slice(0,200),orderId).run();
-    await env.DB.prepare("UPDATE shop_orders SET status='delivery_failed',delivery_error=?,updated_at=? WHERE id=?").bind(String(e.message).slice(0,300),Date.now(),orderId).run();
+    await env.DB.prepare("UPDATE shop_orders SET status='delivery_failed',delivery_error=?,updated_at=? WHERE id=? AND status IN ('review','delivery_failed')").bind(String(e.message).slice(0,300),Date.now(),orderId).run();
     if(env.SHOP_OWNER_ID) await say(env,env.SHOP_OWNER_ID,`تعذّر إكمال تسليم الطلب #${orderId}: ${esc(e.message)}`);
     return 'فشل التسليم. سُجلت المحاولة ويمكن للإدارة إعادة المحاولة بعد التحقق.';
   } finally {
@@ -232,12 +250,10 @@ async function callback(env, cb) {
     const id=Number(data[2]);
     if(action==='approve') { const result=await deliver(env,id,uid); await tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:result.slice(0,180)}); }
     else {
-      const rejected=await env.DB.prepare("UPDATE shop_orders SET status='rejected',rejection_reason='owner_rejected',updated_at=? WHERE id=? AND status='review'").bind(Date.now(),id).run();
-      if(rejected.meta.changes) {
-        const order=await env.DB.prepare('SELECT telegram_id FROM shop_orders WHERE id=?').bind(id).first();
-        if(order) await say(env,order.telegram_id,`تم رفض طلبك #${id} بعد مراجعة الإيصال. إذا تعتقد أن هناك خطأ، تواصل مع الدعم.`);
-      }
-      await tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:rejected.meta.changes?'تم رفض الطلب':'الطلب تمت معالجته مسبقاً'});
+      const order=await env.DB.prepare('SELECT telegram_id FROM shop_orders WHERE id=?').bind(id).first();
+      const changed=order ? await transitionOrderAndReleaseCoupon(env,id,order.telegram_id,'review','rejected','owner_rejected') : false;
+      if(changed && order) await say(env,order.telegram_id,`تم رفض طلبك #${id} بعد مراجعة الإيصال. إذا تعتقد أن هناك خطأ، تواصل مع الدعم.`);
+      await tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:changed?'تم رفض الطلب':'الطلب قيد التسليم أو تمت معالجته مسبقاً'});
     }
     return;
   }
@@ -249,8 +265,8 @@ async function callback(env, cb) {
   else if(action==='orders') await orders(env,chat,uid);
   else if(action==='cancelorder') {
     const id=Number(data[2]);
-    const result=await env.DB.prepare("UPDATE shop_orders SET status='cancelled',updated_at=? WHERE id=? AND telegram_id=? AND status='pending'").bind(Date.now(),id,uid).run();
-    await say(env,chat,result.meta.changes?'تم إلغاء الطلب قبل إرسال الإيصال.':'لا يمكن إلغاء هذا الطلب؛ قد يكون قيد المراجعة أو تمت معالجته.');
+    const changed=await transitionOrderAndReleaseCoupon(env,id,uid,'pending','cancelled');
+    await say(env,chat,changed?'تم إلغاء الطلب وإرجاع استخدام الكوبون إن وُجد.':'لا يمكن إلغاء هذا الطلب؛ قد يكون قيد المراجعة أو تمت معالجته.');
     await orders(env,chat,uid);
   }
   else if(action==='checkout') await checkout(env,chat,uid);
