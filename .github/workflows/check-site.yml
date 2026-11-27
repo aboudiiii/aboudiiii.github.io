@@ -19,5 +19,7 @@ jobs:
         run: python3 scripts/security_check.py
       - name: Check JavaScript syntax
         run: for file in assets/*.js; do node --check "$file"; done
+      - name: Install Worker dependencies
+        run: cd worker && npm install --no-audit --no-fund
       - name: Test reviews Worker
         run: cd worker && npm test
