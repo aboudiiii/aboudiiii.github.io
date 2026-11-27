@@ -232,12 +232,17 @@ async function callback(env, cb) {
     const id=Number(data[2]);
     if(action==='approve') { const result=await deliver(env,id,uid); await tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:result.slice(0,180)}); }
     else {
-      const rejected=await env.DB.prepare("UPDATE shop_orders SET status='rejected',rejection_reason='owner_rejected',updated_at=? WHERE id=? AND status='review'").bind(Date.now(),id).run();
-      if(rejected.meta.changes) {
+      const rejected=await env.DB.batch([
+        env.DB.prepare(`UPDATE shop_coupons SET used_count=MAX(0,used_count-1)
+          WHERE code=(SELECT coupon_code FROM shop_orders WHERE id=? AND status='review' AND coupon_code IS NOT NULL)`).bind(id),
+        env.DB.prepare("UPDATE shop_orders SET status='rejected',rejection_reason='owner_rejected',updated_at=? WHERE id=? AND status='review'").bind(Date.now(),id)
+      ]);
+      const changed=rejected?.[1]?.meta?.changes||0;
+      if(changed) {
         const order=await env.DB.prepare('SELECT telegram_id FROM shop_orders WHERE id=?').bind(id).first();
-        if(order) await say(env,order.telegram_id,`تم رفض طلبك #${id} بعد مراجعة الإيصال. إذا تعتقد أن هناك خطأ، تواصل مع الدعم.`);
+        if(order) await say(env,order.telegram_id,`تم رفض طلبك #${id} بعد مراجعة الإيصال. تم تحرير استخدام الكوبون إن وُجد. إذا تعتقد أن هناك خطأ، تواصل مع الدعم.`);
       }
-      await tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:rejected.meta.changes?'تم رفض الطلب':'الطلب تمت معالجته مسبقاً'});
+      await tg(env,'answerCallbackQuery',{callback_query_id:cb.id,text:changed?'تم رفض الطلب وتحرير الكوبون':'الطلب تمت معالجته مسبقاً'});
     }
     return;
   }
@@ -249,8 +254,15 @@ async function callback(env, cb) {
   else if(action==='orders') await orders(env,chat,uid);
   else if(action==='cancelorder') {
     const id=Number(data[2]);
-    const result=await env.DB.prepare("UPDATE shop_orders SET status='cancelled',updated_at=? WHERE id=? AND telegram_id=? AND status='pending'").bind(Date.now(),id,uid).run();
-    await say(env,chat,result.meta.changes?'تم إلغاء الطلب قبل إرسال الإيصال.':'لا يمكن إلغاء هذا الطلب؛ قد يكون قيد المراجعة أو تمت معالجته.');
+    // Release a coupon use exactly once, only while this order is still pending.
+    const now=Date.now();
+    const result=await env.DB.batch([
+      env.DB.prepare(`UPDATE shop_coupons SET used_count=MAX(0,used_count-1)
+        WHERE code=(SELECT coupon_code FROM shop_orders WHERE id=? AND telegram_id=? AND status='pending' AND coupon_code IS NOT NULL)`).bind(id,uid),
+      env.DB.prepare("UPDATE shop_orders SET status='cancelled',updated_at=? WHERE id=? AND telegram_id=? AND status='pending'").bind(now,id,uid)
+    ]);
+    const changed=result?.[1]?.meta?.changes||0;
+    await say(env,chat,changed?'تم إلغاء الطلب وإرجاع استخدام الكوبون.':'لا يمكن إلغاء هذا الطلب؛ قد يكون قيد المراجعة أو تمت معالجته.');
     await orders(env,chat,uid);
   }
   else if(action==='checkout') await checkout(env,chat,uid);
