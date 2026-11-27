@@ -6,7 +6,7 @@ compatibility_date = "2025-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "hayali"
-database_id = "PUT_D1_ID_HERE"
+database_id = "c0fd9456-54dd-437c-a012-45b918ba4b07"
 migrations_dir = "migrations"
 
 [vars]
