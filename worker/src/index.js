@@ -29,7 +29,7 @@ export default {
     try {
       if (p === '/reader' && m === 'GET') return readerShell();
       if (p === '/api/shop/reader/session' && m === 'POST') return createReaderSession(req, env);
-      const readerPageMatch = p.match(/^\\/api\\/shop\\/reader\\/page\\/(\\d+)$/);
+      const readerPageMatch = p.match(/^\/api\/shop\/reader\/page\/(\d+)$/);
       if (readerPageMatch && m === 'GET') return readerPage(req, env, Number(readerPageMatch[1]));
       if (p === '/api/feed' && m === 'GET') return json(await feed(env), 200, { ...cors, 'Cache-Control': 'no-store' });
       if (p === '/api/stats' && m === 'GET') return json(await stats(env), 200, { ...cors, 'Cache-Control': 'public, max-age=300' });
