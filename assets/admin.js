@@ -35,11 +35,11 @@ function signIn(){
 }
 function fmtDate(t){if(!t)return "—";try{return new Date(Number(t)).toLocaleString("ar-IQ")}catch(e){return "—"}}
 function load(){
- Promise.all([request("/api/admin/summary"),request("/api/admin/coupons")]).then(function(rs){
-  var s=rs[0],c=rs[1];
+ Promise.all([request("/api/admin/summary"),request("/api/admin/coupons"),request("/api/admin/analytics")]).then(function(rs){
+  var s=rs[0],c=rs[1],a=rs[2];
   if(s.status===401||s.status===403||c.status===401||c.status===403){token("");tok="";showAuthed(false);status("loginStatus", "الحساب الحالي ليس حساب المالك المصرّح له.", "error");return}
   if(!s.ok||!c.ok){status("loginStatus","تعذّر تحميل لوحة الإدارة. تحقق من إعدادات Worker وترحيل قاعدة البيانات.","error");showAuthed(false);return}
-  showAuthed(true);renderSummary(s);renderCoupons(c.coupons||[])
+  showAuthed(true);renderSummary(s);renderCoupons(c.coupons||[]);renderAnalytics(a)
  })
 }
 function renderSummary(d){
@@ -55,6 +55,20 @@ function renderSummary(d){
  if($("monthly")) $("monthly").innerHTML=(d.monthly||[]).map(function(x){return "<tr><td>"+esc(x.month)+"</td><td>"+esc(x.orders)+"</td><td>$"+Number(x.revenue||0).toFixed(2)+"</td></tr>"}).join("")||'<tr><td colspan="3">لا توجد بيانات شهرية</td></tr>';
  if($("audit")) $("audit").innerHTML=(d.audit||[]).map(function(x){return "<tr><td>"+esc(x.action)+"</td><td>"+esc(x.entity_id||"—")+"</td><td>"+esc(fmtDate(x.created_at))+"</td></tr>"}).join("")||'<tr><td colspan="3">لا توجد عمليات إدارية مسجلة</td></tr>';
  $("recent").innerHTML=(d.recent_orders||[]).map(function(x){return "<tr><td>"+esc(x.code)+"</td><td>"+esc(x.email||x.telegram_id||"—")+"</td><td>"+(x.total_usd==null?"غير مسجل":"$"+Number(x.total_usd).toFixed(2))+"</td><td>"+esc(fmtDate(x.paid_at))+"</td></tr>"}).join("")||'<tr><td colspan="4">لا توجد طلبات</td></tr>';
+}
+function renderAnalytics(d){
+ var labels={product_view:"مشاهدة منتج",add_to_cart:"إضافة للسلة",begin_checkout:"بدء إتمام الطلب",telegram_click:"النقر إلى تيليجرام"};
+ if(!d||!d.ok){
+  ["analyticsVisitors","analyticsViews"].forEach(function(id){if($(id))$(id).textContent="—"});
+  ["analyticsFunnel","analyticsSources","analyticsProducts","analyticsDaily"].forEach(function(id){if($(id))$(id).innerHTML='<tr><td colspan="3">لا تتوفر بيانات التحليلات بعد. تأكد من تطبيق الترحيل 0003.</td></tr>'});
+  return;
+ }
+ $("analyticsVisitors").textContent=Number(d.visitors||0).toLocaleString("en-US");
+ $("analyticsViews").textContent=Number(d.page_views||0).toLocaleString("en-US");
+ $("analyticsFunnel").innerHTML=(d.funnel||[]).map(function(x){return "<tr><td>"+esc(labels[x.event]||x.event)+"</td><td>"+Number(x.sessions||0)+"</td><td>"+Number(x.events||0)+"</td></tr>"}).join("")||'<tr><td colspan="3">لا توجد بيانات بعد</td></tr>';
+ $("analyticsSources").innerHTML=(d.sources||[]).map(function(x){return "<tr><td>"+esc(x.source)+"</td><td>"+Number(x.sessions||0)+"</td></tr>"}).join("")||'<tr><td colspan="2">لا توجد بيانات بعد</td></tr>';
+ $("analyticsProducts").innerHTML=(d.products||[]).map(function(x){return "<tr><td>"+esc(x.product)+"</td><td>"+Number(x.views||0)+"</td><td>"+Number(x.adds||0)+"</td></tr>"}).join("")||'<tr><td colspan="3">لا توجد بيانات بعد</td></tr>';
+ $("analyticsDaily").innerHTML=(d.daily||[]).map(function(x){return "<tr><td>"+esc(x.day)+"</td><td>"+Number(x.visitors||0)+"</td><td>"+Number(x.views||0)+"</td></tr>"}).join("")||'<tr><td colspan="3">لا توجد بيانات بعد</td></tr>';
 }
 function renderCoupons(rows){
  lastCoupons=rows;
