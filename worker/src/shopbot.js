@@ -3,7 +3,6 @@ import { safeEqual } from './util.js';
 const API = (env, method) => `https://api.telegram.org/bot${env.SHOP_TG_TOKEN}/${method}`;
 const esc = (s) => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const money = (n, multiplier = 1) => String.fromCharCode(36) + (Number(n || 0) * multiplier / 100).toFixed(2);
-const referralPct = env => Math.max(0,Math.min(50,Number(env.SHOP_REFERRAL_PCT||10)||0));
 async function tg(env, method, payload) {
   const r = await fetch(API(env, method), { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(payload) });
   const j = await r.json().catch(()=>({}));
@@ -104,7 +103,6 @@ async function createOrder(env, chat, uid, size) {
     const cp=await env.DB.prepare("SELECT percent FROM shop_coupons WHERE code=? AND active=1 AND (expires_at=0 OR expires_at>?) AND (max_uses<0 OR used_count<max_uses)").bind(u.coupon_code,Date.now()).first();
     if(cp) { discount=Math.round(subtotal*Number(cp.percent||0)/100); couponCode=u.coupon_code; }
   }
-  if(u.referral_code && String(u.referral_code)!==uid) discount=Math.max(discount,Math.round(subtotal*referralPct(env)/100));
   const discountedSubtotal=Math.max(0,subtotal-discount);
   const total=Math.round(discountedSubtotal*priceMultiplier);
   const now=Date.now();
@@ -279,7 +277,7 @@ async function callback(env, cb) {
   else if(action==='samples') await showSamples(env,chat,uid);
   else if(action==='sample') await sendSample(env,chat,uid,data.slice(2).join(':'));
   else if(action==='support') { await env.DB.prepare("UPDATE shop_users SET active_mode='support' WHERE telegram_id=?").bind(uid).run(); await say(env,chat,'أرسل رسالتك الآن. للإلغاء أرسل /cancel.'); }
-  else if(action==='referral') { const bot=String(env.SHOP_BOT_USERNAME||'').replace(/^@/,''); if(!bot) return say(env,chat,'رابط الدعوة غير مهيأ حالياً.'); await say(env,chat,'شارك رابطك مع صديقك واحصلوا على خصم: https://t.me/'+bot+'?start=ref_'+uid); }
+  else if(action==='referral') { const bot=String(env.SHOP_BOT_USERNAME||'').replace(/^@/,''); if(!bot) return say(env,chat,'رابط الدعوة غير مهيأ حالياً.'); await say(env,chat,'شارك رابطك مع أصدقائك وساهم في نشر مكتبة الحيالي: https://t.me/'+bot+'?start=ref_'+uid); }
   await tg(env,'answerCallbackQuery',{callback_query_id:cb.id}).catch(()=>{});
 }
 export async function setupShopWebhook(env,url) {
