@@ -162,6 +162,13 @@ async function callback(env, cb) {
   else if(action==='lang') await say(env,chat,'تغيير اللغة سيضاف في المرحلة التالية.');
   await tg(env,'answerCallbackQuery',{callback_query_id:cb.id}).catch(()=>{});
 }
+export async function setupShopWebhook(env,url) {
+  if(!safeEqual(url.pathname,'/setup-shop/'+env.SHOP_TG_WEBHOOK_SECRET)) return new Response('forbidden',{status:403});
+  if(!env.SHOP_TG_TOKEN || !env.SHOP_TG_WEBHOOK_SECRET) return new Response('ShopBot secrets are not configured',{status:503});
+  const hook=`${url.origin}/shop-tg/${env.SHOP_TG_WEBHOOK_SECRET}`;
+  const result=await tg(env,'setWebhook',{url:hook,secret_token:env.SHOP_TG_WEBHOOK_SECRET,allowed_updates:['message','callback_query']});
+  return new Response(result ? 'ShopBot webhook registered. You can close this page.' : 'Webhook setup failed',{status:200});
+}
 export async function shopWebhook(req,env,url) {
   if(!safeEqual(url.pathname,'/shop-tg/'+env.SHOP_TG_WEBHOOK_SECRET)) return new Response('forbidden',{status:403});
   if(req.headers.get('X-Telegram-Bot-Api-Secret-Token')!==env.SHOP_TG_WEBHOOK_SECRET) return new Response('forbidden',{status:403});
