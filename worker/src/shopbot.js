@@ -205,12 +205,15 @@ async function stampPdf(bytes, label, watermark) {
 async function stampedOrderFile(env, order, product, key) {
   const obj = await env.SHOP_FILES.get(key);
   if (!obj) throw new Error('r2_missing:' + key);
+  const filename = key.split('/').pop();
+  const source = await obj.arrayBuffer();
+  if (!filename.toLowerCase().endsWith('.pdf')) return { bytes: source, filename, contentType: obj.httpMetadata?.contentType || 'application/octet-stream' };
   const userRow = await env.DB.prepare('SELECT username FROM shop_users WHERE telegram_id=?').bind(order.telegram_id).first();
   const username = String(userRow?.username || order.telegram_id).replace(/[^A-Za-z0-9_]/g, '').slice(0,40) || String(order.telegram_id);
   const label = 'Licensed to order #' + order.id + ' - @' + username + ' - personal use only';
   const watermark = 'Order #' + order.id + ' @' + username;
-  const bytes = await stampPdf(await obj.arrayBuffer(), label, watermark);
-  return { bytes, filename: key.split('/').pop() };
+  const bytes = await stampPdf(source, label, watermark);
+  return { bytes, filename, contentType: 'application/pdf' };
 }
 async function stampedSampleFile(env, uid, name, obj) {
   const bytes = await stampPdf(await obj.arrayBuffer(), 'Free sample - user ' + uid + ' - not for resale', 'Sample user ' + uid);
@@ -264,7 +267,7 @@ async function deliver(env, orderId, adminId) {
         const form=new FormData();
         form.set('chat_id',o.telegram_id);
         form.set('caption',p.title_ar||id);
-        form.set('document',new File([stamped.bytes],stamped.filename,{type:'application/pdf'}));
+        form.set('document',new File([stamped.bytes],stamped.filename,{type:stamped.contentType}));
         const rr=await fetch(API(env,'sendDocument'),{method:'POST',body:form});
         const jj=await rr.json().catch(()=>({}));
         if(!rr.ok||!jj.ok) throw new Error('telegram_delivery_failed:'+deliveryKey);
