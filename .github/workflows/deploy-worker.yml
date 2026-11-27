@@ -29,6 +29,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
       - name: Tests
         run: npm test
       - name: Validate and pin the existing production D1 database
