@@ -10,7 +10,7 @@ import { adminSummary, adminCoupons } from './admin.js';
 import { sendScheduledReports } from './reports.js';
 import { autopost } from './autopost.js';
 import { trackAnalytics, adminAnalytics } from './analytics.js';
-import { shopWebhook } from './shopbot.js';
+import { shopWebhook, setupShopWebhook } from './shopbot.js';
 
 export default {
   async scheduled(controller, env, ctx) {
@@ -45,6 +45,7 @@ export default {
       if (p === '/api/confirm' && m === 'GET') return confirmEmail(env, url.searchParams.get('t'));
       if (p === '/api/unsubscribe' && m === 'GET') return unsubscribe(env, url.searchParams.get('t'));
       if (p.startsWith('/shop-tg/') && m === 'POST') return shopWebhook(req, env, url);
+      if (p.startsWith('/setup-shop/') && m === 'GET') return setupShopWebhook(env, url);
       if (p.startsWith('/tg/') && m === 'POST') return webhook(req, env, url);
       if (p.startsWith('/setup/') && m === 'GET') return setup(env, url);
       return json({ ok: false, error: 'not_found' }, 404, cors);
