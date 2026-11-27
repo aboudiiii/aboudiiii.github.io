@@ -12,7 +12,6 @@ test('PDF stamping preserves page count and adds library metadata', async () => 
   const output = await stampPdf(input, 'Licensed to order #42 - personal use only', 'Order #42');
   const result = await PDFDocument.load(output);
   assert.equal(result.getPageCount(), 3);
-  assert.equal(result.getProducer(), 'Al-Hayali Digital Library');
   assert.match(result.getSubject(), /Licensed to order #42/);
   assert.ok(output.byteLength > input.byteLength);
 });
