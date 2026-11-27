@@ -108,8 +108,8 @@ async function createOrder(env, chat, uid, size) {
   const discountedSubtotal=Math.max(0,subtotal-discount);
   const total=Math.round(discountedSubtotal*priceMultiplier);
   const now=Date.now();
-  const res=await env.DB.prepare(`INSERT INTO shop_orders(telegram_id,items_json,paper_size,subtotal_usd_cents,discount_usd_cents,total_usd_cents,currency_country,coupon_code,status,created_at,updated_at)
-    VALUES(?,?,?,?,?,?,?,?, 'pending',?,?)`).bind(uid,JSON.stringify(ids),actualSize,subtotal,discount,total,u.country||'IQ',couponCode,now,now).run();
+  const res=await env.DB.prepare(`INSERT INTO shop_orders(telegram_id,items_json,paper_size,subtotal_usd_cents,discount_usd_cents,total_usd_cents,currency_country,coupon_code,referral_code,status,created_at,updated_at)
+    VALUES(?,?,?,?,?,?,?,?,?, 'pending',?,?)`).bind(uid,JSON.stringify(ids),actualSize,subtotal,discount,total,u.country||'IQ',couponCode,u.referral_code,now,now).run();
   const oid=res.meta.last_row_id;
   if(couponCode) {
     const used=await env.DB.prepare("UPDATE shop_coupons SET used_count=used_count+1 WHERE code=? AND active=1 AND (max_uses<0 OR used_count<max_uses) AND (expires_at=0 OR expires_at>?)").bind(couponCode,now).run();
