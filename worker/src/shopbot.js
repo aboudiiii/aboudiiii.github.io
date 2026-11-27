@@ -31,6 +31,7 @@ async function home(env, chat, lang='ar') {
   const rows=sections.map(([id,name])=>[{text:name,callback_data:'s:cat:'+id}]);
   rows.push([{text:'🛒 السلة',callback_data:'s:cart'},{text:'📦 طلباتي',callback_data:'s:orders'}]);
   rows.push([{text:'🌍 اختيار الدولة',callback_data:'s:country'}]);
+  rows.push([{text:'🎟 إدخال كوبون',callback_data:'s:coupon'}]);
   rows.push([{text:'🌐 English / العربية',callback_data:'s:lang'}]);
   return say(env,chat,'مرحباً بك في مكتبة الحيالي الرقمية 📚\nاختر القسم الذي تريد تصفحه:',kb(rows));
 }
@@ -68,13 +69,17 @@ async function cart(env, chat, uid) {
   return say(env,chat,items.map(p=>esc(p.title_ar)+' — '+money(p.price_usd_cents,priceMultiplier)).join('\n')+`\n\nالإجمالي: <b>${money(total,priceMultiplier)}</b>`,kb(rows));
 }
 async function orders(env, chat, uid) {
-  const r=await env.DB.prepare('SELECT id,total_usd_cents,status,created_at FROM shop_orders WHERE telegram_id=? ORDER BY id DESC LIMIT 10').bind(uid).all();
+  const r=await env.DB.prepare('SELECT id,total_usd_cents,status,currency_country,created_at FROM shop_orders WHERE telegram_id=? ORDER BY id DESC LIMIT 10').bind(uid).all();
   if(!r.results?.length) return say(env,chat,'لا توجد طلبات سابقة.');
-  const lines=r.results.map(o=>`#${o.id} · ${money(o.total_usd_cents)} · ${o.status}`);
+  const lines=[];
+  for(const o of r.results) {
+    const mult=await countryMultiplier(env,o.currency_country);
+    lines.push(`#${o.id} · ${money(o.total_usd_cents,mult)} · ${o.status}`);
+  }
   return say(env,chat,'<b>طلباتك الأخيرة</b>\n'+lines.join('\n'));
 }
 async function checkout(env, chat, uid) {
-  const u=await env.DB.prepare('SELECT selected_items FROM shop_users WHERE telegram_id=?').bind(uid).first();
+  const u=await env.DB.prepare('SELECT selected_items,country FROM shop_users WHERE telegram_id=?').bind(uid).first();
   const ids=JSON.parse(u?.selected_items||'[]');
   if(!ids.length) return say(env,chat,'السلة فارغة.');
   return say(env,chat,'اختر حجم الملفات:',kb([[{text:'A4',callback_data:'s:size:A4'},{text:'Letter',callback_data:'s:size:Letter'}],[{text:'النسختان',callback_data:'s:size:both'}],[{text:'إلغاء',callback_data:'s:cart'}]]));
@@ -89,12 +94,26 @@ async function createOrder(env, chat, uid, size) {
   const actualSize=items.some(x=>x.is_single)?'A4':size;
   const subtotal=items.reduce((n,p)=>n+p.price_usd_cents,0);
   const priceMultiplier=await countryMultiplier(env,u?.country);
-  const total=Math.round(subtotal*priceMultiplier);
+  let discount=0, couponCode=null;
+  if(u.coupon_code) {
+    const cp=await env.DB.prepare("SELECT percent FROM shop_coupons WHERE code=? AND active=1 AND (expires_at=0 OR expires_at>?) AND (max_uses<0 OR used_count<max_uses)").bind(u.coupon_code,Date.now()).first();
+    if(cp) { discount=Math.round(subtotal*Number(cp.percent||0)/100); couponCode=u.coupon_code; }
+  }
+  const discountedSubtotal=Math.max(0,subtotal-discount);
+  const total=Math.round(discountedSubtotal*priceMultiplier);
   const now=Date.now();
-  const res=await env.DB.prepare(`INSERT INTO shop_orders(telegram_id,items_json,paper_size,subtotal_usd_cents,total_usd_cents,currency_country,status,created_at,updated_at)
-    VALUES(?,?,?,?,?,?, 'pending',?,?)`).bind(uid,JSON.stringify(ids),actualSize,subtotal,total,u.country||'IQ',now,now).run();
+  const res=await env.DB.prepare(`INSERT INTO shop_orders(telegram_id,items_json,paper_size,subtotal_usd_cents,discount_usd_cents,total_usd_cents,currency_country,coupon_code,status,created_at,updated_at)
+    VALUES(?,?,?,?,?,?,?,?, 'pending',?,?)`).bind(uid,JSON.stringify(ids),actualSize,subtotal,discount,total,u.country||'IQ',couponCode,now,now).run();
   const oid=res.meta.last_row_id;
+  if(couponCode) {
+    const used=await env.DB.prepare("UPDATE shop_coupons SET used_count=used_count+1 WHERE code=? AND active=1 AND (max_uses<0 OR used_count<max_uses) AND (expires_at=0 OR expires_at>?)").bind(couponCode,now).run();
+    if(!used.meta.changes) {
+      await env.DB.prepare('DELETE FROM shop_orders WHERE id=?').bind(oid).run();
+      return say(env,chat,'انتهت صلاحية الكوبون أو نفدت استخداماته. أعد المحاولة.');
+    }
+  }
   await env.DB.batch(items.map(p=>env.DB.prepare('INSERT INTO shop_order_items(order_id,product_key,unit_price_usd_cents) VALUES(?,?,?)').bind(oid,p.product_key,p.price_usd_cents)));
+  await env.DB.prepare("UPDATE shop_users SET coupon_code=NULL WHERE telegram_id=?").bind(uid).run();
   await env.DB.prepare("UPDATE shop_users SET selected_items='[]',updated_at=? WHERE telegram_id=?").bind(now,uid).run();
   const payment=env.SHOP_PAYMENT_INSTRUCTIONS||'يرجى التواصل مع الدعم لمعرفة طريقة الدفع المتاحة.';
   await say(env,chat,`تم إنشاء طلبك رقم <b>#${oid}</b>\nالإجمالي: <b>${money(total)}</b>\n\n${esc(payment)}\n\nبعد التحويل أرسل صورة وصل الدفع هنا. سيبقى الطلب قيد المراجعة حتى موافقة الإدارة.`);
@@ -181,6 +200,7 @@ async function callback(env, cb) {
   else if(action==='cart') await cart(env,chat,uid);
   else if(action==='orders') await orders(env,chat,uid);
   else if(action==='checkout') await checkout(env,chat,uid);
+  else if(action==='coupon') { await env.DB.prepare("UPDATE shop_users SET active_mode='coupon' WHERE telegram_id=?").bind(uid).run(); await say(env,chat,'أرسل رمز الكوبون الآن، أو /cancel للإلغاء.'); }
   else if(action==='country') {
     const countries=await env.DB.prepare('SELECT code,name_ar,flag FROM shop_countries WHERE active=1 ORDER BY code').all();
     const rows=(countries.results||[]).map(x=>[{text:x.flag+' '+x.name_ar,callback_data:'s:setcountry:'+x.code}]);
@@ -226,6 +246,16 @@ export async function shopWebhook(req,env,url) {
       if(m.from?.id) await user(env,m.from);
       if(m.photo) await receiveReceipt(env,m);
       else if(/^\/start/.test(m.text||'')) await home(env,m.chat.id);
+      else if(m.text==='/cancel') {
+        await env.DB.prepare("UPDATE shop_users SET active_mode='' WHERE telegram_id=?").bind(String(m.from.id)).run();
+        await say(env,m.chat.id,'تم الإلغاء.');
+      }
+      else if(m.text && (await env.DB.prepare('SELECT active_mode FROM shop_users WHERE telegram_id=?').bind(String(m.from.id)).first())?.active_mode==='coupon') {
+        const code=m.text.trim().toUpperCase().slice(0,20);
+        const cp=await env.DB.prepare("SELECT code FROM shop_coupons WHERE code=? AND active=1 AND (expires_at=0 OR expires_at>?) AND (max_uses<0 OR used_count<max_uses)").bind(code,Date.now()).first();
+        await env.DB.prepare("UPDATE shop_users SET active_mode='',coupon_code=? WHERE telegram_id=?").bind(cp?code:null,String(m.from.id)).run();
+        await say(env,m.chat.id,cp?'تم تفعيل الكوبون على طلبك القادم.':'الكوبون غير صالح أو منتهي.');
+      }
       else if(m.text?.startsWith('/')) {
         if(String(m.from?.id)!==String(env.SHOP_OWNER_ID||'')) await say(env,m.chat.id,'الأمر غير متاح.');
         else await say(env,m.chat.id,'أوامر الإدارة التفصيلية قيد الإكمال.');
